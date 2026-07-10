@@ -16,6 +16,7 @@ export const Documentos: React.FC<DocumentosProps> = ({ planData, onFinalizado, 
   const [celular, setCelular] = useState('');
   const [ineFrente, setIneFrente] = useState<File | null>(null);
   const [ineReverso, setIneReverso] = useState<File | null>(null);
+  const [selfie, setSelfie] = useState<File | null>(null);
   const [status, setStatus] = useState<'form' | 'subiendo' | 'exito' | 'error'>('form');
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, setFile: (file: File | null) => void) => {
@@ -26,7 +27,7 @@ export const Documentos: React.FC<DocumentosProps> = ({ planData, onFinalizado, 
 
   const handleEnviar = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!nombre || !celular || !ineFrente || !ineReverso) return;
+    if (!nombre || !celular || !ineFrente || !ineReverso || !selfie) return;
 
     setStatus('subiendo');
 
@@ -36,7 +37,7 @@ export const Documentos: React.FC<DocumentosProps> = ({ planData, onFinalizado, 
     }, 2000);
   };
 
-  const isFormValid = nombre.trim() !== '' && celular.trim().length >= 10 && ineFrente !== null && ineReverso !== null;
+  const isFormValid = nombre.trim() !== '' && celular.trim().length >= 10 && ineFrente !== null && ineReverso !== null && selfie !== null;
 
   if (status === 'subiendo') {
     return (
@@ -125,7 +126,7 @@ export const Documentos: React.FC<DocumentosProps> = ({ planData, onFinalizado, 
               <div className={styles.hint}>Se enviará un código de verificación por SMS.</div>
             </div>
 
-            <div className={styles.lbl} style={{ marginTop: '20px' }}>Fotografía de tu INE</div>
+            <div className={styles.lbl} style={{ marginTop: '20px' }}>Fotografía de tu INE y Selfie</div>
 
             {/* Frente */}
             <div className={`${styles.drop} ${ineFrente ? styles.cargado : ''}`}>
@@ -177,6 +178,31 @@ export const Documentos: React.FC<DocumentosProps> = ({ planData, onFinalizado, 
               <div className={styles.txt}>
                 <div className={styles.t}>Reverso de tu INE</div>
                 <div className={styles.d}>{ineReverso ? 'Foto cargada correctamente' : 'Haz clic para tomar foto o subir'}</div>
+              </div>
+              <div className={styles.check}>✓</div>
+            </div>
+
+            {/* Selfie */}
+            <div className={`${styles.drop} ${selfie ? styles.cargado : ''}`}>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => handleFileChange(e, setSelfie)}
+                required
+              />
+              <div className={styles.thumb}>
+                {selfie ? (
+                  <img src={URL.createObjectURL(selfie)} alt="Selfie" />
+                ) : (
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <circle cx="12" cy="9" r="4"></circle>
+                    <path d="M5 20c0-3.3 3.1-6 7-6s7 2.7 7 6"></path>
+                  </svg>
+                )}
+              </div>
+              <div className={styles.txt}>
+                <div className={styles.t}>Selfie</div>
+                <div className={styles.d}>{selfie ? 'Foto cargada correctamente' : 'Tu rostro, bien iluminado'}</div>
               </div>
               <div className={styles.check}>✓</div>
             </div>
