@@ -1,0 +1,166 @@
+.adminWrap {
+  max-width: 900px;
+  margin: 40px auto;
+  padding: 20px;
+  font-family: 'Inter', sans-serif;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  border-bottom: 1.5px solid var(--linea);
+  padding-bottom: 20px;
+}
+
+.header h1 {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--marino);
+}
+
+.badge {
+  background: var(--marino);
+  color: #fff;
+  font-size: 12px;
+  font-weight: bold;
+  padding: 6px 12px;
+  border-radius: 20px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+
+.panel {
+  background: var(--blanco);
+  border: 1px solid var(--linea);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 4px 12px rgba(11, 27, 60, 0.05);
+}
+
+.panelTitle {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--marino);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px;
+  background: var(--hueso);
+  border-radius: 12px;
+  border: 1px solid transparent;
+  transition: 0.15s ease;
+  cursor: pointer;
+}
+
+.item:hover {
+  border-color: var(--azul);
+}
+
+.clientInfo h4 {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--marino);
+}
+
+.clientInfo p {
+  font-size: 13px;
+  color: var(--gris);
+  margin-top: 2px;
+}
+
+.status {
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 800;
+  border-radius: 20px;
+  text-transform: uppercase;
+}
+
+.statusPending {
+  background: #FEF3C7;
+  color: #D97706;
+}
+
+.statusApproved {
+  background: #D1FAE5;
+  color: var(--ok);
+}
+
+.detail {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.detailRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  padding: 8px 0;
+  border-bottom: 1px dashed var(--linea);
+}
+
+.detailRow span:first-child {
+  color: var(--gris);
+  font-weight: 600;
+}
+
+.detailRow span:last-child {
+  font-weight: 700;
+  color: var(--marino);
+}
+
+.btnGroup {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.btnApprove {
+  flex: 1;
+  background: var(--ok);
+  color: #fff;
+  border: none;
+  padding: 14px;
+  border-radius: 12px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.15s;
+}
+
+.btnReject {
+  flex: 1;
+  background: var(--err);
+  color: #fff;
+  border: none;
+  padding: 14px;
+  border-radius: 12px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.15s;
+}
+
+.btnApprove:hover, .btnReject:hover {
+  opacity: 0.9;
+}
