@@ -7,6 +7,13 @@ import samsungImg from './assets/samsung_s24.png';
 import iphoneImg from './assets/iphone15_pro.png';
 import xiaomiImg from './assets/xiaomi_redmi.png';
 
+// Importar logos reales de marca y métodos de pago
+import logoColor from './assets/movinex_color.png';
+import oxxoLogo from './assets/Oxxo_Logo.svg.png';
+import sevenLogo from './assets/7-eleven_logo.svg.png';
+import speiLogo from './assets/spei.png';
+import mpLogo from './assets/images mercado.png';
+
 interface LandingProps {
   onSelectPhone: (phone: Phone) => void;
 }
@@ -60,10 +67,7 @@ export const Landing: React.FC<LandingProps> = ({ onSelectPhone }) => {
       {/* HEADER */}
       <header className={styles.header}>
         <div className={styles.headerContent}>
-          <svg className={styles.logo} viewBox="0 0 240 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M20 15 L35 45 L50 15 L65 45 L80 15" stroke="#0B1B3C" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round"/>
-            <text x="95" y="42" fill="#0B1B3C" fontSize="32" fontWeight="bold" fontFamily="'Outfit', sans-serif">Movinex</text>
-          </svg>
+          <img src={logoColor} alt="Movinex Logo" className={styles.logo} />
           <nav className={styles.nav}>
             <a href="#inicio">Inicio</a>
             <a href="#beneficios">Nosotros</a>
@@ -161,6 +165,15 @@ export const Landing: React.FC<LandingProps> = ({ onSelectPhone }) => {
       <footer className={styles.footer}>
         <div className={styles.footerContent}>
           <p>&copy; {new Date().getFullYear()} Movinex. Todos los derechos reservados.</p>
+          
+          <div className={styles.metodosPago}>
+            <span>Aceptamos:</span>
+            <img src={oxxoLogo} alt="Oxxo" />
+            <img src={sevenLogo} alt="7 Eleven" />
+            <img src={speiLogo} alt="SPEI" />
+            <img src={mpLogo} alt="Mercado Pago" />
+          </div>
+
           <div className={styles.footerLinks}>
             <a href="#">Envío y devoluciones</a>
             <a href="#">Términos y condiciones</a>

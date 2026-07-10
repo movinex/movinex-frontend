@@ -398,6 +398,27 @@
   font-size: 14px;
 }
 
+.metodosPago {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.metodosPago span {
+  font-size: 13px;
+  color: #AEB9D2;
+  font-weight: 600;
+}
+
+.metodosPago img {
+  height: 24px;
+  width: auto;
+  object-fit: contain;
+  background-color: #ffffff;
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
 .footerLinks {
   display: flex;
   gap: 25px;

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import styles from './Documentos.module.css';
+import logoBlanco from './assets/movinex_blanco.png';
 
 interface DocumentosProps {
   planData: {
@@ -80,10 +81,7 @@ export const Documentos: React.FC<DocumentosProps> = ({ planData, onFinalizado, 
     <div className={styles.wrap}>
       <div className={styles.card}>
         <div className={styles.hero}>
-          <svg className={styles.logo} viewBox="0 0 240 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M20 15 L35 45 L50 15 L65 45 L80 15" stroke="#FFFFFF" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round"/>
-            <text x="95" y="42" fill="#FFFFFF" fontSize="32" fontWeight="bold" fontFamily="'Outfit', sans-serif">Movinex</text>
-          </svg>
+          <img src={logoBlanco} alt="Movinex Logo" className={styles.logo} />
           <div className={styles.eyebrow}>Verifica tu identidad</div>
           <div className={styles.titulo}>Sube tus documentos</div>
           <div className={styles.sub}>Para autorizar tu crédito requerimos validar tu identidad de forma segura.</div>

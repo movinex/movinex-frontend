@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import styles from './Cotizador.module.css';
 import type { Phone } from './types';
+import logoBlanco from './assets/movinex_blanco.png';
 
 interface PlazoOption {
   semanas: number;
@@ -43,11 +44,7 @@ export const Cotizador: React.FC<CotizadorProps> = ({ phone, onSiguiente, onVolv
     <div className={styles.wrap}>
       <div className={styles.card}>
         <div className={styles.hero}>
-          {/* Logo SVG inline de Movinex */}
-          <svg className={styles.logo} viewBox="0 0 240 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M20 15 L35 45 L50 15 L65 45 L80 15" stroke="#FFFFFF" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round"/>
-            <text x="95" y="42" fill="#FFFFFF" fontSize="32" fontWeight="bold" fontFamily="'Outfit', sans-serif">Movinex</text>
-          </svg>
+          <img src={logoBlanco} alt="Movinex Logo" className={styles.logo} />
           <div className={styles.eyebrow}>Tu próximo celular</div>
           <div className={styles.modelo}>{modelo}</div>
           <div className={styles.precioBase}>
