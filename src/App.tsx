@@ -1,9 +1,12 @@
 import { useState } from 'react';
+import { Landing } from './Landing';
 import { Cotizador } from './Cotizador';
 import { Documentos } from './Documentos';
+import type { Phone } from './types';
 
 function App() {
-  const [step, setStep] = useState<'cotizar' | 'documentos' | 'finalizado'>('cotizar');
+  const [step, setStep] = useState<'landing' | 'cotizar' | 'documentos' | 'finalizado'>('landing');
+  const [selectedPhone, setSelectedPhone] = useState<Phone | null>(null);
   const [planSelected, setPlanSelected] = useState<{ semanas: number; pagoSemanal: number; enganche: number } | null>(null);
 
   const handleCotizacionFinalizada = (data: { semanas: number; pagoSemanal: number; enganche: number }) => {
@@ -16,11 +19,28 @@ function App() {
   };
 
   const handleVolver = () => {
-    setStep('cotizar');
+    setStep('landing');
   };
 
-  if (step === 'cotizar') {
-    return <Cotizador onSiguiente={handleCotizacionFinalizada} />;
+  if (step === 'landing') {
+    return (
+      <Landing
+        onSelectPhone={(phone) => {
+          setSelectedPhone(phone);
+          setStep('cotizar');
+        }}
+      />
+    );
+  }
+
+  if (step === 'cotizar' && selectedPhone) {
+    return (
+      <Cotizador
+        phone={selectedPhone}
+        onSiguiente={handleCotizacionFinalizada}
+        onVolver={handleVolver}
+      />
+    );
   }
 
   if (step === 'documentos' && planSelected) {
@@ -28,7 +48,7 @@ function App() {
       <Documentos
         planData={planSelected}
         onFinalizado={handleVerificacionFinalizada}
-        onVolver={handleVolver}
+        onVolver={() => setStep('cotizar')}
       />
     );
   }
@@ -49,7 +69,7 @@ function App() {
         Tu solicitud ha sido ingresada al sistema. En menos de 24 horas te contactaremos para validar el envío y activación de tu nuevo celular.
       </p>
       <button
-        onClick={() => setStep('cotizar')}
+        onClick={() => setStep('landing')}
         style={{
           background: 'linear-gradient(135deg,#2B6BE4,#3FC6F0)',
           color: '#ffffff',

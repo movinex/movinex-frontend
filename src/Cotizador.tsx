@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import styles from './Cotizador.module.css';
+import type { Phone } from './types';
 
 interface PlazoOption {
   semanas: number;
@@ -9,20 +10,21 @@ interface PlazoOption {
 }
 
 interface CotizadorProps {
+  phone: Phone;
   onSiguiente: (data: { semanas: number; pagoSemanal: number; enganche: number }) => void;
+  onVolver: () => void;
 }
 
-export const Cotizador: React.FC<CotizadorProps> = ({ onSiguiente }) => {
-  // Datos ejemplo basados en la maqueta
-  const modelo = "Samsung Galaxy S24 Ultra";
-  const precioBase = 12999;
-  const enganche = 2999;
+export const Cotizador: React.FC<CotizadorProps> = ({ phone, onSiguiente, onVolver }) => {
+  const modelo = phone.modelo;
+  const precioBase = phone.precioBase;
+  const enganche = phone.enganche;
   const precioFinanciado = precioBase - enganche;
 
-  // Opciones de plazos predefinidas
+  // Opciones de plazos basadas en el teléfono seleccionado
   const plazos: PlazoOption[] = [
-    { semanas: 26, montoSemanal: 425, totalPagar: 11050, ahorro: 1200 },
-    { semanas: 52, montoSemanal: 235, totalPagar: 12220 }
+    { semanas: 26, montoSemanal: phone.montoSemanal26, totalPagar: phone.totalPagar26, ahorro: phone.ahorro26 },
+    { semanas: 52, montoSemanal: phone.montoSemanal52, totalPagar: phone.totalPagar52 }
   ];
 
   const [plazoSeleccionado, setPlazoSeleccionado] = useState<number>(26);
@@ -41,7 +43,7 @@ export const Cotizador: React.FC<CotizadorProps> = ({ onSiguiente }) => {
     <div className={styles.wrap}>
       <div className={styles.card}>
         <div className={styles.hero}>
-          {/* Logo SVG inline de Movinex para evitar dependencias de imágenes externas */}
+          {/* Logo SVG inline de Movinex */}
           <svg className={styles.logo} viewBox="0 0 240 60" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M20 15 L35 45 L50 15 L65 45 L80 15" stroke="#FFFFFF" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round"/>
             <text x="95" y="42" fill="#FFFFFF" fontSize="32" fontWeight="bold" fontFamily="'Outfit', sans-serif">Movinex</text>
@@ -105,6 +107,10 @@ export const Cotizador: React.FC<CotizadorProps> = ({ onSiguiente }) => {
 
           <button className={styles.cta} onClick={handleSiguiente}>
             Solicitar crédito ahora
+          </button>
+
+          <button className={styles.cta} style={{ background: '#E4E8F1', color: '#5A6688', marginTop: '10px', boxShadow: 'none' }} onClick={onVolver}>
+            Volver a la tienda
           </button>
 
           <div className={styles.nota}>
