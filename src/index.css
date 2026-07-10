@@ -1,3 +1,7 @@
+html {
+  scroll-behavior: smooth;
+}
+
 :root {
   --marino: #0B1B3C;
   --marino-2: #13264d;

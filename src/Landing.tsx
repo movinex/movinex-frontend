@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import styles from './Landing.module.css';
 import type { Phone } from './types';
 
@@ -19,8 +19,23 @@ interface LandingProps {
 }
 
 export const Landing: React.FC<LandingProps> = ({ onSelectPhone }) => {
-  // Lista de teléfonos disponibles en la tienda (maqueta)
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
+
+  // Lista de teléfonos disponibles en la tienda (maqueta ampliada)
   const phones: Phone[] = [
+    {
+      id: 'samsung-a07',
+      modelo: 'Samsung Galaxy A07',
+      marca: 'Samsung',
+      precioBase: 2999,
+      enganche: 375,
+      montoSemanal26: 167,
+      montoSemanal52: 99,
+      totalPagar26: 4342,
+      totalPagar52: 5148,
+      ahorro26: 250,
+      imagen: samsungImg
+    },
     {
       id: 'samsung-s24',
       modelo: 'Samsung Galaxy S24 Ultra',
@@ -62,6 +77,29 @@ export const Landing: React.FC<LandingProps> = ({ onSelectPhone }) => {
     }
   ];
 
+  const faqs = [
+    {
+      q: '¿Qué requisitos necesito para obtener mi crédito?',
+      a: 'Solo necesitas tener a la mano tu identificación oficial vigente (INE) y tu celular con WhatsApp para recibir las notificaciones. No requerimos tarjetas bancarias ni consulta de historial en buró de crédito.'
+    },
+    {
+      q: '¿De cuánto es el pago inicial (enganche)?',
+      a: 'El enganche es equivalente a aproximadamente el 15% del valor total del teléfono seleccionado. Se paga una sola vez al momento de autorizar tu crédito para poder apartar y enviar tu equipo.'
+    },
+    {
+      q: '¿Cómo y dónde realizo mis pagos semanales?',
+      a: 'Puedes realizar tus pagos de forma presencial en cualquier tienda OXXO o 7-Eleven de la República Mexicana, o bien de forma digital mediante transferencia electrónica (SPEI).'
+    },
+    {
+      q: '¿Cuánto tiempo tarda en llegar mi celular?',
+      a: 'El envío es express y totalmente gratuito a cualquier parte de México. Tarda entre 2 y 5 días hábiles en llegar directamente a tu domicilio después de confirmarse el pago del enganche.'
+    }
+  ];
+
+  const toggleFaq = (index: number) => {
+    setOpenFaq(openFaq === index ? null : index);
+  };
+
   return (
     <div className={styles.container}>
       {/* HEADER */}
@@ -71,6 +109,7 @@ export const Landing: React.FC<LandingProps> = ({ onSelectPhone }) => {
           <nav className={styles.nav}>
             <a href="#inicio">Inicio</a>
             <a href="#beneficios">Nosotros</a>
+            <a href="#faq">Preguntas</a>
             <a href="#tienda" className={styles.btnTienda}>Tienda</a>
           </nav>
         </div>
@@ -143,6 +182,26 @@ export const Landing: React.FC<LandingProps> = ({ onSelectPhone }) => {
                   </div>
                 </div>
                 <button className={styles.cotizarBtn}>Cotizar Ahora</button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* PREGUNTAS FRECUENTES (FAQ Accordion) */}
+      <section id="faq" className={styles.faqSection}>
+        <h2 className={styles.sectionTitle}>Preguntas Frecuentes</h2>
+        <div className={styles.faqContainer}>
+          {faqs.map((faq, idx) => (
+            <div key={idx} className={`${styles.faqItem} ${openFaq === idx ? styles.activeFaq : ''}`}>
+              <button className={styles.faqQuestion} onClick={() => toggleFaq(idx)}>
+                <span>{faq.q}</span>
+                <svg className={styles.faqIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </button>
+              <div className={styles.faqAnswer}>
+                <p>{faq.a}</p>
               </div>
             </div>
           ))}

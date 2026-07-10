@@ -7,18 +7,68 @@ interface DocumentosProps {
     semanas: number;
     pagoSemanal: number;
     enganche: number;
+    modelo: string;
   };
   onFinalizado: () => void;
   onVolver: () => void;
 }
 
+// Utilidad para comprimir y convertir imágenes a Base64
+const compressAndGetBase64 = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        const maxDimension = 1500;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height && width > maxDimension) {
+          height = Math.round((height * maxDimension) / width);
+          width = maxDimension;
+        } else if (height > width && height > maxDimension) {
+          width = Math.round((width * maxDimension) / height);
+          height = maxDimension;
+        }
+
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.fillStyle = '#fff';
+          ctx.fillRect(0, 0, width, height);
+          ctx.drawImage(img, 0, 0, width, height);
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.75);
+          resolve(dataUrl.split(',')[1]);
+        } else {
+          reject(new Error('Canvas context not available'));
+        }
+      };
+      img.onerror = () => {
+        if (typeof reader.result === 'string') {
+          resolve(reader.result.split(',')[1]);
+        } else {
+          reject(new Error('FileReader result is empty'));
+        }
+      };
+      img.src = reader.result as string;
+    };
+    reader.onerror = (error) => reject(error);
+  });
+};
+
 export const Documentos: React.FC<DocumentosProps> = ({ planData, onFinalizado, onVolver }) => {
   const [nombre, setNombre] = useState('');
   const [celular, setCelular] = useState('');
+  const [email, setEmail] = useState('');
   const [ineFrente, setIneFrente] = useState<File | null>(null);
   const [ineReverso, setIneReverso] = useState<File | null>(null);
   const [selfie, setSelfie] = useState<File | null>(null);
   const [status, setStatus] = useState<'form' | 'subiendo' | 'exito' | 'error'>('form');
+  const [errorMessage, setErrorMessage] = useState('');
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, setFile: (file: File | null) => void) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -26,19 +76,64 @@ export const Documentos: React.FC<DocumentosProps> = ({ planData, onFinalizado, 
     }
   };
 
-  const handleEnviar = (e: React.FormEvent) => {
+  const handleEnviar = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!nombre || !celular || !ineFrente || !ineReverso || !selfie) return;
+    if (!nombre || !celular || !email || !ineFrente || !ineReverso || !selfie) return;
 
     setStatus('subiendo');
+    setErrorMessage('');
 
-    // Simulación de envío/KYC
-    setTimeout(() => {
-      setStatus('exito');
-    }, 2000);
+    try {
+      // Comprimir imágenes de manera concurrente
+      const [ineFrenteB64, ineReversoB64, selfieB64] = await Promise.all([
+        compressAndGetBase64(ineFrente),
+        compressAndGetBase64(ineReverso),
+        compressAndGetBase64(selfie)
+      ]);
+
+      const payload = {
+        nombre: nombre.trim(),
+        telefono: celular.trim(),
+        email: email.trim(),
+        ine_front: ineFrenteB64,
+        ine_back: ineReversoB64,
+        selfie: selfieB64,
+        plan: {
+          modelo: planData.modelo,
+          plazo_semanas: planData.semanas,
+          cuota_semanal: planData.pagoSemanal,
+          enganche: planData.enganche
+        }
+      };
+
+      const response = await fetch('https://autovia.app.n8n.cloud/webhook/verificacion-cliente', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      const res = await response.json();
+
+      if (res && (res.aprobado === true || res.status === 'aprobado')) {
+        setStatus('exito');
+      } else {
+        setErrorMessage(res.mensaje || 'No pudimos validar tu identidad en este momento. Revisa que las fotos sean claras y vuelve a intentar.');
+        setStatus('error');
+      }
+    } catch (error) {
+      console.error(error);
+      setErrorMessage('Ocurrió un error al procesar tu solicitud de crédito. Por favor intenta de nuevo.');
+      setStatus('error');
+    }
   };
 
-  const isFormValid = nombre.trim() !== '' && celular.trim().length >= 10 && ineFrente !== null && ineReverso !== null && selfie !== null;
+  const isFormValid =
+    nombre.trim() !== '' &&
+    celular.trim().length >= 10 &&
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) &&
+    ineFrente !== null &&
+    ineReverso !== null &&
+    selfie !== null;
 
   if (status === 'subiendo') {
     return (
@@ -48,7 +143,7 @@ export const Documentos: React.FC<DocumentosProps> = ({ planData, onFinalizado, 
             <div className={styles.estado}>
               <div className={styles.spinner}></div>
               <div className={styles.et}>Verificando Identidad</div>
-              <div className={styles.ed}>Procesando tus documentos mediante Verificamex para validación biométrica.</div>
+              <div className={styles.ed}>Estamos verificando tu INE ante fuentes oficiales. No cierres esta ventana.</div>
             </div>
           </div>
         </div>
@@ -67,9 +162,31 @@ export const Documentos: React.FC<DocumentosProps> = ({ planData, onFinalizado, 
                   <polyline points="20 6 9 17 4 12"></polyline>
                 </svg>
               </div>
-              <div className={styles.et}>¡Identidad Validada!</div>
-              <div className={styles.ed}>Tu información ha sido validada con éxito. En unos momentos un asesor te contactará para finalizar tu firma.</div>
-              <button className={styles.cta} onClick={onFinalizado}>Entendido</button>
+              <div className={styles.et}>🎉 ¡Felicidades, fuiste autorizado!</div>
+              <div className={styles.ed}>Tu identidad quedó validada. El siguiente paso es tu enganche de <b>${planData.enganche}</b> para apartar tu equipo.</div>
+              <button className={styles.cta} onClick={onFinalizado}>Pagar enganche →</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (status === 'error') {
+    return (
+      <div className={styles.wrap}>
+        <div className={styles.card}>
+          <div className={styles.body}>
+            <div className={styles.estado}>
+              <div className={styles.badgeErr}>
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#DC2626" strokeWidth="3">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </div>
+              <div className={styles.et}>No pudimos verificarte</div>
+              <div className={styles.ed}>{errorMessage}</div>
+              <button className={styles.cta} onClick={() => setStatus('form')}>Volver a intentar</button>
             </div>
           </div>
         </div>
@@ -111,7 +228,7 @@ export const Documentos: React.FC<DocumentosProps> = ({ planData, onFinalizado, 
             </div>
 
             <div className={styles.campo}>
-              <label htmlFor="celular">Número de Celular</label>
+              <label htmlFor="celular">Número de Celular (WhatsApp)</label>
               <input
                 id="celular"
                 type="tel"
@@ -121,7 +238,19 @@ export const Documentos: React.FC<DocumentosProps> = ({ planData, onFinalizado, 
                 maxLength={10}
                 required
               />
-              <div className={styles.hint}>Se enviará un código de verificación por SMS.</div>
+              <div className={styles.hint}>Ahí te enviaremos el seguimiento de tu crédito.</div>
+            </div>
+
+            <div className={styles.campo}>
+              <label htmlFor="email">Correo electrónico</label>
+              <input
+                id="email"
+                type="email"
+                placeholder="tucorreo@ejemplo.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
             </div>
 
             <div className={styles.lbl} style={{ marginTop: '20px' }}>Fotografía de tu INE y Selfie</div>

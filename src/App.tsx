@@ -43,10 +43,13 @@ function App() {
     );
   }
 
-  if (step === 'documentos' && planSelected) {
+  if (step === 'documentos' && planSelected && selectedPhone) {
     return (
       <Documentos
-        planData={planSelected}
+        planData={{
+          ...planSelected,
+          modelo: selectedPhone.modelo
+        }}
         onFinalizado={handleVerificacionFinalizada}
         onVolver={() => setStep('cotizar')}
       />
