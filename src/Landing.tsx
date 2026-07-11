@@ -120,9 +120,7 @@ export const Landing: React.FC<LandingProps> = ({ onSelectPhone, onNavigateAdmin
   const [currentSlide, setCurrentSlide] = useState(0);
 
   // Prevent TS6133 unused prop error while Backoffice is commented
-  if (typeof onNavigateAdmin === 'undefined') {
-    onNavigateAdmin();
-  }
+  ((_x: any) => {})(onNavigateAdmin);
 
   const slides = [
     {
