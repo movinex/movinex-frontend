@@ -699,6 +699,9 @@
   transition: all 0.25s ease;
   position: relative;
   box-shadow: 0 4px 10px rgba(15, 23, 42, 0.01);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 .productCard:hover {
@@ -767,6 +770,9 @@
 
 .prodInfo {
   padding: 24px;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
 }
 
 .brand {
@@ -823,6 +829,7 @@
   font-size: 15px;
   cursor: pointer;
   transition: background-color 0.2s;
+  margin-top: auto;
 }
 
 .productCard:hover .cotizarBtn {
