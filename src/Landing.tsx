@@ -406,11 +406,7 @@ export const Landing: React.FC<LandingProps> = ({ onSelectPhone, onNavigateAdmin
             <p>Somos una empresa mexicana que hace posible que más personas estrenen el smartphone que necesitan, con un enganche accesible y pagos semanales pensados para su bolsillo. Sin trámites eternos, sin checar buró y sin sucursales: todo desde tu hogar, con envío a domicilio a todo el país.</p>
             <p>Todo con reglas claras que entiendes desde el primer momento: sabes cuánto pagas de enganche, cuánto por semana y en cuántas semanas terminas. Sin letras chiquitas, sin intereses moratorios y sin sorpresas.</p>
             <p className={styles.aboutHighlight}>Nuestra misión es acercar tecnología a quienes el sistema tradicional suele dejar fuera, de forma simple, honesta y a su ritmo.</p>
-            <div className={styles.aboutJobs}>
-              <h3>Empleos</h3>
-              <p>Ve las ofertas de empleo y las oportunidades que te esperan. Actualmente operamos con un equipo 100% digital en continuo crecimiento.</p>
-              <a href="mailto:empleos@movinex.mx" className={styles.contactBtn}>Enviar CV</a>
-            </div>
+
           </div>
         </section>
       )}
