@@ -11,3 +11,20 @@ export interface Phone {
   ahorro26?: number;
   imagen: string;
 }
+
+export interface Solicitud {
+  id: string;
+  cliente: string;
+  celular: string;
+  email: string;
+  modelo: string;
+  enganche: number;
+  semanas: number;
+  pagoSemanal: number;
+  estatus: 'Pendiente' | 'Aprobado' | 'Rechazado';
+  fecha: string;
+  ineFrente?: string; // Base64
+  ineReverso?: string; // Base64
+  selfie?: string; // Base64
+}
+

@@ -9,7 +9,18 @@ interface DocumentosProps {
     enganche: number;
     modelo: string;
   };
-  onFinalizado: () => void;
+  onFinalizado: (datos: {
+    cliente: string;
+    celular: string;
+    email: string;
+    modelo: string;
+    enganche: number;
+    semanas: number;
+    pagoSemanal: number;
+    ineFrente: string;
+    ineReverso: string;
+    selfie: string;
+  }) => void;
   onVolver: () => void;
 }
 
@@ -70,6 +81,11 @@ export const Documentos: React.FC<DocumentosProps> = ({ planData, onFinalizado, 
   const [status, setStatus] = useState<'form' | 'subiendo' | 'exito' | 'error'>('form');
   const [errorMessage, setErrorMessage] = useState('');
 
+  // Estados para persistir base64 de las imágenes
+  const [ineFrenteBase64, setIneFrenteBase64] = useState<string>('');
+  const [ineReversoBase64, setIneReversoBase64] = useState<string>('');
+  const [selfieBase64, setSelfieBase64] = useState<string>('');
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, setFile: (file: File | null) => void) => {
     if (e.target.files && e.target.files.length > 0) {
       setFile(e.target.files[0]);
@@ -90,6 +106,14 @@ export const Documentos: React.FC<DocumentosProps> = ({ planData, onFinalizado, 
         compressAndGetBase64(ineReverso),
         compressAndGetBase64(selfie)
       ]);
+
+      const formattedFrente = `data:image/jpeg;base64,${ineFrenteB64}`;
+      const formattedReverso = `data:image/jpeg;base64,${ineReversoB64}`;
+      const formattedSelfie = `data:image/jpeg;base64,${selfieB64}`;
+
+      setIneFrenteBase64(formattedFrente);
+      setIneReversoBase64(formattedReverso);
+      setSelfieBase64(formattedSelfie);
 
       const payload = {
         nombre: nombre.trim(),
@@ -164,7 +188,18 @@ export const Documentos: React.FC<DocumentosProps> = ({ planData, onFinalizado, 
               </div>
               <div className={styles.et}>🎉 ¡Felicidades, fuiste autorizado!</div>
               <div className={styles.ed}>Tu identidad quedó validada. El siguiente paso es tu enganche de <b>${planData.enganche}</b> para apartar tu equipo.</div>
-              <button className={styles.cta} onClick={onFinalizado}>Pagar enganche →</button>
+              <button className={styles.cta} onClick={() => onFinalizado({
+                cliente: nombre.trim(),
+                celular: celular.trim(),
+                email: email.trim(),
+                modelo: planData.modelo,
+                enganche: planData.enganche,
+                semanas: planData.semanas,
+                pagoSemanal: planData.pagoSemanal,
+                ineFrente: ineFrenteBase64,
+                ineReverso: ineReversoBase64,
+                selfie: selfieBase64
+              })}>Pagar enganche →</button>
             </div>
           </div>
         </div>
