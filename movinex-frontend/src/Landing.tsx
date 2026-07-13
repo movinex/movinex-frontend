@@ -2,11 +2,7 @@ import React, { useState, useEffect } from 'react';
 import styles from './Landing.module.css';
 import type { Phone } from './types';
 
-// Mockup local images
-import samsungImg from './assets/samsung_s24.png';
-import iphoneImg from './assets/iphone15_pro.png';
-import xiaomiImg from './assets/xiaomi_redmi.png';
-import samsungA07Img from './assets/samsung a07 1.avif';
+
 
 // Carousel Banners (imágenes nuevas del usuario)
 import banner1 from './assets/carrusel1.avif';
@@ -191,7 +187,7 @@ export const Landing: React.FC<LandingProps> = ({ onSelectPhone, onNavigateAdmin
               totalPagar26: 4342,
               totalPagar52: 6188,
               ahorro26: 250,
-              imagen: samsungA07Img
+              imagen: 'https://chjkpezpqwqdsiulwrdf.supabase.co/storage/v1/object/public/celulares/samsung_a07.png'
             },
             {
               id: 'samsung-s24',
@@ -204,7 +200,7 @@ export const Landing: React.FC<LandingProps> = ({ onSelectPhone, onNavigateAdmin
               totalPagar26: 11050,
               totalPagar52: 12220,
               ahorro26: 1200,
-              imagen: samsungImg
+              imagen: 'https://chjkpezpqwqdsiulwrdf.supabase.co/storage/v1/object/public/celulares/samsung_s24.png'
             },
             {
               id: 'iphone-15pro',
@@ -217,7 +213,7 @@ export const Landing: React.FC<LandingProps> = ({ onSelectPhone, onNavigateAdmin
               totalPagar26: 13520,
               totalPagar52: 14820,
               ahorro26: 1500,
-              imagen: iphoneImg
+              imagen: 'https://chjkpezpqwqdsiulwrdf.supabase.co/storage/v1/object/public/celulares/iphone15_pro.png'
             },
             {
               id: 'xiaomi-redmi13',
@@ -230,7 +226,7 @@ export const Landing: React.FC<LandingProps> = ({ onSelectPhone, onNavigateAdmin
               totalPagar26: 5070,
               totalPagar52: 5720,
               ahorro26: 600,
-              imagen: xiaomiImg
+              imagen: 'https://chjkpezpqwqdsiulwrdf.supabase.co/storage/v1/object/public/celulares/xiaomi_redmi.png'
             }
           ]);
           setLoading(false);
