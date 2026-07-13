@@ -152,7 +152,7 @@ export const Landing: React.FC<LandingProps> = ({ onSelectPhone, onNavigateAdmin
   useEffect(() => {
     if (page === 'tienda') {
       setLoading(true);
-      fetch('http://localhost:5000/api/celulares')
+      fetch('https://movinex-backend-production.up.railway.app/api/celulares')
         .then(res => res.json())
         .then(data => {
           // Mapear campos de base de datos snake_case a camelCase si es necesario

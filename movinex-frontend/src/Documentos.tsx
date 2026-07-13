@@ -116,7 +116,7 @@ export const Documentos: React.FC<DocumentosProps> = ({ planData, onFinalizado, 
       setSelfieBase64(formattedSelfie);
 
       // Enviar solicitud de manera segura a nuestro Backend
-      const response = await fetch('http://localhost:5000/api/solicitudes', {
+      const response = await fetch('https://movinex-backend-production.up.railway.app/api/solicitudes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
