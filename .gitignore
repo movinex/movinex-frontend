@@ -19,6 +19,9 @@ dist/
 build/
 .tsbuildinfo
 
+# Proyectos separados
+movinex-backend/
+
 # IDE y Editores
 .vscode/
 .idea/
