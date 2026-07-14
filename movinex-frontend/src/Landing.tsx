@@ -18,18 +18,18 @@ import imgCardIne from './assets/Copia de Degradado horizontal izquierda a derec
 import imgCardRitmo from './assets/Copia de Que se degrade de menos a mas 3.png';
 
 // Brand logos (imágenes nuevas del usuario)
-import marca1 from './assets/marca1.png';
-import marca2 from './assets/marca2.png';
-import marca3 from './assets/marca3.png';
-import marca4 from './assets/marca4.png';
-import marca5 from './assets/marca5.png';
+import marca1 from './assets/marca1.webp';
+import marca2 from './assets/marca2.webp';
+import marca3 from './assets/marca3.webp';
+import marca4 from './assets/marca4.webp';
+import marca5 from './assets/marca5.webp';
 
 // Payment methods
-import logoColor from './assets/movinex_color.png';
-import sevenLogo from './assets/7-eleven_logo.svg.png';
-import speiLogo from './assets/spei.png';
-import mpLogo from './assets/images mercado.png';
-import ahorroLogo from './assets/66e332240412cb710d3532c4_Farmacias del Ahorro.png';
+import logoColor from './assets/movinex_color.webp';
+import sevenLogo from './assets/7-eleven_logo.svg.webp';
+import speiLogo from './assets/spei.webp';
+import mpLogo from './assets/images mercado.webp';
+import ahorroLogo from './assets/66e332240412cb710d3532c4_Farmacias del Ahorro.webp';
 
 interface LandingProps {
   onSelectPhone: (phone: Phone) => void;

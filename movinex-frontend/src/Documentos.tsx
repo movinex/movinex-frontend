@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import styles from './Documentos.module.css';
-import logoBlanco from './assets/movinex_blanco.png';
+import logoBlanco from './assets/movinex_blanco.webp';
 
 interface DocumentosProps {
   planData: {

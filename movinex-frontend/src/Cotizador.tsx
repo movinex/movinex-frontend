@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import styles from './Cotizador.module.css';
 import type { Phone } from './types';
-import logoBlanco from './assets/movinex_blanco.png';
+import logoBlanco from './assets/movinex_blanco.webp';
 
 interface PlazoOption {
   semanas: number;
