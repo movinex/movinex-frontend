@@ -187,7 +187,7 @@ export const Landing: React.FC<LandingProps> = ({ onSelectPhone, onNavigateAdmin
               totalPagar26: 4342,
               totalPagar52: 6188,
               ahorro26: 250,
-              imagen: 'https://chjkpezpqwqdsiulwrdf.supabase.co/storage/v1/object/public/celulares/samsung_a07.png'
+              imagen: 'https://chjkpezpqwqdsiulwrdf.supabase.co/storage/v1/object/public/celulares/samsung_a07.webp'
             },
             {
               id: 'samsung-s24',
@@ -200,7 +200,7 @@ export const Landing: React.FC<LandingProps> = ({ onSelectPhone, onNavigateAdmin
               totalPagar26: 11050,
               totalPagar52: 12220,
               ahorro26: 1200,
-              imagen: 'https://chjkpezpqwqdsiulwrdf.supabase.co/storage/v1/object/public/celulares/samsung_s24.png'
+              imagen: 'https://chjkpezpqwqdsiulwrdf.supabase.co/storage/v1/object/public/celulares/samsung_s24.webp'
             },
             {
               id: 'iphone-15pro',
@@ -213,7 +213,7 @@ export const Landing: React.FC<LandingProps> = ({ onSelectPhone, onNavigateAdmin
               totalPagar26: 13520,
               totalPagar52: 14820,
               ahorro26: 1500,
-              imagen: 'https://chjkpezpqwqdsiulwrdf.supabase.co/storage/v1/object/public/celulares/iphone15_pro.png'
+              imagen: 'https://chjkpezpqwqdsiulwrdf.supabase.co/storage/v1/object/public/celulares/iphone15_pro.webp'
             },
             {
               id: 'xiaomi-redmi13',
@@ -226,7 +226,7 @@ export const Landing: React.FC<LandingProps> = ({ onSelectPhone, onNavigateAdmin
               totalPagar26: 5070,
               totalPagar52: 5720,
               ahorro26: 600,
-              imagen: 'https://chjkpezpqwqdsiulwrdf.supabase.co/storage/v1/object/public/celulares/xiaomi_redmi.png'
+              imagen: 'https://chjkpezpqwqdsiulwrdf.supabase.co/storage/v1/object/public/celulares/xiaomi_redmi.webp'
             }
           ]);
           setLoading(false);
