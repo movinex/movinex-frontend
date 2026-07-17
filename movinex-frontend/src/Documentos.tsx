@@ -79,6 +79,8 @@ export const Documentos: React.FC<DocumentosProps> = ({
   const [nombre, setNombre] = useState("");
   const [celular, setCelular] = useState("");
   const [email, setEmail] = useState("");
+  const [codigoPostal, setCodigoPostal] = useState("");
+  const [direccionEnvio, setDireccionEnvio] = useState("");
   const [ineFrente, setIneFrente] = useState<File | null>(null);
   const [ineReverso, setIneReverso] = useState<File | null>(null);
   const [selfie, setSelfie] = useState<File | null>(null);
@@ -104,7 +106,7 @@ export const Documentos: React.FC<DocumentosProps> = ({
 
   const handleEnviar = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!nombre || !celular || !email || !ineFrente || !ineReverso || !selfie)
+    if (!nombre || !celular || !email || !codigoPostal || !direccionEnvio || !ineFrente || !ineReverso || !selfie)
       return;
 
     setStatus("subiendo");
@@ -141,6 +143,8 @@ export const Documentos: React.FC<DocumentosProps> = ({
             ine_frente: formattedFrente,
             ine_reverso: formattedReverso,
             selfie: formattedSelfie,
+            codigo_postal: codigoPostal.trim(),
+            direccion_envio: direccionEnvio.trim(),
           }),
         },
       );
@@ -173,6 +177,8 @@ export const Documentos: React.FC<DocumentosProps> = ({
     nombre.trim() !== "" &&
     celular.trim().length >= 10 &&
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) &&
+    codigoPostal.trim().length >= 5 &&
+    direccionEnvio.trim() !== "" &&
     ineFrente !== null &&
     ineReverso !== null &&
     selfie !== null;
@@ -351,6 +357,34 @@ export const Documentos: React.FC<DocumentosProps> = ({
                 onChange={(e) => setEmail(e.target.value)}
                 required
               />
+            </div>
+
+            <div className={styles.campo}>
+              <label htmlFor="codigoPostal">Código Postal de Envío</label>
+              <input
+                id="codigoPostal"
+                type="text"
+                placeholder="06600"
+                value={codigoPostal}
+                onChange={(e) => setCodigoPostal(e.target.value.replace(/\D/g, ''))}
+                maxLength={5}
+                required
+              />
+            </div>
+
+            <div className={styles.campo}>
+              <label htmlFor="direccionEnvio">Dirección completa de Envío</label>
+              <input
+                id="direccionEnvio"
+                type="text"
+                placeholder="Calle, número exterior/interior, colonia y alcaldía/municipio"
+                value={direccionEnvio}
+                onChange={(e) => setDireccionEnvio(e.target.value)}
+                required
+              />
+              <div className={styles.hint}>
+                Dirección exacta donde recibirás tu celular a través de Skydropx.
+              </div>
             </div>
 
             <div className={styles.lbl} style={{ marginTop: "20px" }}>
