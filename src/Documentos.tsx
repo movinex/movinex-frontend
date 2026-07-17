@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import styles from './Documentos.module.css';
-import logoBlanco from './assets/movinex_blanco.png';
+import React, { useState } from "react";
+import styles from "./Documentos.module.css";
+import logoBlanco from "./assets/movinex_blanco.webp";
 
 interface DocumentosProps {
   planData: {
@@ -44,25 +44,25 @@ const compressAndGetBase64 = (file: File): Promise<string> => {
           height = maxDimension;
         }
 
-        const canvas = document.createElement('canvas');
+        const canvas = document.createElement("canvas");
         canvas.width = width;
         canvas.height = height;
-        const ctx = canvas.getContext('2d');
+        const ctx = canvas.getContext("2d");
         if (ctx) {
-          ctx.fillStyle = '#fff';
+          ctx.fillStyle = "#fff";
           ctx.fillRect(0, 0, width, height);
           ctx.drawImage(img, 0, 0, width, height);
-          const dataUrl = canvas.toDataURL('image/jpeg', 0.75);
-          resolve(dataUrl.split(',')[1]);
+          const dataUrl = canvas.toDataURL("image/jpeg", 0.75);
+          resolve(dataUrl.split(",")[1]);
         } else {
-          reject(new Error('Canvas context not available'));
+          reject(new Error("Canvas context not available"));
         }
       };
       img.onerror = () => {
-        if (typeof reader.result === 'string') {
-          resolve(reader.result.split(',')[1]);
+        if (typeof reader.result === "string") {
+          resolve(reader.result.split(",")[1]);
         } else {
-          reject(new Error('FileReader result is empty'));
+          reject(new Error("FileReader result is empty"));
         }
       };
       img.src = reader.result as string;
@@ -71,22 +71,34 @@ const compressAndGetBase64 = (file: File): Promise<string> => {
   });
 };
 
-export const Documentos: React.FC<DocumentosProps> = ({ planData, onFinalizado, onVolver }) => {
-  const [nombre, setNombre] = useState('');
-  const [celular, setCelular] = useState('');
-  const [email, setEmail] = useState('');
+export const Documentos: React.FC<DocumentosProps> = ({
+  planData,
+  onFinalizado,
+  onVolver,
+}) => {
+  const [nombre, setNombre] = useState("");
+  const [celular, setCelular] = useState("");
+  const [email, setEmail] = useState("");
+  const [codigoPostal, setCodigoPostal] = useState("");
+  const [direccionEnvio, setDireccionEnvio] = useState("");
   const [ineFrente, setIneFrente] = useState<File | null>(null);
   const [ineReverso, setIneReverso] = useState<File | null>(null);
   const [selfie, setSelfie] = useState<File | null>(null);
-  const [status, setStatus] = useState<'form' | 'subiendo' | 'exito' | 'error'>('form');
-  const [errorMessage, setErrorMessage] = useState('');
+  const [status, setStatus] = useState<"form" | "subiendo" | "exito" | "error">(
+    "form",
+  );
+  const [errorMessage, setErrorMessage] = useState("");
 
   // Estados para persistir base64 de las imágenes
-  const [ineFrenteBase64, setIneFrenteBase64] = useState<string>('');
-  const [ineReversoBase64, setIneReversoBase64] = useState<string>('');
-  const [selfieBase64, setSelfieBase64] = useState<string>('');
+  const [ineFrenteBase64, setIneFrenteBase64] = useState<string>("");
+  const [ineReversoBase64, setIneReversoBase64] = useState<string>("");
+  const [selfieBase64, setSelfieBase64] = useState<string>("");
+  const [paymentLink, setPaymentLink] = useState<string>("");
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, setFile: (file: File | null) => void) => {
+  const handleFileChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    setFile: (file: File | null) => void,
+  ) => {
     if (e.target.files && e.target.files.length > 0) {
       setFile(e.target.files[0]);
     }
@@ -94,17 +106,17 @@ export const Documentos: React.FC<DocumentosProps> = ({ planData, onFinalizado, 
 
   const handleEnviar = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!nombre || !celular || !email || !ineFrente || !ineReverso || !selfie) return;
+    if (!nombre || !celular || !email || !codigoPostal || !direccionEnvio || !ineFrente || !ineReverso || !selfie)
+      return;
 
-    setStatus('subiendo');
-    setErrorMessage('');
+    setStatus("subiendo");
+    setErrorMessage("");
 
     try {
-      // Comprimir imágenes de manera concurrente
       const [ineFrenteB64, ineReversoB64, selfieB64] = await Promise.all([
         compressAndGetBase64(ineFrente),
         compressAndGetBase64(ineReverso),
-        compressAndGetBase64(selfie)
+        compressAndGetBase64(selfie),
       ]);
 
       const formattedFrente = `data:image/jpeg;base64,${ineFrenteB64}`;
@@ -115,51 +127,63 @@ export const Documentos: React.FC<DocumentosProps> = ({ planData, onFinalizado, 
       setIneReversoBase64(formattedReverso);
       setSelfieBase64(formattedSelfie);
 
-      const payload = {
-        nombre: nombre.trim(),
-        telefono: celular.trim(),
-        email: email.trim(),
-        ine_front: ineFrenteB64,
-        ine_back: ineReversoB64,
-        selfie: selfieB64,
-        plan: {
-          modelo: planData.modelo,
-          plazo_semanas: planData.semanas,
-          cuota_semanal: planData.pagoSemanal,
-          enganche: planData.enganche
-        }
-      };
-
-      const response = await fetch('https://autovia.app.n8n.cloud/webhook/verificacion-cliente', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
+      const response = await fetch(
+        "https://movinex-backend-production.up.railway.app/api/solicitudes",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            cliente: nombre.trim(),
+            celular: celular.trim(),
+            email: email.trim(),
+            modelo: planData.modelo,
+            enganche: planData.enganche,
+            semanas: planData.semanas,
+            pago_semanal: planData.pagoSemanal,
+            ine_frente: formattedFrente,
+            ine_reverso: formattedReverso,
+            selfie: formattedSelfie,
+            codigo_postal: codigoPostal.trim(),
+            direccion_envio: direccionEnvio.trim(),
+          }),
+        },
+      );
 
       const res = await response.json();
 
-      if (res && (res.aprobado === true || res.status === 'aprobado')) {
-        setStatus('exito');
-      } else {
-        setErrorMessage(res.mensaje || 'No pudimos validar tu identidad en este momento. Revisa que las fotos sean claras y vuelve a intentar.');
-        setStatus('error');
+      if (!response.ok) {
+        throw new Error(
+          res.error || "Ocurrió un error al procesar tu solicitud.",
+        );
       }
-    } catch (error) {
+
+      // Guardar el enlace de pago de Conekta
+      if (res.checkoutUrl) {
+        setPaymentLink(res.checkoutUrl);
+      }
+
+      setStatus("exito");
+    } catch (error: any) {
       console.error(error);
-      setErrorMessage('Ocurrió un error al procesar tu solicitud de crédito. Por favor intenta de nuevo.');
-      setStatus('error');
+      setErrorMessage(
+        error.message ||
+          "Ocurrió un error al procesar tu solicitud de crédito. Por favor intenta de nuevo.",
+      );
+      setStatus("error");
     }
   };
 
   const isFormValid =
-    nombre.trim() !== '' &&
+    nombre.trim() !== "" &&
     celular.trim().length >= 10 &&
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) &&
+    codigoPostal.trim().length >= 5 &&
+    direccionEnvio.trim() !== "" &&
     ineFrente !== null &&
     ineReverso !== null &&
     selfie !== null;
 
-  if (status === 'subiendo') {
+  if (status === "subiendo") {
     return (
       <div className={styles.wrap}>
         <div className={styles.card}>
@@ -167,7 +191,10 @@ export const Documentos: React.FC<DocumentosProps> = ({ planData, onFinalizado, 
             <div className={styles.estado}>
               <div className={styles.spinner}></div>
               <div className={styles.et}>Verificando Identidad</div>
-              <div className={styles.ed}>Estamos verificando tu INE ante fuentes oficiales. No cierres esta ventana.</div>
+              <div className={styles.ed}>
+                Estamos verificando tu INE ante fuentes oficiales. No cierres
+                esta ventana.
+              </div>
             </div>
           </div>
         </div>
@@ -175,31 +202,57 @@ export const Documentos: React.FC<DocumentosProps> = ({ planData, onFinalizado, 
     );
   }
 
-  if (status === 'exito') {
+  if (status === "exito") {
     return (
       <div className={styles.wrap}>
         <div className={styles.card}>
           <div className={styles.body}>
             <div className={styles.estado}>
               <div className={styles.badgeOk}>
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                <svg
+                  width="32"
+                  height="32"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
                   <polyline points="20 6 9 17 4 12"></polyline>
                 </svg>
               </div>
-              <div className={styles.et}>🎉 ¡Felicidades, fuiste autorizado!</div>
-              <div className={styles.ed}>Tu identidad quedó validada. El siguiente paso es tu enganche de <b>${planData.enganche}</b> para apartar tu equipo.</div>
-              <button className={styles.cta} onClick={() => onFinalizado({
-                cliente: nombre.trim(),
-                celular: celular.trim(),
-                email: email.trim(),
-                modelo: planData.modelo,
-                enganche: planData.enganche,
-                semanas: planData.semanas,
-                pagoSemanal: planData.pagoSemanal,
-                ineFrente: ineFrenteBase64,
-                ineReverso: ineReversoBase64,
-                selfie: selfieBase64
-              })}>Pagar enganche →</button>
+              <div className={styles.et}>
+                🎉 ¡Felicidades, fuiste autorizado!
+              </div>
+              <div className={styles.ed}>
+                Tu identidad quedó validada. El siguiente paso es tu enganche de{" "}
+                <b>${planData.enganche}</b> para apartar tu equipo.
+              </div>
+              <button
+                className={styles.cta}
+                onClick={() => {
+                  // Redirigir al checkout seguro de Conekta
+                  if (paymentLink) {
+                    window.location.href = paymentLink;
+                  } else {
+                    onFinalizado({
+                      cliente: nombre.trim(),
+                      celular: celular.trim(),
+                      email: email.trim(),
+                      modelo: planData.modelo,
+                      enganche: planData.enganche,
+                      semanas: planData.semanas,
+                      pagoSemanal: planData.pagoSemanal,
+                      ineFrente: ineFrenteBase64,
+                      ineReverso: ineReversoBase64,
+                      selfie: selfieBase64,
+                    });
+                  }
+                }}
+              >
+                Pagar enganche →
+              </button>
             </div>
           </div>
         </div>
@@ -207,21 +260,30 @@ export const Documentos: React.FC<DocumentosProps> = ({ planData, onFinalizado, 
     );
   }
 
-  if (status === 'error') {
+  if (status === "error") {
     return (
       <div className={styles.wrap}>
         <div className={styles.card}>
           <div className={styles.body}>
             <div className={styles.estado}>
               <div className={styles.badgeErr}>
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#DC2626" strokeWidth="3">
+                <svg
+                  width="28"
+                  height="28"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#DC2626"
+                  strokeWidth="3"
+                >
                   <line x1="18" y1="6" x2="6" y2="18"></line>
                   <line x1="6" y1="6" x2="18" y2="18"></line>
                 </svg>
               </div>
               <div className={styles.et}>No pudimos verificarte</div>
               <div className={styles.ed}>{errorMessage}</div>
-              <button className={styles.cta} onClick={() => setStatus('form')}>Volver a intentar</button>
+              <button className={styles.cta} onClick={() => setStatus("form")}>
+                Volver a intentar
+              </button>
             </div>
           </div>
         </div>
@@ -236,22 +298,29 @@ export const Documentos: React.FC<DocumentosProps> = ({ planData, onFinalizado, 
           <img src={logoBlanco} alt="Movinex Logo" className={styles.logo} />
           <div className={styles.eyebrow}>Verifica tu identidad</div>
           <div className={styles.titulo}>Sube tus documentos</div>
-          <div className={styles.sub}>Para autorizar tu crédito requerimos validar tu identidad de forma segura.</div>
+          <div className={styles.sub}>
+            Para autorizar tu crédito requerimos validar tu identidad de forma
+            segura.
+          </div>
         </div>
 
         <div className={styles.body}>
           <div className={styles.planChip}>
             <div className={styles.ico}></div>
             <div>
-              Plan elegido: <b>{planData.semanas} semanas</b> de <b>${planData.pagoSemanal}/sem</b> con enganche de <b>${planData.enganche}</b>.
+              Plan elegido: <b>{planData.semanas} semanas</b> de{" "}
+              <b>${planData.pagoSemanal}/sem</b> con enganche de{" "}
+              <b>${planData.enganche}</b>.
             </div>
           </div>
 
           <form onSubmit={handleEnviar}>
             <div className={styles.lbl}>Datos de contacto</div>
-            
+
             <div className={styles.campo}>
-              <label htmlFor="nombre">Nombre completo (como aparece en tu INE)</label>
+              <label htmlFor="nombre">
+                Nombre completo (como aparece en tu INE)
+              </label>
               <input
                 id="nombre"
                 type="text"
@@ -273,7 +342,9 @@ export const Documentos: React.FC<DocumentosProps> = ({ planData, onFinalizado, 
                 maxLength={10}
                 required
               />
-              <div className={styles.hint}>Ahí te enviaremos el seguimiento de tu crédito.</div>
+              <div className={styles.hint}>
+                Ahí te enviaremos el seguimiento de tu crédito.
+              </div>
             </div>
 
             <div className={styles.campo}>
@@ -288,10 +359,42 @@ export const Documentos: React.FC<DocumentosProps> = ({ planData, onFinalizado, 
               />
             </div>
 
-            <div className={styles.lbl} style={{ marginTop: '20px' }}>Fotografía de tu INE y Selfie</div>
+            <div className={styles.campo}>
+              <label htmlFor="codigoPostal">Código Postal de Envío</label>
+              <input
+                id="codigoPostal"
+                type="text"
+                placeholder="06600"
+                value={codigoPostal}
+                onChange={(e) => setCodigoPostal(e.target.value.replace(/\D/g, ''))}
+                maxLength={5}
+                required
+              />
+            </div>
+
+            <div className={styles.campo}>
+              <label htmlFor="direccionEnvio">Dirección completa de Envío</label>
+              <input
+                id="direccionEnvio"
+                type="text"
+                placeholder="Calle, número exterior/interior, colonia y alcaldía/municipio"
+                value={direccionEnvio}
+                onChange={(e) => setDireccionEnvio(e.target.value)}
+                required
+              />
+              <div className={styles.hint}>
+                Dirección exacta donde recibirás tu celular a través de Skydropx.
+              </div>
+            </div>
+
+            <div className={styles.lbl} style={{ marginTop: "20px" }}>
+              Fotografía de tu INE y Selfie
+            </div>
 
             {/* Frente */}
-            <div className={`${styles.drop} ${ineFrente ? styles.cargado : ''}`}>
+            <div
+              className={`${styles.drop} ${ineFrente ? styles.cargado : ""}`}
+            >
               <input
                 type="file"
                 accept="image/*"
@@ -302,8 +405,20 @@ export const Documentos: React.FC<DocumentosProps> = ({ planData, onFinalizado, 
                 {ineFrente ? (
                   <img src={URL.createObjectURL(ineFrente)} alt="Frente INE" />
                 ) : (
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <rect x="3" y="4" width="18" height="16" rx="2" ry="2"></rect>
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <rect
+                      x="3"
+                      y="4"
+                      width="18"
+                      height="16"
+                      rx="2"
+                      ry="2"
+                    ></rect>
                     <line x1="16" y1="2" x2="16" y2="4"></line>
                     <line x1="8" y1="2" x2="8" y2="4"></line>
                     <line x1="3" y1="10" x2="21" y2="10"></line>
@@ -312,13 +427,19 @@ export const Documentos: React.FC<DocumentosProps> = ({ planData, onFinalizado, 
               </div>
               <div className={styles.txt}>
                 <div className={styles.t}>Frente de tu INE</div>
-                <div className={styles.d}>{ineFrente ? 'Foto cargada correctamente' : 'Haz clic para tomar foto o subir'}</div>
+                <div className={styles.d}>
+                  {ineFrente
+                    ? "Foto cargada correctamente"
+                    : "Haz clic para tomar foto o subir"}
+                </div>
               </div>
               <div className={styles.check}>✓</div>
             </div>
 
             {/* Reverso */}
-            <div className={`${styles.drop} ${ineReverso ? styles.cargado : ''}`}>
+            <div
+              className={`${styles.drop} ${ineReverso ? styles.cargado : ""}`}
+            >
               <input
                 type="file"
                 accept="image/*"
@@ -327,10 +448,25 @@ export const Documentos: React.FC<DocumentosProps> = ({ planData, onFinalizado, 
               />
               <div className={styles.thumb}>
                 {ineReverso ? (
-                  <img src={URL.createObjectURL(ineReverso)} alt="Reverso INE" />
+                  <img
+                    src={URL.createObjectURL(ineReverso)}
+                    alt="Reverso INE"
+                  />
                 ) : (
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <rect x="3" y="4" width="18" height="16" rx="2" ry="2"></rect>
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <rect
+                      x="3"
+                      y="4"
+                      width="18"
+                      height="16"
+                      rx="2"
+                      ry="2"
+                    ></rect>
                     <line x1="16" y1="2" x2="16" y2="4"></line>
                     <line x1="8" y1="2" x2="8" y2="4"></line>
                     <line x1="3" y1="10" x2="21" y2="10"></line>
@@ -339,13 +475,17 @@ export const Documentos: React.FC<DocumentosProps> = ({ planData, onFinalizado, 
               </div>
               <div className={styles.txt}>
                 <div className={styles.t}>Reverso de tu INE</div>
-                <div className={styles.d}>{ineReverso ? 'Foto cargada correctamente' : 'Haz clic para tomar foto o subir'}</div>
+                <div className={styles.d}>
+                  {ineReverso
+                    ? "Foto cargada correctamente"
+                    : "Haz clic para tomar foto o subir"}
+                </div>
               </div>
               <div className={styles.check}>✓</div>
             </div>
 
             {/* Selfie */}
-            <div className={`${styles.drop} ${selfie ? styles.cargado : ''}`}>
+            <div className={`${styles.drop} ${selfie ? styles.cargado : ""}`}>
               <input
                 type="file"
                 accept="image/*"
@@ -356,7 +496,12 @@ export const Documentos: React.FC<DocumentosProps> = ({ planData, onFinalizado, 
                 {selfie ? (
                   <img src={URL.createObjectURL(selfie)} alt="Selfie" />
                 ) : (
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
                     <circle cx="12" cy="9" r="4"></circle>
                     <path d="M5 20c0-3.3 3.1-6 7-6s7 2.7 7 6"></path>
                   </svg>
@@ -364,24 +509,50 @@ export const Documentos: React.FC<DocumentosProps> = ({ planData, onFinalizado, 
               </div>
               <div className={styles.txt}>
                 <div className={styles.t}>Selfie</div>
-                <div className={styles.d}>{selfie ? 'Foto cargada correctamente' : 'Tu rostro, bien iluminado'}</div>
+                <div className={styles.d}>
+                  {selfie
+                    ? "Foto cargada correctamente"
+                    : "Tu rostro, bien iluminado"}
+                </div>
               </div>
               <div className={styles.check}>✓</div>
             </div>
 
             <div className={styles.privacidad}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
                 <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
                 <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
               </svg>
-              Tus datos biométricos y fotos se encriptan de extremo a extremo conforme a la Ley de Protección de Datos Personales.
+              Tus datos biométricos y fotos se encriptan de extremo a extremo
+              conforme a la Ley de Protección de Datos Personales.
             </div>
 
-            <button type="submit" className={styles.cta} disabled={!isFormValid}>
+            <button
+              type="submit"
+              className={styles.cta}
+              disabled={!isFormValid}
+            >
               Enviar y Verificar Identidad
             </button>
 
-            <button type="button" className={styles.cta} style={{ background: '#E4E8F1', color: '#5A6688', marginTop: '10px', boxShadow: 'none' }} onClick={onVolver}>
+            <button
+              type="button"
+              className={styles.cta}
+              style={{
+                background: "#E4E8F1",
+                color: "#5A6688",
+                marginTop: "10px",
+                boxShadow: "none",
+              }}
+              onClick={onVolver}
+            >
               Volver al cotizador
             </button>
           </form>

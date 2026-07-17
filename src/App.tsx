@@ -5,38 +5,7 @@ import { Documentos } from './Documentos';
 import { Admin } from './Admin';
 import type { Phone, Solicitud } from './types';
 
-const SEED_SOLICITUDES: Solicitud[] = [
-  {
-    id: 'sol-1',
-    cliente: 'Carlos Mendoza Ruiz',
-    celular: '5543210987',
-    email: 'carlos.mendoza@gmail.com',
-    modelo: 'Samsung Galaxy A07',
-    enganche: 375,
-    semanas: 26,
-    pagoSemanal: 167,
-    estatus: 'Pendiente',
-    fecha: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(), // hace 2 horas
-    ineFrente: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200" viewBox="0 0 300 200"><rect width="100%" height="100%" fill="%23e2e8f0"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="16" fill="%2364748b">INE FRENTE - Carlos Mendoza</text></svg>',
-    ineReverso: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200" viewBox="0 0 300 200"><rect width="100%" height="100%" fill="%23cbd5e1"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="16" fill="%23475569">INE REVERSO - Carlos Mendoza</text></svg>',
-    selfie: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><rect width="100%" height="100%" fill="%23fed7aa"/><circle cx="100" cy="80" r="40" fill="%23ea580c"/><path d="M40 160 C40 120, 160 120, 160 160" fill="%23ea580c"/></svg>'
-  },
-  {
-    id: 'sol-2',
-    cliente: 'Ana Sofía Garza',
-    celular: '8118273645',
-    email: 'ana.garza@outlook.com',
-    modelo: 'iPhone 15 Pro Max',
-    enganche: 3699,
-    semanas: 52,
-    pagoSemanal: 285,
-    estatus: 'Aprobado',
-    fecha: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(), // hace 1 día
-    ineFrente: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200" viewBox="0 0 300 200"><rect width="100%" height="100%" fill="%23e2e8f0"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="16" fill="%2364748b">INE FRENTE - Ana Garza</text></svg>',
-    ineReverso: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200" viewBox="0 0 300 200"><rect width="100%" height="100%" fill="%23cbd5e1"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="16" fill="%23475569">INE REVERSO - Ana Garza</text></svg>',
-    selfie: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><rect width="100%" height="100%" fill="%23fbcfe8"/><circle cx="100" cy="80" r="40" fill="%23db2777"/><path d="M40 160 C40 120, 160 120, 160 160" fill="%23db2777"/></svg>'
-  }
-];
+
 
 function App() {
   const [view, setView] = useState<'tienda' | 'dashboard'>('tienda');
@@ -45,37 +14,42 @@ function App() {
   const [planSelected, setPlanSelected] = useState<{ semanas: number; pagoSemanal: number; enganche: number } | null>(null);
   
   // Estado de solicitudes compartido y persistido
-  const [solicitudes, setSolicitudes] = useState<Solicitud[]>(() => {
-    const localData = localStorage.getItem('movinex_solicitudes');
-    if (localData) {
-      try {
-        return JSON.parse(localData);
-      } catch (e) {
-        console.error('Error al parsear solicitudes locales', e);
-      }
-    }
-    return SEED_SOLICITUDES;
-  });
+  const [solicitudes, setSolicitudes] = useState<Solicitud[]>([]);
 
+  // Cargar solicitudes del backend al inicializar o al abrir el dashboard
   useEffect(() => {
-    localStorage.setItem('movinex_solicitudes', JSON.stringify(solicitudes));
-  }, [solicitudes]);
+    if (view === 'dashboard') {
+      fetch('http://localhost:5000/api/solicitudes')
+        .then(res => res.json())
+        .then(data => {
+          // Adaptar campos de base de datos snake_case a camelCase si es necesario
+          const solicitudesAdaptadas = data.map((s: any) => ({
+            id: s.id,
+            cliente: s.cliente,
+            celular: s.celular,
+            email: s.email,
+            modelo: s.modelo,
+            enganche: s.enganche,
+            semanas: s.semanas,
+            pagoSemanal: s.pago_semanal,
+            estatus: s.estatus,
+            fecha: s.created_at || s.fecha,
+            ineFrente: s.ine_frente,
+            ineReverso: s.ine_reverso,
+            selfie: s.selfie
+          }));
+          setSolicitudes(solicitudesAdaptadas);
+        })
+        .catch(err => console.error('Error al cargar solicitudes del backend:', err));
+    }
+  }, [view]);
 
   const handleCotizacionFinalizada = (data: { semanas: number; pagoSemanal: number; enganche: number }) => {
     setPlanSelected(data);
     setStep('documentos');
   };
 
-  const handleVerificacionFinalizada = (nuevaSolicitud?: Omit<Solicitud, 'id' | 'estatus' | 'fecha'>) => {
-    if (nuevaSolicitud) {
-      const solicitudCompleta: Solicitud = {
-        ...nuevaSolicitud,
-        id: `sol-${Date.now()}`,
-        estatus: 'Aprobado', // El n8n aprobó al usuario
-        fecha: new Date().toISOString()
-      };
-      setSolicitudes(prev => [solicitudCompleta, ...prev]);
-    }
+  const handleVerificacionFinalizada = () => {
     setStep('finalizado');
   };
 
@@ -83,10 +57,24 @@ function App() {
     setStep('landing');
   };
 
-  const handleUpdateStatus = (id: string, nuevoEstatus: 'Aprobado' | 'Rechazado') => {
-    setSolicitudes(prev =>
-      prev.map(s => (s.id === id ? { ...s, estatus: nuevoEstatus } : s))
-    );
+  const handleUpdateStatus = async (id: string, nuevoEstatus: 'Aprobado' | 'Rechazado') => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/solicitudes/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ estatus: nuevoEstatus })
+      });
+
+      if (response.ok) {
+        setSolicitudes(prev =>
+          prev.map(s => (s.id === id ? { ...s, estatus: nuevoEstatus } : s))
+        );
+      } else {
+        console.error('Error al actualizar estatus en backend');
+      }
+    } catch (err) {
+      console.error('Error en patch request:', err);
+    }
   };
 
   if (view === 'dashboard') {
@@ -129,7 +117,7 @@ function App() {
           ...planSelected,
           modelo: selectedPhone.modelo
         }}
-        onFinalizado={(datosCliente) => handleVerificacionFinalizada(datosCliente)}
+        onFinalizado={() => handleVerificacionFinalizada()}
         onVolver={() => setStep('cotizar')}
       />
     );
