@@ -327,8 +327,12 @@ export const Documentos: React.FC<DocumentosProps> = ({
                 placeholder="Juan Pérez López"
                 value={nombre}
                 onChange={(e) => setNombre(e.target.value)}
+                className={nombre.trim() === "" && nombre !== "" ? styles.inputError : ""}
                 required
               />
+              {nombre.trim() === "" && nombre !== "" && (
+                <span className={styles.errorMsg}>El nombre completo es requerido</span>
+              )}
             </div>
 
             <div className={styles.campo}>
@@ -338,10 +342,14 @@ export const Documentos: React.FC<DocumentosProps> = ({
                 type="tel"
                 placeholder="55 1234 5678"
                 value={celular}
-                onChange={(e) => setCelular(e.target.value)}
+                onChange={(e) => setCelular(e.target.value.replace(/\D/g, ""))}
                 maxLength={10}
+                className={celular.length > 0 && celular.length < 10 ? styles.inputError : ""}
                 required
               />
+              {celular.length > 0 && celular.length < 10 && (
+                <span className={styles.errorMsg}>El celular debe contener exactamente 10 dígitos</span>
+              )}
               <div className={styles.hint}>
                 Ahí te enviaremos el seguimiento de tu crédito.
               </div>
@@ -355,8 +363,12 @@ export const Documentos: React.FC<DocumentosProps> = ({
                 placeholder="tucorreo@ejemplo.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                className={email.length > 0 && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? styles.inputError : ""}
                 required
               />
+              {email.length > 0 && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && (
+                <span className={styles.errorMsg}>Ingresa una dirección de correo electrónico válida</span>
+              )}
             </div>
 
             <div className={styles.campo}>
@@ -366,10 +378,14 @@ export const Documentos: React.FC<DocumentosProps> = ({
                 type="text"
                 placeholder="06600"
                 value={codigoPostal}
-                onChange={(e) => setCodigoPostal(e.target.value.replace(/\D/g, ''))}
+                onChange={(e) => setCodigoPostal(e.target.value.replace(/\D/g, ""))}
                 maxLength={5}
+                className={codigoPostal.length > 0 && codigoPostal.length < 5 ? styles.inputError : ""}
                 required
               />
+              {codigoPostal.length > 0 && codigoPostal.length < 5 && (
+                <span className={styles.errorMsg}>El Código Postal debe contener exactamente 5 dígitos</span>
+              )}
             </div>
 
             <div className={styles.campo}>
