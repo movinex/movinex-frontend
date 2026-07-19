@@ -169,7 +169,9 @@ function App() {
       <Documentos
         planData={{
           ...planSelected,
-          modelo: selectedPhone.modelo
+          modelo: selectedPhone.modelo,
+          envioGratis: selectedPhone.envioGratis,
+          costoEnvio: selectedPhone.costoEnvio
         }}
         onFinalizado={() => handleVerificacionFinalizada()}
         onVolver={() => setStep('cotizar')}

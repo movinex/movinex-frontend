@@ -8,6 +8,8 @@ interface DocumentosProps {
     pagoSemanal: number;
     enganche: number;
     modelo: string;
+    envioGratis?: boolean;
+    costoEnvio?: number;
   };
   onFinalizado: (datos: {
     cliente: string;
@@ -225,9 +227,27 @@ export const Documentos: React.FC<DocumentosProps> = ({
               <div className={styles.et}>
                 🎉 ¡Felicidades, fuiste autorizado!
               </div>
-              <div className={styles.ed}>
-                Tu identidad quedó validada. El siguiente paso es tu enganche de{" "}
-                <b>${planData.enganche}</b> para apartar tu equipo.
+              <div className={styles.ed} style={{ fontSize: '14px', lineHeight: '1.6' }}>
+                Tu identidad quedó validada. El siguiente paso es el pago inicial para procesar el envío de tu {planData.modelo}:
+                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '12px', borderRadius: '10px', marginTop: '10px', display: 'flex', flexDirection: 'column', gap: '6px', textAlign: 'left' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span style={{ color: '#64748B' }}>Enganche requerido:</span>
+                    <span style={{ fontWeight: '700', color: '#0F172A' }}>${planData.enganche.toLocaleString()}</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span style={{ color: '#64748B' }}>Costo de envío:</span>
+                    <span style={{ fontWeight: '700', color: planData.envioGratis !== false ? '#10B981' : '#0F172A' }}>
+                      {planData.envioGratis !== false ? '¡Gratis!' : `$${(planData.costoEnvio || 0).toLocaleString()}`}
+                    </span>
+                  </div>
+                  <div style={{ borderTop: '1px dashed #CBD5E1', margin: '6px 0' }}></div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '15px', fontWeight: '800' }}>
+                    <span style={{ color: '#2B6BE4' }}>Total Inicial a pagar:</span>
+                    <span style={{ color: '#2B6BE4' }}>
+                      ${(planData.enganche + (planData.envioGratis !== false ? 0 : (planData.costoEnvio || 0))).toLocaleString()}
+                    </span>
+                  </div>
+                </div>
               </div>
               <button
                 className={styles.cta}
@@ -307,10 +327,11 @@ export const Documentos: React.FC<DocumentosProps> = ({
         <div className={styles.body}>
           <div className={styles.planChip}>
             <div className={styles.ico}></div>
-            <div>
+            <div style={{ fontSize: '13px', lineHeight: '1.4' }}>
               Plan elegido: <b>{planData.semanas} semanas</b> de{" "}
               <b>${planData.pagoSemanal}/sem</b> con enganche de{" "}
-              <b>${planData.enganche}</b>.
+              <b>${planData.enganche}</b>
+              {planData.envioGratis !== false ? ' (¡Envio Gratis!)' : ` (+ $${planData.costoEnvio} costo de envío)`}.
             </div>
           </div>
 
