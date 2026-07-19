@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import styles from './Sadmin.module.css';
 import logoBlanco from './assets/movinex_blanco.webp';
 import { Admin } from './Admin';
+import { supabase } from './supabaseClient';
 import type { Phone, Solicitud } from './types';
 
 interface SadminProps {
@@ -39,9 +40,49 @@ export const SadminPortal: React.FC<SadminProps> = ({
   const [costoEnvio, setCostoEnvio] = useState(0);
 
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
 
   const backendUrl = import.meta.env.VITE_BACKEND_URL || 'https://movinex-backend-production.up.railway.app';
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    setError('');
+
+    try {
+      // Generar nombre de archivo único
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}_${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      // Subir archivo al bucket 'celulares' de Supabase Storage
+      const { error: uploadError } = await supabase.storage
+        .from('celulares')
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
+
+      if (uploadError) {
+        throw uploadError;
+      }
+
+      // Obtener URL pública de la imagen
+      const { data: { publicUrl } } = supabase.storage
+        .from('celulares')
+        .getPublicUrl(filePath);
+
+      setImagenUrl(publicUrl);
+    } catch (err: any) {
+      console.error('Error al subir imagen:', err.message);
+      setError('No se pudo subir la imagen. Verifica el bucket de Supabase.');
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const resetForm = () => {
     setId('');
@@ -276,15 +317,45 @@ export const SadminPortal: React.FC<SadminProps> = ({
                     />
                   </div>
 
-                  <div className={styles.formGroup}>
-                    <label>URL de la Imagen</label>
-                    <input
-                      type="text"
-                      placeholder="ej. https://dominio.com/imagen.png"
-                      value={imagenUrl}
-                      onChange={(e) => setImagenUrl(e.target.value)}
-                      required
-                    />
+                  <div className={styles.formGroup} style={{ gridColumn: 'span 2' }}>
+                    <label>Imagen del Celular</label>
+                    <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                        style={{ display: 'none' }}
+                        id="file-upload-btn"
+                      />
+                      <label htmlFor="file-upload-btn" style={{
+                        background: '#F1F5F9',
+                        border: '1.5px solid #E2E8F0',
+                        padding: '10px 16px',
+                        borderRadius: '10px',
+                        cursor: 'pointer',
+                        fontSize: '13px',
+                        fontWeight: '600',
+                        color: '#334155',
+                        display: 'inline-block',
+                        marginBottom: 0
+                      }}>
+                        {uploading ? 'Subiendo...' : '📁 Cargar Imagen'}
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="O ingresa la URL de la imagen manualmente..."
+                        value={imagenUrl}
+                        onChange={(e) => setImagenUrl(e.target.value)}
+                        required
+                        style={{ flex: 1 }}
+                      />
+                    </div>
+                    {imagenUrl && (
+                      <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ fontSize: '11px', color: '#64748B' }}>Vista previa:</span>
+                        <img src={imagenUrl} alt="Preview" style={{ width: '40px', height: '40px', objectFit: 'contain', background: '#F8FAFC', borderRadius: '6px', border: '1px solid #E2E8F0' }} />
+                      </div>
+                    )}
                   </div>
 
                   <div className={styles.formGroup}>
