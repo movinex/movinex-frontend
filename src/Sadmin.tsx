@@ -87,7 +87,7 @@ export const SadminPortal: React.FC<SadminProps> = ({
       enganche,
       monto_semanal_26: montoSemanal26,
       monto_semanal_52: montoSemanal52,
-      imagen_url: imagenUrl,
+      imagen: imagenUrl,
       envio_gratis: envioGratis,
       costo_envio: envioGratis ? 0 : costoEnvio
     };
