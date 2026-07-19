@@ -60,9 +60,6 @@ function App() {
     fetch(`${backendUrl}/api/celulares`)
       .then(res => res.json())
       .then(data => {
-        if (!Array.isArray(data) || data.length === 0) {
-          throw new Error('Base de datos vacía');
-        }
         const celularesMapeados = data.map((p: any) => ({
           id: p.id,
           modelo: p.modelo,
@@ -80,65 +77,8 @@ function App() {
         setPhones(celularesMapeados);
       })
       .catch(err => {
-        console.error('Error al cargar celulares, usando fallback:', err);
-        setPhones([
-          {
-            id: "samsung-a07",
-            modelo: "SAMSUNG A07",
-            marca: "Samsung",
-            precioBase: 2999,
-            enganche: 375,
-            montoSemanal26: 167,
-            montoSemanal52: 119,
-            totalPagar26: 4342,
-            totalPagar52: 6188,
-            imagen: "https://chjkpezpqwqdsiulwrdf.supabase.co/storage/v1/object/public/celulares/samsung_a07.webp",
-            envioGratis: true,
-            costoEnvio: 0
-          },
-          {
-            id: "samsung-s24",
-            modelo: "Samsung Galaxy S24 Ultra",
-            marca: "Samsung",
-            precioBase: 12999,
-            enganche: 2999,
-            montoSemanal26: 425,
-            montoSemanal52: 235,
-            totalPagar26: 11050,
-            totalPagar52: 12220,
-            imagen: "https://chjkpezpqwqdsiulwrdf.supabase.co/storage/v1/object/public/celulares/samsung_s24.webp",
-            envioGratis: true,
-            costoEnvio: 0
-          },
-          {
-            id: "iphone-15pro",
-            modelo: "iPhone 15 Pro Max",
-            marca: "Apple",
-            precioBase: 15999,
-            enganche: 3699,
-            montoSemanal26: 520,
-            montoSemanal52: 285,
-            totalPagar26: 13520,
-            totalPagar52: 14820,
-            imagen: "https://chjkpezpqwqdsiulwrdf.supabase.co/storage/v1/object/public/celulares/iphone15_pro.webp",
-            envioGratis: true,
-            costoEnvio: 0
-          },
-          {
-            id: "xiaomi-redmi13",
-            modelo: "Xiaomi Redmi Note 13 Pro",
-            marca: "Xiaomi",
-            precioBase: 5999,
-            enganche: 1399,
-            montoSemanal26: 195,
-            montoSemanal52: 110,
-            totalPagar26: 5070,
-            totalPagar52: 5720,
-            imagen: "https://chjkpezpqwqdsiulwrdf.supabase.co/storage/v1/object/public/celulares/xiaomi_redmi.webp",
-            envioGratis: true,
-            costoEnvio: 0
-          }
-        ]);
+        console.error('Error al cargar celulares:', err);
+        setPhones([]);
       });
   }, [reloadTrigger, backendUrl]);
 

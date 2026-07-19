@@ -187,65 +187,7 @@ export const Landing: React.FC<LandingProps> = ({
         })
         .catch((err) => {
           console.error("Error al cargar catálogo de celulares:", err);
-          // Fallback en caso de error
-          setPhones([
-            {
-              id: "samsung-a07",
-              modelo: "SAMSUNG A07",
-              marca: "Samsung",
-              precioBase: 2999,
-              enganche: 375,
-              montoSemanal26: 167,
-              montoSemanal52: 119,
-              totalPagar26: 4342,
-              totalPagar52: 6188,
-              ahorro26: 250,
-              imagen:
-                "https://chjkpezpqwqdsiulwrdf.supabase.co/storage/v1/object/public/celulares/samsung_a07.webp",
-            },
-            {
-              id: "samsung-s24",
-              modelo: "Samsung Galaxy S24 Ultra",
-              marca: "Samsung",
-              precioBase: 12999,
-              enganche: 2999,
-              montoSemanal26: 425,
-              montoSemanal52: 235,
-              totalPagar26: 11050,
-              totalPagar52: 12220,
-              ahorro26: 1200,
-              imagen:
-                "https://chjkpezpqwqdsiulwrdf.supabase.co/storage/v1/object/public/celulares/samsung_s24.webp",
-            },
-            {
-              id: "iphone-15pro",
-              modelo: "iPhone 15 Pro Max",
-              marca: "Apple",
-              precioBase: 15999,
-              enganche: 3699,
-              montoSemanal26: 520,
-              montoSemanal52: 285,
-              totalPagar26: 13520,
-              totalPagar52: 14820,
-              ahorro26: 1500,
-              imagen:
-                "https://chjkpezpqwqdsiulwrdf.supabase.co/storage/v1/object/public/celulares/iphone15_pro.webp",
-            },
-            {
-              id: "xiaomi-redmi13",
-              modelo: "Xiaomi Redmi Note 13 Pro",
-              marca: "Xiaomi",
-              precioBase: 5999,
-              enganche: 1399,
-              montoSemanal26: 195,
-              montoSemanal52: 110,
-              totalPagar26: 5070,
-              totalPagar52: 5720,
-              ahorro26: 600,
-              imagen:
-                "https://chjkpezpqwqdsiulwrdf.supabase.co/storage/v1/object/public/celulares/xiaomi_redmi.webp",
-            },
-          ]);
+          setPhones([]);
           setLoading(false);
         });
     }
