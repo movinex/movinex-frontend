@@ -32,6 +32,7 @@ import ahorroLogo from "./assets/66e332240412cb710d3532c4_Farmacias del Ahorro.w
 interface LandingProps {
   onSelectPhone: (phone: Phone) => void;
   onNavigateAdmin: () => void;
+  showAdminButton?: boolean;
 }
 
 interface Specs {
@@ -115,6 +116,7 @@ const phoneSpecs: Record<string, Specs> = {
 export const Landing: React.FC<LandingProps> = ({
   onSelectPhone,
   onNavigateAdmin,
+  showAdminButton = false,
 }) => {
   const [page, setPage] = useState<"inicio" | "movinex" | "tienda">("inicio");
   const [selectedQuickView, setSelectedQuickView] = useState<Phone | null>(
@@ -169,14 +171,16 @@ export const Landing: React.FC<LandingProps> = ({
             id: p.id,
             modelo: p.modelo,
             marca: p.marca,
-            precioBase: p.precio_base,
-            enganche: p.enganche,
-            montoSemanal26: p.monto_semanal_26,
-            montoSemanal52: p.monto_semanal_52,
-            totalPagar26: p.total_pagar_26,
-            totalPagar52: p.total_pagar_52,
-            ahorro26: p.ahorro_26,
-            imagen: p.imagen,
+            precioBase: Number(p.precio_base),
+            enganche: Number(p.enganche),
+            montoSemanal26: Number(p.monto_semanal_26),
+            montoSemanal52: Number(p.monto_semanal_52),
+            totalPagar26: Number(p.monto_semanal_26) * 26 + Number(p.enganche),
+            totalPagar52: Number(p.monto_semanal_52) * 52 + Number(p.enganche),
+            ahorro26: 0,
+            imagen: p.imagen_url || p.imagen || '',
+            envioGratis: p.envio_gratis !== false,
+            costoEnvio: Number(p.costo_envio || 0)
           }));
           setPhones(celularesMapeados);
           setLoading(false);
@@ -291,9 +295,11 @@ export const Landing: React.FC<LandingProps> = ({
             >
               Tienda
             </button>
-            <button onClick={onNavigateAdmin} className={styles.adminBtn}>
-              Backoffice
-            </button>
+            {showAdminButton && (
+              <button onClick={onNavigateAdmin} className={styles.adminBtn}>
+                Backoffice
+              </button>
+            )}
           </nav>
         </div>
       </header>

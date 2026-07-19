@@ -3,26 +3,37 @@ import { Landing } from './Landing';
 import { Cotizador } from './Cotizador';
 import { Documentos } from './Documentos';
 import { Admin } from './Admin';
+import { SadminPortal } from './Sadmin';
 import type { Phone, Solicitud } from './types';
 
 
 
 function App() {
-  const [view, setView] = useState<'tienda' | 'dashboard'>('tienda');
+  const [view, setView] = useState<'tienda' | 'dashboard' | 'sadmin'>('tienda');
   const [step, setStep] = useState<'landing' | 'cotizar' | 'documentos' | 'finalizado'>('landing');
   const [selectedPhone, setSelectedPhone] = useState<Phone | null>(null);
   const [planSelected, setPlanSelected] = useState<{ semanas: number; pagoSemanal: number; enganche: number } | null>(null);
   
   // Estado de solicitudes compartido y persistido
   const [solicitudes, setSolicitudes] = useState<Solicitud[]>([]);
+  const [phones, setPhones] = useState<Phone[]>([]);
+  const [reloadTrigger, setReloadTrigger] = useState(0);
+
+  const backendUrl = import.meta.env.VITE_BACKEND_URL || 'https://movinex-backend-production.up.railway.app';
+
+  // Detectar la ruta privada /sadmin al inicializar la app
+  useEffect(() => {
+    if (window.location.pathname === '/sadmin') {
+      setView('sadmin');
+    }
+  }, []);
 
   // Cargar solicitudes del backend al inicializar o al abrir el dashboard
   useEffect(() => {
-    if (view === 'dashboard') {
-      fetch('http://localhost:5000/api/solicitudes')
+    if (view === 'dashboard' || view === 'sadmin') {
+      fetch(`${backendUrl}/api/solicitudes`)
         .then(res => res.json())
         .then(data => {
-          // Adaptar campos de base de datos snake_case a camelCase si es necesario
           const solicitudesAdaptadas = data.map((s: any) => ({
             id: s.id,
             cliente: s.cliente,
@@ -42,7 +53,31 @@ function App() {
         })
         .catch(err => console.error('Error al cargar solicitudes del backend:', err));
     }
-  }, [view]);
+  }, [view, backendUrl]);
+
+  // Cargar lista de celulares para alimentar el CRUD
+  useEffect(() => {
+    fetch(`${backendUrl}/api/celulares`)
+      .then(res => res.json())
+      .then(data => {
+        const celularesMapeados = data.map((p: any) => ({
+          id: p.id,
+          modelo: p.modelo,
+          marca: p.marca,
+          precioBase: Number(p.precio_base),
+          enganche: Number(p.enganche),
+          montoSemanal26: Number(p.monto_semanal_26),
+          montoSemanal52: Number(p.monto_semanal_52),
+          totalPagar26: Number(p.monto_semanal_26) * 26 + Number(p.enganche),
+          totalPagar52: Number(p.monto_semanal_52) * 52 + Number(p.enganche),
+          imagen: p.imagen_url || p.imagen || '',
+          envioGratis: p.envio_gratis !== false,
+          costoEnvio: Number(p.costo_envio || 0)
+        }));
+        setPhones(celularesMapeados);
+      })
+      .catch(err => console.error('Error al cargar celulares:', err));
+  }, [reloadTrigger, backendUrl]);
 
   const handleCotizacionFinalizada = (data: { semanas: number; pagoSemanal: number; enganche: number }) => {
     setPlanSelected(data);
@@ -59,7 +94,7 @@ function App() {
 
   const handleUpdateStatus = async (id: string, nuevoEstatus: 'Aprobado' | 'Rechazado') => {
     try {
-      const response = await fetch(`http://localhost:5000/api/solicitudes/${id}`, {
+      const response = await fetch(`${backendUrl}/api/solicitudes/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ estatus: nuevoEstatus })
@@ -76,6 +111,21 @@ function App() {
       console.error('Error en patch request:', err);
     }
   };
+
+  if (view === 'sadmin') {
+    return (
+      <SadminPortal
+        solicitudes={solicitudes}
+        onUpdateStatus={handleUpdateStatus}
+        onVolver={() => {
+          setView('tienda');
+          window.history.pushState({}, '', '/');
+        }}
+        phones={phones}
+        onReloadPhones={() => setReloadTrigger(prev => prev + 1)}
+      />
+    );
+  }
 
   if (view === 'dashboard') {
     return (
@@ -96,6 +146,7 @@ function App() {
           setStep('cotizar');
         }}
         onNavigateAdmin={() => setView('dashboard')}
+        showAdminButton={false} // Hidden under normal traffic
       />
     );
   }

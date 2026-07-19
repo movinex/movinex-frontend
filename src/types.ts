@@ -10,6 +10,8 @@ export interface Phone {
   totalPagar52: number;
   ahorro26?: number;
   imagen: string;
+  envioGratis?: boolean;
+  costoEnvio?: number;
 }
 
 export interface Solicitud {
