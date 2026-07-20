@@ -72,7 +72,19 @@ function App() {
           totalPagar52: Number(p.monto_semanal_52) * 52 + Number(p.enganche),
           imagen: p.imagen_url || p.imagen || '',
           envioGratis: p.envio_gratis !== false,
-          costoEnvio: Number(p.costo_envio || 0)
+          costoEnvio: Number(p.costo_envio || 0),
+          specsPantalla: p.specs_pantalla || '',
+          specsProcesador: p.specs_procesador || '',
+          specsRamAlmacenamiento: p.specs_ram_almacenamiento || '',
+          specsMicrosd: p.specs_microsd || '',
+          specsCamaraTrasera: p.specs_camara_trasera || '',
+          specsCamaraFrontal: p.specs_camara_frontal || '',
+          specsBateria: p.specs_bateria || '',
+          specsSistema: p.specs_sistema || '',
+          specsSeguridad: p.specs_seguridad || '',
+          specsResistencia: p.specs_resistencia || '',
+          specsConectividad: p.specs_conectividad || '',
+          specsDimensionesPeso: p.specs_dimensiones_peso || ''
         }));
         setPhones(celularesMapeados);
       })

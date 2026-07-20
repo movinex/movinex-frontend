@@ -39,6 +39,20 @@ export const SadminPortal: React.FC<SadminProps> = ({
   const [envioGratis, setEnvioGratis] = useState(true);
   const [costoEnvio, setCostoEnvio] = useState(0);
 
+  // Specs form states
+  const [specsPantalla, setSpecsPantalla] = useState('');
+  const [specsProcesador, setSpecsProcesador] = useState('');
+  const [specsRamAlmacenamiento, setSpecsRamAlmacenamiento] = useState('');
+  const [specsMicrosd, setSpecsMicrosd] = useState('');
+  const [specsCamaraTrasera, setSpecsCamaraTrasera] = useState('');
+  const [specsCamaraFrontal, setSpecsCamaraFrontal] = useState('');
+  const [specsBateria, setSpecsBateria] = useState('');
+  const [specsSistema, setSpecsSistema] = useState('');
+  const [specsSeguridad, setSpecsSeguridad] = useState('');
+  const [specsResistencia, setSpecsResistencia] = useState('');
+  const [specsConectividad, setSpecsConectividad] = useState('');
+  const [specsDimensionesPeso, setSpecsDimensionesPeso] = useState('');
+
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
@@ -95,6 +109,18 @@ export const SadminPortal: React.FC<SadminProps> = ({
     setImagenUrl('');
     setEnvioGratis(true);
     setCostoEnvio(0);
+    setSpecsPantalla('');
+    setSpecsProcesador('');
+    setSpecsRamAlmacenamiento('');
+    setSpecsMicrosd('');
+    setSpecsCamaraTrasera('');
+    setSpecsCamaraFrontal('');
+    setSpecsBateria('');
+    setSpecsSistema('');
+    setSpecsSeguridad('');
+    setSpecsResistencia('');
+    setSpecsConectividad('');
+    setSpecsDimensionesPeso('');
     setEditingPhone(null);
     setIsAdding(false);
     setError('');
@@ -113,6 +139,18 @@ export const SadminPortal: React.FC<SadminProps> = ({
     setImagenUrl(phone.imagen);
     setEnvioGratis(phone.envioGratis !== false);
     setCostoEnvio(phone.costoEnvio || 0);
+    setSpecsPantalla(phone.specsPantalla || '');
+    setSpecsProcesador(phone.specsProcesador || '');
+    setSpecsRamAlmacenamiento(phone.specsRamAlmacenamiento || '');
+    setSpecsMicrosd(phone.specsMicrosd || '');
+    setSpecsCamaraTrasera(phone.specsCamaraTrasera || '');
+    setSpecsCamaraFrontal(phone.specsCamaraFrontal || '');
+    setSpecsBateria(phone.specsBateria || '');
+    setSpecsSistema(phone.specsSistema || '');
+    setSpecsSeguridad(phone.specsSeguridad || '');
+    setSpecsResistencia(phone.specsResistencia || '');
+    setSpecsConectividad(phone.specsConectividad || '');
+    setSpecsDimensionesPeso(phone.specsDimensionesPeso || '');
   };
 
   const handleSave = async (e: React.FormEvent) => {
@@ -130,7 +168,19 @@ export const SadminPortal: React.FC<SadminProps> = ({
       monto_semanal_52: montoSemanal52,
       imagen: imagenUrl,
       envio_gratis: envioGratis,
-      costo_envio: envioGratis ? 0 : costoEnvio
+      costo_envio: envioGratis ? 0 : costoEnvio,
+      specs_pantalla: specsPantalla,
+      specs_procesador: specsProcesador,
+      specs_ram_almacenamiento: specsRamAlmacenamiento,
+      specs_microsd: specsMicrosd,
+      specs_camara_trasera: specsCamaraTrasera,
+      specs_camara_frontal: specsCamaraFrontal,
+      specs_bateria: specsBateria,
+      specs_sistema: specsSistema,
+      specs_seguridad: specsSeguridad,
+      specs_resistencia: specsResistencia,
+      specs_conectividad: specsConectividad,
+      specs_dimensiones_peso: specsDimensionesPeso
     };
 
     try {
@@ -381,6 +431,120 @@ export const SadminPortal: React.FC<SadminProps> = ({
                       />
                     </div>
                   )}
+                </div>
+
+                <div style={{ marginTop: '28px', borderTop: '1px solid #E2E8F0', paddingTop: '20px' }}>
+                  <h4 style={{ fontSize: '15px', color: '#0F172A', fontWeight: 700, marginBottom: '16px' }}>📋 Ficha Técnica (Especificaciones del Celular)</h4>
+                  <div className={styles.formGrid}>
+                    <div className={styles.formGroup}>
+                      <label>Pantalla</label>
+                      <input
+                        type="text"
+                        placeholder="ej. 6.8' Dynamic AMOLED 2X QHD+..."
+                        value={specsPantalla}
+                        onChange={(e) => setSpecsPantalla(e.target.value)}
+                      />
+                    </div>
+                    <div className={styles.formGroup}>
+                      <label>Procesador</label>
+                      <input
+                        type="text"
+                        placeholder="ej. Snapdragon 8 Gen 3"
+                        value={specsProcesador}
+                        onChange={(e) => setSpecsProcesador(e.target.value)}
+                      />
+                    </div>
+                    <div className={styles.formGroup}>
+                      <label>RAM / Almacenamiento</label>
+                      <input
+                        type="text"
+                        placeholder="ej. 12 GB RAM / 256 GB Almacenamiento"
+                        value={specsRamAlmacenamiento}
+                        onChange={(e) => setSpecsRamAlmacenamiento(e.target.value)}
+                      />
+                    </div>
+                    <div className={styles.formGroup}>
+                      <label>MicroSD</label>
+                      <input
+                        type="text"
+                        placeholder="ej. No / Sí, hasta 1 TB"
+                        value={specsMicrosd}
+                        onChange={(e) => setSpecsMicrosd(e.target.value)}
+                      />
+                    </div>
+                    <div className={styles.formGroup}>
+                      <label>Cámara Trasera</label>
+                      <input
+                        type="text"
+                        placeholder="ej. 200 MP + 50 MP + 12 MP..."
+                        value={specsCamaraTrasera}
+                        onChange={(e) => setSpecsCamaraTrasera(e.target.value)}
+                      />
+                    </div>
+                    <div className={styles.formGroup}>
+                      <label>Cámara Frontal</label>
+                      <input
+                        type="text"
+                        placeholder="ej. 12 MP"
+                        value={specsCamaraFrontal}
+                        onChange={(e) => setSpecsCamaraFrontal(e.target.value)}
+                      />
+                    </div>
+                    <div className={styles.formGroup}>
+                      <label>Batería</label>
+                      <input
+                        type="text"
+                        placeholder="ej. 5000 mAh · carga rápida 45 W"
+                        value={specsBateria}
+                        onChange={(e) => setSpecsBateria(e.target.value)}
+                      />
+                    </div>
+                    <div className={styles.formGroup}>
+                      <label>Sistema Operativo</label>
+                      <input
+                        type="text"
+                        placeholder="ej. Android 14 · One UI 6.1"
+                        value={specsSistema}
+                        onChange={(e) => setSpecsSistema(e.target.value)}
+                      />
+                    </div>
+                    <div className={styles.formGroup}>
+                      <label>Seguridad</label>
+                      <input
+                        type="text"
+                        placeholder="ej. Lector de huella + reconocimiento facial"
+                        value={specsSeguridad}
+                        onChange={(e) => setSpecsSeguridad(e.target.value)}
+                      />
+                    </div>
+                    <div className={styles.formGroup}>
+                      <label>Resistencia</label>
+                      <input
+                        type="text"
+                        placeholder="ej. IP68 (sumergible)"
+                        value={specsResistencia}
+                        onChange={(e) => setSpecsResistencia(e.target.value)}
+                      />
+                    </div>
+                    <div className={styles.formGroup}>
+                      <label>Conectividad</label>
+                      <input
+                        type="text"
+                        placeholder="ej. 5G · Wi-Fi 7 · Bluetooth 5.3"
+                        value={specsConectividad}
+                        onChange={(e) => setSpecsConectividad(e.target.value)}
+                      />
+                    </div>
+                    <div className={styles.formGroup}>
+                      <label>Dimensiones / Peso</label>
+                      <input
+                        type="text"
+                        placeholder="ej. 162.3 × 79.0 × 8.6 mm · 232 g"
+                        value={specsDimensionesPeso}
+                        onChange={(e) => setSpecsDimensionesPeso(e.target.value)}
+                      />
+                    </div>
+                  </div>
                 </div>
 
                 <div className={styles.formActions}>

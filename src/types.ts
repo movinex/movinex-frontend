@@ -12,6 +12,18 @@ export interface Phone {
   imagen: string;
   envioGratis?: boolean;
   costoEnvio?: number;
+  specsPantalla?: string;
+  specsProcesador?: string;
+  specsRamAlmacenamiento?: string;
+  specsMicrosd?: string;
+  specsCamaraTrasera?: string;
+  specsCamaraFrontal?: string;
+  specsBateria?: string;
+  specsSistema?: string;
+  specsSeguridad?: string;
+  specsResistencia?: string;
+  specsConectividad?: string;
+  specsDimensionesPeso?: string;
 }
 
 export interface Solicitud {

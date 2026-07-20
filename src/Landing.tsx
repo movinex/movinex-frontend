@@ -35,84 +35,6 @@ interface LandingProps {
   showAdminButton?: boolean;
 }
 
-interface Specs {
-  pantalla: string;
-  procesador: string;
-  ramAlmacenamiento: string;
-  microSD: string;
-  camaraTrasera: string;
-  camaraFrontal: string;
-  bateria: string;
-  sistema: string;
-  seguridad: string;
-  resistencia: string;
-  conectividad: string;
-  dimensionesPeso: string;
-}
-
-const phoneSpecs: Record<string, Specs> = {
-  "samsung-a07": {
-    pantalla: '6.7" LCD HD+ (1600×720), 90 Hz',
-    procesador: "MediaTek Helio G99 (octa-core)",
-    ramAlmacenamiento: "4 GB RAM / 64 GB Almacenamiento",
-    microSD: "Sí, hasta 1 TB",
-    camaraTrasera: "50 MP principal + 2 MP profundidad",
-    camaraFrontal: "8 MP",
-    bateria: "5000 mAh · carga rápida 25 W",
-    sistema: "Android 15 · One UI 7",
-    seguridad: "Huella lateral + reconocimiento facial",
-    resistencia: "IP54 (polvo y salpicaduras)",
-    conectividad: "4G LTE · Wi-Fi · NFC: No",
-    dimensionesPeso: "167.4 × 77.4 × 7.6 mm · 184 g",
-  },
-  "samsung-s24": {
-    pantalla: '6.8" Dynamic AMOLED 2X QHD+ (3120×1440), 120 Hz, Gorilla Armor',
-    procesador: "Snapdragon 8 Gen 3 for Galaxy (octa-core)",
-    ramAlmacenamiento: "12 GB RAM / 256 GB Almacenamiento",
-    microSD: "No",
-    camaraTrasera: "200 MP + 50 MP + 12 MP + 10 MP con zoom óptico 100x",
-    camaraFrontal: "12 MP",
-    bateria: "5000 mAh · carga rápida 45 W",
-    sistema: "Android 14 · One UI 6.1 (con Galaxy AI)",
-    seguridad:
-      "Lector de huella ultrasónico en pantalla + reconocimiento facial",
-    resistencia: "IP68 (sumergible hasta 1.5m por 30 min)",
-    conectividad: "5G · Wi-Fi 7 · Bluetooth 5.3 · NFC",
-    dimensionesPeso: "162.3 × 79.0 × 8.6 mm · 232 g",
-  },
-  "iphone-15pro": {
-    pantalla:
-      '6.7" Super Retina XDR OLED (2796×1290), 120 Hz ProMotion, Always-On',
-    procesador: "A17 Pro (hexa-core con GPU de 6 núcleos)",
-    ramAlmacenamiento: "8 GB RAM / 256 GB Almacenamiento",
-    microSD: "No",
-    camaraTrasera:
-      "48 MP principal + 12 MP ultra gran angular + 12 MP teleobjetivo 5x",
-    camaraFrontal: "12 MP TrueDepth",
-    bateria: "4441 mAh · carga rápida 20 W (MagSafe 15 W)",
-    sistema: "iOS 17 (actualizable a iOS 18 con Apple Intelligence)",
-    seguridad: "Face ID (reconocimiento facial 3D)",
-    resistencia: "IP68 (sumergible hasta 6m por 30 min)",
-    conectividad: "5G · Wi-Fi 6E · Bluetooth 5.3 · NFC · USB-C 3.0",
-    dimensionesPeso: "159.9 × 76.7 × 8.25 mm · 221 g",
-  },
-  "xiaomi-redmi13": {
-    pantalla:
-      '6.67" AMOLED CrystalRes FHD+ (2712×1220), 120 Hz, Gorilla Glass Victus',
-    procesador: "MediaTek Helio G99-Ultra (octa-core)",
-    ramAlmacenamiento: "8 GB RAM / 256 GB Almacenamiento",
-    microSD: "Sí, hasta 1 TB",
-    camaraTrasera: "200 MP principal + 8 MP ultra gran angular + 2 MP macro",
-    camaraFrontal: "16 MP",
-    bateria: "5000 mAh · carga turbo 67 W",
-    sistema: "Android 13 con MIUI 14 (actualizable a HyperOS)",
-    seguridad: "Lector de huella en pantalla + reconocimiento facial",
-    resistencia: "IP54 (resistencia a salpicaduras)",
-    conectividad: "4G LTE · Wi-Fi · Bluetooth 5.2 · NFC",
-    dimensionesPeso: "161.1 × 74.2 × 7.98 mm · 187 g",
-  },
-};
-
 export const Landing: React.FC<LandingProps> = ({
   onSelectPhone,
   onNavigateAdmin,
@@ -634,23 +556,21 @@ export const Landing: React.FC<LandingProps> = ({
                   <h3>Ficha Técnica</h3>
                   <div className={styles.specsTable}>
                     {(() => {
-                      const specs = phoneSpecs[selectedQuickView.id];
-                      if (!specs) return null;
                       const entries: [string, string][] = [
-                        ["Pantalla", specs.pantalla],
-                        ["Procesador", specs.procesador],
-                        ["RAM / Almacenamiento", specs.ramAlmacenamiento],
-                        ["MicroSD", specs.microSD],
-                        ["Cámara Trasera", specs.camaraTrasera],
-                        ["Cámara Frontal", specs.camaraFrontal],
-                        ["Batería", specs.bateria],
-                        ["Sistema", specs.sistema],
-                        ["Seguridad", specs.seguridad],
-                        ["Resistencia", specs.resistencia],
-                        ["Conectividad", specs.conectividad],
-                        ["Dimensiones / Peso", specs.dimensionesPeso],
+                        ["Pantalla", selectedQuickView.specsPantalla || ''],
+                        ["Procesador", selectedQuickView.specsProcesador || ''],
+                        ["RAM / Almacenamiento", selectedQuickView.specsRamAlmacenamiento || ''],
+                        ["MicroSD", selectedQuickView.specsMicrosd || ''],
+                        ["Cámara Trasera", selectedQuickView.specsCamaraTrasera || ''],
+                        ["Cámara Frontal", selectedQuickView.specsCamaraFrontal || ''],
+                        ["Batería", selectedQuickView.specsBateria || ''],
+                        ["Sistema", selectedQuickView.specsSistema || ''],
+                        ["Seguridad", selectedQuickView.specsSeguridad || ''],
+                        ["Resistencia", selectedQuickView.specsResistencia || ''],
+                        ["Conectividad", selectedQuickView.specsConectividad || ''],
+                        ["Dimensiones / Peso", selectedQuickView.specsDimensionesPeso || ''],
                       ];
-                      return entries.map(([label, value]) => (
+                      return entries.filter(([_, val]) => val).map(([label, value]) => (
                         <div key={label} className={styles.specRow}>
                           <span>{label}</span>
                           <span>{value}</span>
