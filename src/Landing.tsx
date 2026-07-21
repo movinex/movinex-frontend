@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import styles from "./Landing.module.css";
 import type { Phone } from "./types";
+import { LegalContent } from "./LegalContent";
 
 // Carousel Banners (imágenes nuevas del usuario)
 import banner1 from "./assets/carrusel1.avif";
@@ -40,7 +41,7 @@ export const Landing: React.FC<LandingProps> = ({
   onNavigateAdmin,
   showAdminButton = false,
 }) => {
-  const [page, setPage] = useState<"inicio" | "movinex" | "tienda">("inicio");
+  const [page, setPage] = useState<"inicio" | "movinex" | "tienda" | "privacidad" | "terminos" | "cookies" | "envios">("inicio");
   const [selectedQuickView, setSelectedQuickView] = useState<Phone | null>(
     null,
   );
@@ -81,11 +82,20 @@ export const Landing: React.FC<LandingProps> = ({
   const [phones, setPhones] = useState<Phone[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Smooth scroll to top when page changes
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth"
+    });
+  }, [page]);
+
   // Cargar catálogo de celulares desde el backend
   useEffect(() => {
     if (page === "tienda") {
       setLoading(true);
-      fetch("https://movinex-backend-production.up.railway.app/api/celulares")
+      const backendUrl = import.meta.env.VITE_BACKEND_URL || 'https://movinex-backend-production.up.railway.app';
+      fetch(`${backendUrl}/api/celulares`)
         .then((res) => res.json())
         .then((data) => {
           // Mapear campos de base de datos snake_case a camelCase si es necesario
@@ -128,8 +138,54 @@ export const Landing: React.FC<LandingProps> = ({
     onSelectPhone(phone);
   };
 
+  // State to track if all heavy main page images are loaded
+  const [criticalImagesLoaded, setCriticalImagesLoaded] = useState(false);
+
+  useEffect(() => {
+    // List of initial images that need to be preloaded
+    const criticalUrls = [
+      banner1,
+      banner2,
+      banner3,
+      logoColor,
+      imgCardIne,
+      imgCardRitmo,
+      imgFoldEnganche,
+      imgFoldDudas
+    ];
+
+    let loadedCount = 0;
+    const totalToLoad = criticalUrls.length;
+
+    criticalUrls.forEach((url) => {
+      const img = new Image();
+      img.src = url;
+      img.onload = () => {
+        loadedCount++;
+        if (loadedCount === totalToLoad) {
+          setCriticalImagesLoaded(true);
+        }
+      };
+      img.onerror = () => {
+        loadedCount++;
+        if (loadedCount === totalToLoad) {
+          setCriticalImagesLoaded(true);
+        }
+      };
+    });
+  }, []);
+
   return (
     <div className={styles.container}>
+      {/* Full Page Loader Overlay */}
+      {!criticalImagesLoaded && (
+        <div className={styles.pageLoaderOverlay}>
+          <div className={styles.loaderContent}>
+            <div className={styles.spinner}></div>
+          </div>
+        </div>
+      )}
+
       {/* HEADER */}
       <header className={styles.header}>
         <div className={styles.headerContent}>
@@ -490,6 +546,11 @@ export const Landing: React.FC<LandingProps> = ({
         </section>
       )}
 
+      {/* ===================== LEGAL PAGES ===================== */}
+      {["privacidad", "terminos", "cookies", "envios"].includes(page) && (
+        <LegalContent page={page as any} />
+      )}
+
       {/* QUICK VIEW MODAL */}
       {selectedQuickView && (
         <div className={styles.modalOverlay} onClick={handleCloseQuickView}>
@@ -624,16 +685,6 @@ export const Landing: React.FC<LandingProps> = ({
                   <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.051.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" />
                 </svg>
               </a>
-              <a href="#" className={styles.socialIconLink}>
-                <svg
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                >
-                  <path d="M12.525.02c1.31-.03 2.625-.01 3.935-.002.08.73.53 1.34 1.18 1.7 1.05.6 2.25.72 3.42.74v3.52c-.8-.01-1.61-.16-2.39-.37a4.9 4.9 0 01-2.21-1.34v7.7c-.02 2.11-.93 4.14-2.58 5.43a6.83 6.83 0 01-7.85.62A6.87 6.87 0 013.1 12.7c.07-2.92 2.14-5.59 5.04-6.07a6.9 6.9 0 016.14 2.13c.01-.84.004-1.68.006-2.52C12.18 5.6 10 5.03 8.35 6.07c-2.35 1.5-3.3 4.67-2.18 7.23a6.85 6.85 0 007.82 4.1c1.86-.54 3.16-2.3 3.16-4.24V.02z" />
-                </svg>
-              </a>
             </div>
           </div>
           <div className={styles.footerColumn}>
@@ -669,20 +720,35 @@ export const Landing: React.FC<LandingProps> = ({
               >
                 Contáctanos
               </a>
-              <button
-                onClick={() => setPage("movinex")}
-                className={styles.footerBtnLink}
-              >
-                Acerca de
-              </button>
             </div>
           </div>
           <div className={styles.footerColumn}>
             <h4>Política</h4>
             <div className={styles.footerLinks}>
-              <a href="#">Envío y devoluciones</a>
-              <a href="#">Términos y condiciones</a>
-              <a href="#">FAQ</a>
+              <button
+                onClick={() => setPage("envios")}
+                className={styles.footerBtnLink}
+              >
+                Envío y devoluciones
+              </button>
+              <button
+                onClick={() => setPage("terminos")}
+                className={styles.footerBtnLink}
+              >
+                Términos y condiciones
+              </button>
+              <button
+                onClick={() => setPage("privacidad")}
+                className={styles.footerBtnLink}
+              >
+                Aviso de Privacidad
+              </button>
+              <button
+                onClick={() => setPage("cookies")}
+                className={styles.footerBtnLink}
+              >
+                Política de Cookies
+              </button>
             </div>
           </div>
         </div>

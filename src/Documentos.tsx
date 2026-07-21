@@ -129,8 +129,9 @@ export const Documentos: React.FC<DocumentosProps> = ({
       setIneReversoBase64(formattedReverso);
       setSelfieBase64(formattedSelfie);
 
+      const backendUrl = import.meta.env.VITE_BACKEND_URL || 'https://movinex-backend-production.up.railway.app';
       const response = await fetch(
-        "https://movinex-backend-production.up.railway.app/api/solicitudes",
+        `${backendUrl}/api/solicitudes`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

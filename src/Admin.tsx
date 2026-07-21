@@ -13,12 +13,22 @@ export const Admin: React.FC<AdminProps> = ({ solicitudes, onUpdateStatus, onVol
   const [filtroEstatus, setFiltroEstatus] = useState<'Todos' | 'Pendiente' | 'Aprobado' | 'Rechazado'>('Todos');
   const [activeTab, setActiveTab] = useState<'info' | 'documentos'>('info');
 
+  // Loading states for image preloading
+  const [loadFrente, setLoadFrente] = useState(false);
+  const [loadReverso, setLoadReverso] = useState(false);
+  const [loadSelfie, setLoadSelfie] = useState(false);
+
   // Seleccionar la primera solicitud por defecto al cargar o al cambiar filtros
   const solicitudesFiltradas = solicitudes.filter(s => 
     filtroEstatus === 'Todos' ? true : s.estatus === filtroEstatus
   );
 
   useEffect(() => {
+    // Reset loaded states when changing selection
+    setLoadFrente(false);
+    setLoadReverso(false);
+    setLoadSelfie(false);
+
     if (solicitudesFiltradas.length > 0) {
       // Intentar mantener seleccionada la misma si sigue en la lista filtrada
       const aunExiste = solicitudesFiltradas.find(s => s.id === solicitudSeleccionada?.id);
@@ -31,7 +41,7 @@ export const Admin: React.FC<AdminProps> = ({ solicitudes, onUpdateStatus, onVol
       setSolicitudSeleccionada(null);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filtroEstatus, solicitudes]);
+  }, [filtroEstatus, solicitudes, solicitudSeleccionada?.id]);
 
   // Cálculos de métricas
   const totalSolicitudes = solicitudes.length;
@@ -285,7 +295,18 @@ export const Admin: React.FC<AdminProps> = ({ solicitudes, onUpdateStatus, onVol
                       <h4>INE Frente</h4>
                       <div className={styles.docImageWrap}>
                         {solicitudSeleccionada.ineFrente ? (
-                          <img src={solicitudSeleccionada.ineFrente} alt="INE Frente" className={styles.docImage} />
+                          <div style={{ position: 'relative', width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            {!loadFrente && (
+                              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%)', backgroundSize: '200% 100%', animation: 'shimmer 1.5s infinite', borderRadius: '8px' }}></div>
+                            )}
+                            <img 
+                              src={solicitudSeleccionada.ineFrente} 
+                              alt="INE Frente" 
+                              className={styles.docImage} 
+                              onLoad={() => setLoadFrente(true)}
+                              style={{ opacity: loadFrente ? 1 : 0, transition: 'opacity 0.25s ease' }}
+                            />
+                          </div>
                         ) : (
                           <div className={styles.noDoc}>Sin foto cargada</div>
                         )}
@@ -297,7 +318,18 @@ export const Admin: React.FC<AdminProps> = ({ solicitudes, onUpdateStatus, onVol
                       <h4>INE Reverso</h4>
                       <div className={styles.docImageWrap}>
                         {solicitudSeleccionada.ineReverso ? (
-                          <img src={solicitudSeleccionada.ineReverso} alt="INE Reverso" className={styles.docImage} />
+                          <div style={{ position: 'relative', width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            {!loadReverso && (
+                              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%)', backgroundSize: '200% 100%', animation: 'shimmer 1.5s infinite', borderRadius: '8px' }}></div>
+                            )}
+                            <img 
+                              src={solicitudSeleccionada.ineReverso} 
+                              alt="INE Reverso" 
+                              className={styles.docImage} 
+                              onLoad={() => setLoadReverso(true)}
+                              style={{ opacity: loadReverso ? 1 : 0, transition: 'opacity 0.25s ease' }}
+                            />
+                          </div>
                         ) : (
                           <div className={styles.noDoc}>Sin foto cargada</div>
                         )}
@@ -309,7 +341,18 @@ export const Admin: React.FC<AdminProps> = ({ solicitudes, onUpdateStatus, onVol
                       <h4>Selfie Biométrica</h4>
                       <div className={styles.docImageWrap} style={{ height: '240px' }}>
                         {solicitudSeleccionada.selfie ? (
-                          <img src={solicitudSeleccionada.selfie} alt="Selfie" className={styles.docImage} style={{ maxWidth: '240px' }} />
+                          <div style={{ position: 'relative', width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            {!loadSelfie && (
+                              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%)', backgroundSize: '200% 100%', animation: 'shimmer 1.5s infinite', borderRadius: '8px' }}></div>
+                            )}
+                            <img 
+                              src={solicitudSeleccionada.selfie} 
+                              alt="Selfie" 
+                              className={styles.docImage} 
+                              onLoad={() => setLoadSelfie(true)}
+                              style={{ maxWidth: '240px', opacity: loadSelfie ? 1 : 0, transition: 'opacity 0.25s ease' }}
+                            />
+                          </div>
                         ) : (
                           <div className={styles.noDoc}>Sin selfie cargada</div>
                         )}

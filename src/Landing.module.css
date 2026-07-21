@@ -570,17 +570,24 @@
 
 .socialsWix {
   display: flex;
-  gap: 16px;
-  margin-bottom: 0;
+  gap: 12px;
+  margin-top: 8px;
 }
 
 .socialIconLink {
-  color: #0B1B3C;
-  transition: color 0.2s;
+  color: #5A6688;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .socialIconLink:hover {
   color: #2B6BE4;
+  transform: translateY(-3px) scale(1.05);
 }
 
 .footerPaymentSection {
@@ -1331,16 +1338,61 @@
   }
   .nav {
     gap: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
   }
   .slideContent {
     padding: 0 24px;
   }
   .slideContent h1 {
+    font-size: 26px;
+  }
+  .slideContent p {
+    font-size: 13px;
+  }
+  .heroCarousel {
+    height: 320px;
+  }
+  .sideCardContent h2 {
     font-size: 28px;
+  }
+  .sideCard {
+    padding: 24px;
+    aspect-ratio: 4 / 3;
+  }
+  .medidaRight h2 {
+    font-size: 26px;
+  }
+  .dudasBlueCard h2 {
+    font-size: 28px;
+  }
+  .dudasBlueCard {
+    padding: 32px 20px;
+  }
+  .marcaItem {
+    width: 45%;
+    height: 90px;
+  }
+  .catalogo {
+    grid-template-columns: 1fr; /* Single column on very small viewports */
+    padding: 0 8px;
   }
   .footerContent {
     grid-template-columns: 1fr;
     gap: 32px;
+    text-align: center;
+  }
+  .footerColumn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .socialsWix {
+    justify-content: center;
+  }
+  .metodosPagoWix {
+    justify-content: center;
+    gap: 12px;
   }
 }
 
@@ -1412,10 +1464,55 @@
 
 .skeletonButton {
   height: 42px;
-  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8F9 50%, #f1f5f9 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
   border-radius: 10px;
   width: 100%;
   margin-top: auto;
+}
+
+/* ================================= */
+/* PREMIUM OVERLAY PAGE LOADER       */
+/* ================================= */
+.pageLoaderOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #ffffff;
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.loaderContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid #E2E8F0;
+  border-top: 4px solid #2B6BE4;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.loaderText {
+  font-size: 16px;
+  font-weight: 600;
+  color: #0B1B3C;
+  font-family: 'Inter', sans-serif;
+  letter-spacing: -0.01em;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
