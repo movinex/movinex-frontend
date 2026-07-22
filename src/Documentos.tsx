@@ -26,7 +26,6 @@ interface DocumentosProps {
   onVolver: () => void;
 }
 
-// Utilidad para comprimir y convertir imágenes a Base64
 const compressAndGetBase64 = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -34,7 +33,7 @@ const compressAndGetBase64 = (file: File): Promise<string> => {
     reader.onload = () => {
       const img = new Image();
       img.onload = () => {
-        const maxDimension = 1500;
+        const maxDimension = 800;
         let width = img.width;
         let height = img.height;
 
@@ -54,7 +53,7 @@ const compressAndGetBase64 = (file: File): Promise<string> => {
           ctx.fillStyle = "#fff";
           ctx.fillRect(0, 0, width, height);
           ctx.drawImage(img, 0, 0, width, height);
-          const dataUrl = canvas.toDataURL("image/jpeg", 0.75);
+          const dataUrl = canvas.toDataURL("image/jpeg", 0.5);
           resolve(dataUrl.split(",")[1]);
         } else {
           reject(new Error("Canvas context not available"));
@@ -91,7 +90,6 @@ export const Documentos: React.FC<DocumentosProps> = ({
   );
   const [errorMessage, setErrorMessage] = useState("");
 
-  // Estados para persistir base64 de las imágenes
   const [ineFrenteBase64, setIneFrenteBase64] = useState<string>("");
   const [ineReversoBase64, setIneReversoBase64] = useState<string>("");
   const [selfieBase64, setSelfieBase64] = useState<string>("");
@@ -160,12 +158,10 @@ export const Documentos: React.FC<DocumentosProps> = ({
         );
       }
 
-      // Guardar el enlace de pago de Conekta
       if (res.checkoutUrl) {
         setPaymentLink(res.checkoutUrl);
       }
 
-      // Guardar si fue aprobado de inmediato o requiere revisión manual
       const fueAprobado = res.solicitud?.estatus === "Aprobado";
       setEsAprobadoDirecto(fueAprobado);
 
