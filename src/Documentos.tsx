@@ -96,6 +96,7 @@ export const Documentos: React.FC<DocumentosProps> = ({
   const [ineReversoBase64, setIneReversoBase64] = useState<string>("");
   const [selfieBase64, setSelfieBase64] = useState<string>("");
   const [paymentLink, setPaymentLink] = useState<string>("");
+  const [esAprobadoDirecto, setEsAprobadoDirecto] = useState<boolean>(true);
 
   const handleFileChange = (
     e: React.ChangeEvent<HTMLInputElement>,
@@ -151,7 +152,6 @@ export const Documentos: React.FC<DocumentosProps> = ({
           }),
         },
       );
-
       const res = await response.json();
 
       if (!response.ok) {
@@ -164,6 +164,10 @@ export const Documentos: React.FC<DocumentosProps> = ({
       if (res.checkoutUrl) {
         setPaymentLink(res.checkoutUrl);
       }
+
+      // Guardar si fue aprobado de inmediato o requiere revisión manual
+      const fueAprobado = res.solicitud?.estatus === "Aprobado";
+      setEsAprobadoDirecto(fueAprobado);
 
       setStatus("exito");
     } catch (error: any) {
@@ -211,25 +215,46 @@ export const Documentos: React.FC<DocumentosProps> = ({
         <div className={styles.card}>
           <div className={styles.body}>
             <div className={styles.estado}>
-              <div className={styles.badgeOk}>
-                <svg
-                  width="32"
-                  height="32"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="3"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <polyline points="20 6 9 17 4 12"></polyline>
-                </svg>
+              <div className={esAprobadoDirecto ? styles.badgeOk : styles.badgeInfo}>
+                {esAprobadoDirecto ? (
+                  <svg
+                    width="32"
+                    height="32"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="3"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                ) : (
+                  <svg
+                    width="32"
+                    height="32"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="3"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="16" x2="12" y2="12"></line>
+                    <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                  </svg>
+                )}
               </div>
               <div className={styles.et}>
-                🎉 ¡Felicidades, fuiste autorizado!
+                {esAprobadoDirecto 
+                  ? "🎉 ¡Felicidades, fuiste autorizado!"
+                  : "⌛ Tu solicitud está en revisión manual"}
               </div>
               <div className={styles.ed} style={{ fontSize: '14px', lineHeight: '1.6' }}>
-                Tu identidad quedó validada. El siguiente paso es el pago inicial para procesar el envío de tu {planData.modelo}:
+                {esAprobadoDirecto 
+                  ? `Tu identidad quedó validada. El siguiente paso es el pago inicial para procesar el envío de tu ${planData.modelo}:`
+                  : `Tu identidad está siendo analizada por nuestro equipo de prevención. Para agilizar el proceso y reservar tu ${planData.modelo}, puedes proceder a realizar tu pago inicial:`}
                 <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '12px', borderRadius: '10px', marginTop: '10px', display: 'flex', flexDirection: 'column', gap: '6px', textAlign: 'left' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                     <span style={{ color: '#64748B' }}>Enganche requerido:</span>

@@ -385,6 +385,19 @@
   animation: scaleIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
 }
 
+.badgeInfo {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #FEF3C7;
+  margin: 0 auto 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #D97706;
+  animation: scaleIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
 @media(max-width:380px) {
   .titulo {
     font-size: 22px;
