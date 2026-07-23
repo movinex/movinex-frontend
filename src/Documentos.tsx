@@ -82,6 +82,7 @@ export const Documentos: React.FC<DocumentosProps> = ({
   const [email, setEmail] = useState("");
   const [codigoPostal, setCodigoPostal] = useState("");
   const [direccionEnvio, setDireccionEnvio] = useState("");
+  const [curp, setCurp] = useState("");
   const [ineFrente, setIneFrente] = useState<File | null>(null);
   const [ineReverso, setIneReverso] = useState<File | null>(null);
   const [selfie, setSelfie] = useState<File | null>(null);
@@ -107,7 +108,7 @@ export const Documentos: React.FC<DocumentosProps> = ({
 
   const handleEnviar = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!nombre || !celular || !email || !codigoPostal || !direccionEnvio || !ineFrente || !ineReverso || !selfie)
+    if (!nombre || !celular || !email || !codigoPostal || !direccionEnvio || !curp || !ineFrente || !ineReverso || !selfie)
       return;
 
     setStatus("subiendo");
@@ -147,6 +148,7 @@ export const Documentos: React.FC<DocumentosProps> = ({
             selfie: formattedSelfie,
             codigo_postal: codigoPostal.trim(),
             direccion_envio: direccionEnvio.trim(),
+            curp: curp.trim().toUpperCase(),
           }),
         },
       );
@@ -182,6 +184,7 @@ export const Documentos: React.FC<DocumentosProps> = ({
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) &&
     codigoPostal.trim().length >= 5 &&
     direccionEnvio.trim() !== "" &&
+    curp.trim().length === 18 &&
     ineFrente !== null &&
     ineReverso !== null &&
     selfie !== null;
@@ -211,7 +214,7 @@ export const Documentos: React.FC<DocumentosProps> = ({
         <div className={styles.card}>
           <div className={styles.body}>
             <div className={styles.estado}>
-              <div className={esAprobadoDirecto ? styles.badgeOk : styles.badgeInfo}>
+              <div className={planData.envioGratis !== false ? styles.badgeOk : styles.badgeInfo}>
                 {esAprobadoDirecto ? (
                   <svg
                     width="32"
@@ -244,7 +247,7 @@ export const Documentos: React.FC<DocumentosProps> = ({
               </div>
               <div className={styles.et}>
                 {esAprobadoDirecto 
-                  ? "🎉 ¡Felicidades, fuiste autorizado!"
+                  ? "🎉 ¡Felicidades, fuiste al corriente!"
                   : "⌛ Tu solicitud está en revisión manual"}
               </div>
               <div className={styles.ed} style={{ fontSize: '14px', lineHeight: '1.6' }}>
@@ -274,7 +277,6 @@ export const Documentos: React.FC<DocumentosProps> = ({
               <button
                 className={styles.cta}
                 onClick={() => {
-                  // Redirigir al checkout seguro de Conekta
                   if (paymentLink) {
                     window.location.href = paymentLink;
                   } else {
@@ -411,6 +413,23 @@ export const Documentos: React.FC<DocumentosProps> = ({
               />
               {email.length > 0 && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && (
                 <span className={styles.errorMsg}>Ingresa una dirección de correo electrónico válida</span>
+              )}
+            </div>
+
+            <div className={styles.campo}>
+              <label htmlFor="curp">CURP (18 caracteres)</label>
+              <input
+                id="curp"
+                type="text"
+                placeholder="AAAA000000XXXXXX00"
+                value={curp}
+                onChange={(e) => setCurp(e.target.value.toUpperCase())}
+                maxLength={18}
+                className={curp.length > 0 && curp.length < 18 ? styles.inputError : ""}
+                required
+              />
+              {curp.length > 0 && curp.length < 18 && (
+                <span className={styles.errorMsg}>La CURP debe contener exactamente 18 caracteres</span>
               )}
             </div>
 

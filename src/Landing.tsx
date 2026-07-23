@@ -9,8 +9,8 @@ import banner2 from "./assets/carrusel2.avif";
 import banner3 from "./assets/carrusel3.avif";
 
 // Fold assets (imágenes nuevas del usuario)
-import imgFoldEnganche from "./assets/los mejores celulares.avif";
-import imgFoldDudas from "./assets/tienes dudas.avif";
+import imgFoldEnganche from "./assets/los mejores celulares.webp";
+import imgFoldDudas from "./assets/tienes dudas.webp";
 
 // Card backgrounds (existing PNGs como fallback para las tarjetas dobles)
 import imgCardIne from "./assets/Copia de Degradado horizontal izquierda a derecha 3.png";
