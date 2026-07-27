@@ -12,7 +12,6 @@ interface DocumentosProps {
     costoEnvio?: number;
   };
   onFinalizado: (datos: {
-    cliente: string;
     celular: string;
     email: string;
     modelo: string;
@@ -77,11 +76,8 @@ export const Documentos: React.FC<DocumentosProps> = ({
   onFinalizado,
   onVolver,
 }) => {
-  const [nombre, setNombre] = useState("");
   const [celular, setCelular] = useState("");
   const [email, setEmail] = useState("");
-  const [codigoPostal, setCodigoPostal] = useState("");
-  const [direccionEnvio, setDireccionEnvio] = useState("");
   const [ineFrente, setIneFrente] = useState<File | null>(null);
   const [ineReverso, setIneReverso] = useState<File | null>(null);
   const [selfie, setSelfie] = useState<File | null>(null);
@@ -107,8 +103,7 @@ export const Documentos: React.FC<DocumentosProps> = ({
 
   const handleEnviar = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!nombre || !celular || !email || !codigoPostal || !direccionEnvio || !ineFrente || !ineReverso || !selfie)
-      return;
+    if (!celular || !email || !ineFrente || !ineReverso || !selfie) return;
 
     setStatus("subiendo");
     setErrorMessage("");
@@ -135,7 +130,6 @@ export const Documentos: React.FC<DocumentosProps> = ({
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            cliente: nombre.trim(),
             celular: celular.trim(),
             email: email.trim(),
             modelo: planData.modelo,
@@ -145,8 +139,6 @@ export const Documentos: React.FC<DocumentosProps> = ({
             ine_frente: formattedFrente,
             ine_reverso: formattedReverso,
             selfie: formattedSelfie,
-            codigo_postal: codigoPostal.trim(),
-            direccion_envio: direccionEnvio.trim(),
           }),
         },
       );
@@ -177,11 +169,8 @@ export const Documentos: React.FC<DocumentosProps> = ({
   };
 
   const isFormValid =
-    nombre.trim() !== "" &&
     celular.trim().length >= 10 &&
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) &&
-    codigoPostal.trim().length >= 5 &&
-    direccionEnvio.trim() !== "" &&
     ineFrente !== null &&
     ineReverso !== null &&
     selfie !== null;
@@ -279,7 +268,6 @@ export const Documentos: React.FC<DocumentosProps> = ({
                     window.location.href = paymentLink;
                   } else {
                     onFinalizado({
-                      cliente: nombre.trim(),
                       celular: celular.trim(),
                       email: email.trim(),
                       modelo: planData.modelo,
@@ -361,24 +349,6 @@ export const Documentos: React.FC<DocumentosProps> = ({
             <div className={styles.lbl}>Datos de contacto</div>
 
             <div className={styles.campo}>
-              <label htmlFor="nombre">
-                Nombre completo (como aparece en tu INE)
-              </label>
-              <input
-                id="nombre"
-                type="text"
-                placeholder="Juan Pérez López"
-                value={nombre}
-                onChange={(e) => setNombre(e.target.value)}
-                className={nombre.trim() === "" && nombre !== "" ? styles.inputError : ""}
-                required
-              />
-              {nombre.trim() === "" && nombre !== "" && (
-                <span className={styles.errorMsg}>El nombre completo es requerido</span>
-              )}
-            </div>
-
-            <div className={styles.campo}>
               <label htmlFor="celular">Número de Celular (WhatsApp)</label>
               <input
                 id="celular"
@@ -412,38 +382,6 @@ export const Documentos: React.FC<DocumentosProps> = ({
               {email.length > 0 && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && (
                 <span className={styles.errorMsg}>Ingresa una dirección de correo electrónico válida</span>
               )}
-            </div>
-
-            <div className={styles.campo}>
-              <label htmlFor="codigoPostal">Código Postal de Envío</label>
-              <input
-                id="codigoPostal"
-                type="text"
-                placeholder="06600"
-                value={codigoPostal}
-                onChange={(e) => setCodigoPostal(e.target.value.replace(/\D/g, ""))}
-                maxLength={5}
-                className={codigoPostal.length > 0 && codigoPostal.length < 5 ? styles.inputError : ""}
-                required
-              />
-              {codigoPostal.length > 0 && codigoPostal.length < 5 && (
-                <span className={styles.errorMsg}>El Código Postal debe contener exactamente 5 dígitos</span>
-              )}
-            </div>
-
-            <div className={styles.campo}>
-              <label htmlFor="direccionEnvio">Dirección completa de Envío</label>
-              <input
-                id="direccionEnvio"
-                type="text"
-                placeholder="Calle, número exterior/interior, colonia y alcaldía/municipio"
-                value={direccionEnvio}
-                onChange={(e) => setDireccionEnvio(e.target.value)}
-                required
-              />
-              <div className={styles.hint}>
-                Dirección exacta donde recibirás tu celular a través de Skydropx.
-              </div>
             </div>
 
             <div className={styles.lbl} style={{ marginTop: "20px" }}>
