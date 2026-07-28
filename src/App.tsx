@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Landing } from './Landing';
 import { Cotizador } from './Cotizador';
 import { Documentos } from './Documentos';
+import { Domicilio } from './Domicilio';
 import { Admin } from './Admin';
 import { SadminPortal } from './Sadmin';
 import type { Phone, Solicitud } from './types';
@@ -10,9 +11,10 @@ import type { Phone, Solicitud } from './types';
 
 function App() {
   const [view, setView] = useState<'tienda' | 'dashboard' | 'sadmin'>('tienda');
-  const [step, setStep] = useState<'landing' | 'cotizar' | 'documentos' | 'finalizado'>('landing');
+  const [step, setStep] = useState<'landing' | 'cotizar' | 'documentos' | 'domicilio' | 'finalizado'>('landing');
   const [selectedPhone, setSelectedPhone] = useState<Phone | null>(null);
   const [planSelected, setPlanSelected] = useState<{ semanas: number; pagoSemanal: number; enganche: number } | null>(null);
+  const [solicitudPagadaId, setSolicitudPagadaId] = useState<string | null>(null);
   
   // Estado de solicitudes compartido y persistido
   const [solicitudes, setSolicitudes] = useState<Solicitud[]>([]);
@@ -103,6 +105,11 @@ function App() {
     setStep('finalizado');
   };
 
+  const handlePagoConfirmado = (solicitudId: string) => {
+    setSolicitudPagadaId(solicitudId);
+    setStep('domicilio');
+  };
+
   const handleVolver = () => {
     setStep('landing');
   };
@@ -186,7 +193,18 @@ function App() {
           costoEnvio: selectedPhone.costoEnvio
         }}
         onFinalizado={() => handleVerificacionFinalizada()}
+        onPagoConfirmado={handlePagoConfirmado}
         onVolver={() => setStep('cotizar')}
+      />
+    );
+  }
+
+  if (step === 'domicilio' && solicitudPagadaId && selectedPhone) {
+    return (
+      <Domicilio
+        solicitudId={solicitudPagadaId}
+        modelo={selectedPhone.modelo}
+        onFinalizado={() => handleVerificacionFinalizada()}
       />
     );
   }

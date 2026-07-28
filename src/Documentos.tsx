@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import styles from "./Documentos.module.css";
 import logoBlanco from "./assets/movinex_blanco.webp";
 
@@ -22,8 +22,11 @@ interface DocumentosProps {
     ineReverso: string;
     selfie: string;
   }) => void;
+  onPagoConfirmado: (solicitudId: string) => void;
   onVolver: () => void;
 }
+
+const POLL_INTERVAL_MS = 4000;
 
 const compressAndGetBase64 = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
@@ -74,6 +77,7 @@ const compressAndGetBase64 = (file: File): Promise<string> => {
 export const Documentos: React.FC<DocumentosProps> = ({
   planData,
   onFinalizado,
+  onPagoConfirmado,
   onVolver,
 }) => {
   const [celular, setCelular] = useState("");
@@ -81,9 +85,9 @@ export const Documentos: React.FC<DocumentosProps> = ({
   const [ineFrente, setIneFrente] = useState<File | null>(null);
   const [ineReverso, setIneReverso] = useState<File | null>(null);
   const [selfie, setSelfie] = useState<File | null>(null);
-  const [status, setStatus] = useState<"form" | "subiendo" | "exito" | "error">(
-    "form",
-  );
+  const [status, setStatus] = useState<
+    "form" | "subiendo" | "exito" | "esperando_pago" | "error"
+  >("form");
   const [errorMessage, setErrorMessage] = useState("");
 
   const [ineFrenteBase64, setIneFrenteBase64] = useState<string>("");
@@ -91,6 +95,37 @@ export const Documentos: React.FC<DocumentosProps> = ({
   const [selfieBase64, setSelfieBase64] = useState<string>("");
   const [paymentLink, setPaymentLink] = useState<string>("");
   const [esAprobadoDirecto, setEsAprobadoDirecto] = useState<boolean>(true);
+  const [verificandoPago, setVerificandoPago] = useState(false);
+
+  const verificarPago = useCallback(async () => {
+    setVerificandoPago(true);
+    try {
+      const backendUrl = import.meta.env.VITE_BACKEND_URL || 'https://movinex-backend-production.up.railway.app';
+      const response = await fetch(
+        `${backendUrl}/api/solicitudes/estatus?celular=${encodeURIComponent(celular.trim())}`,
+      );
+      if (!response.ok) return false;
+      const data = await response.json();
+      if (data.pagoConfirmado && data.id) {
+        onPagoConfirmado(data.id);
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error("Error al verificar el estatus del pago:", error);
+      return false;
+    } finally {
+      setVerificandoPago(false);
+    }
+  }, [celular, onPagoConfirmado]);
+
+  useEffect(() => {
+    if (status !== "esperando_pago") return;
+    const interval = setInterval(() => {
+      verificarPago();
+    }, POLL_INTERVAL_MS);
+    return () => clearInterval(interval);
+  }, [status, verificarPago]);
 
   const handleFileChange = (
     e: React.ChangeEvent<HTMLInputElement>,
@@ -263,9 +298,11 @@ export const Documentos: React.FC<DocumentosProps> = ({
               <button
                 className={styles.cta}
                 onClick={() => {
-                  // Redirigir al checkout seguro de Conekta
+                  // Abrir el checkout seguro de Conekta en una pestaña nueva y
+                  // esperar la confirmación de pago sin abandonar la SPA.
                   if (paymentLink) {
-                    window.location.href = paymentLink;
+                    window.open(paymentLink, "_blank", "noopener,noreferrer");
+                    setStatus("esperando_pago");
                   } else {
                     onFinalizado({
                       celular: celular.trim(),
@@ -282,6 +319,45 @@ export const Documentos: React.FC<DocumentosProps> = ({
                 }}
               >
                 Pagar enganche →
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (status === "esperando_pago") {
+    return (
+      <div className={styles.wrap}>
+        <div className={styles.card}>
+          <div className={styles.body}>
+            <div className={styles.estado}>
+              <div className={styles.spinner}></div>
+              <div className={styles.et}>Esperando confirmación de pago</div>
+              <div className={styles.ed}>
+                Completa tu pago en la pestaña que abrimos. En cuanto se
+                confirme, vas a continuar automáticamente con los datos de
+                envío.
+              </div>
+              <button
+                className={styles.cta}
+                onClick={() => verificarPago()}
+                disabled={verificandoPago}
+              >
+                {verificandoPago ? "Verificando..." : "Ya pagué, verificar de nuevo"}
+              </button>
+              <button
+                className={styles.cta}
+                style={{
+                  background: "#E4E8F1",
+                  color: "#5A6688",
+                  marginTop: "10px",
+                  boxShadow: "none",
+                }}
+                onClick={() => setStatus("exito")}
+              >
+                Volver
               </button>
             </div>
           </div>
