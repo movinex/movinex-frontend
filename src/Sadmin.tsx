@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import styles from './Sadmin.module.css';
 import logoBlanco from './assets/movinex_blanco.webp';
 import { Admin } from './Admin';
-import { supabase } from './supabaseClient';
 import type { Phone, Solicitud } from './types';
 
 interface SadminProps {
@@ -59,6 +58,15 @@ export const SadminPortal: React.FC<SadminProps> = ({
 
   const backendUrl = import.meta.env.VITE_BACKEND_URL || 'https://movinex-backend-production.up.railway.app';
 
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  };
+
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -67,29 +75,20 @@ export const SadminPortal: React.FC<SadminProps> = ({
     setError('');
 
     try {
-      // Generar nombre de archivo único
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Date.now()}_${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
-      const filePath = `${fileName}`;
+      const base64 = await fileToBase64(file);
 
-      // Subir archivo al bucket 'celulares' de Supabase Storage
-      const { error: uploadError } = await supabase.storage
-        .from('celulares')
-        .upload(filePath, file, {
-          cacheControl: '3600',
-          upsert: false
-        });
+      const response = await fetch(`${backendUrl}/api/celulares/imagen`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ imagen: base64 }),
+      });
 
-      if (uploadError) {
-        throw uploadError;
+      const res = await response.json();
+      if (!response.ok) {
+        throw new Error(res.error || 'No se pudo subir la imagen.');
       }
 
-      // Obtener URL pública de la imagen
-      const { data: { publicUrl } } = supabase.storage
-        .from('celulares')
-        .getPublicUrl(filePath);
-
-      setImagenUrl(publicUrl);
+      setImagenUrl(res.url);
     } catch (err: any) {
       console.error('Error al subir imagen:', err.message);
       setError('No se pudo subir la imagen. Verifica el bucket de Supabase.');
