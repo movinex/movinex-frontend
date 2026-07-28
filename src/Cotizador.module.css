@@ -141,7 +141,7 @@
 
 .plazo.activo {
   border-color: transparent;
-  background: linear-gradient(135deg, var(--azul), var(--cian));
+  background: linear-gradient(135deg, var(--azul), #0E7490);
   color: #fff;
   box-shadow: 0 8px 20px rgba(43, 107, 228, .28);
   transform: scale(1.03);
@@ -190,7 +190,7 @@
 
 .engancheTag {
   display: inline-block;
-  background: linear-gradient(135deg, var(--azul), var(--cian));
+  background: linear-gradient(135deg, var(--azul), #0E7490);
   color: #fff;
   font-weight: 800;
   font-size: 11px;
@@ -216,7 +216,7 @@
 }
 
 .leyenda .grande span {
-  background: linear-gradient(135deg, var(--azul), var(--cian));
+  background: linear-gradient(135deg, var(--azul), #0E7490);
   color: #fff;
   padding: 1px 6px;
   border-radius: 6px;
@@ -233,7 +233,7 @@
   display: block;
   width: 100%;
   margin-top: 20px;
-  background: linear-gradient(135deg, var(--azul), var(--cian));
+  background: linear-gradient(135deg, var(--azul), #0E7490);
   color: #fff;
   border: none;
   border-radius: 16px;

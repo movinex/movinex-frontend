@@ -222,7 +222,7 @@ function App() {
       fontFamily: "'Inter', sans-serif"
     }}>
       <h2 style={{ fontSize: '28px', color: '#0B1B3C', fontWeight: 800 }}>¡Gracias por elegir Movinex!</h2>
-      <p style={{ margin: '20px 0', color: '#7A85A0', fontSize: '15px', lineHeight: 1.5 }}>
+      <p style={{ margin: '20px 0', color: '#5A6688', fontSize: '15px', lineHeight: 1.5 }}>
         Tu solicitud ha sido ingresada al sistema y aprobada con éxito. En menos de 24 horas te contactaremos para coordinar el envío de tu nuevo celular {selectedPhone?.modelo}.
       </p>
       <button
@@ -232,7 +232,7 @@ function App() {
           setPlanSelected(null);
         }}
         style={{
-          background: 'linear-gradient(135deg,#2B6BE4,#3FC6F0)',
+          background: 'linear-gradient(135deg,#2B6BE4,#0E7490)',
           color: '#ffffff',
           border: 'none',
           padding: '16px 32px',

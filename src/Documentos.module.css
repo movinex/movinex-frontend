@@ -99,7 +99,7 @@
   width: 34px;
   height: 34px;
   border-radius: 10px;
-  background: linear-gradient(135deg, var(--azul), var(--cian));
+  background: linear-gradient(135deg, var(--azul), #0E7490);
   flex: none;
 }
 
@@ -299,7 +299,7 @@
   display: block;
   width: 100%;
   margin-top: 18px;
-  background: linear-gradient(135deg, var(--azul), var(--cian));
+  background: linear-gradient(135deg, var(--azul), #0E7490);
   color: #fff;
   border: none;
   border-radius: 16px;
@@ -363,7 +363,7 @@
   width: 64px;
   height: 64px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--azul), var(--cian));
+  background: linear-gradient(135deg, var(--azul), #0E7490);
   margin: 0 auto 16px;
   display: flex;
   align-items: center;

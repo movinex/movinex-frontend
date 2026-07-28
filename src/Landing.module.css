@@ -88,6 +88,15 @@
   z-index: 1;
 }
 
+/* Capa oscura para que el texto blanco del hero sea legible sobre cualquier foto */
+.slide::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: linear-gradient(90deg, rgba(11, 27, 60, 0.72) 0%, rgba(11, 27, 60, 0.4) 45%, rgba(11, 27, 60, 0) 80%);
+}
+
 .slideActive {
   opacity: 1;
   z-index: 3;
@@ -192,6 +201,15 @@
   align-items: flex-end;
   overflow: hidden;
   position: relative;
+}
+
+/* Capa oscura para que el texto blanco sea legible sobre cualquier foto */
+.sideCard::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(to top, rgba(11, 27, 60, 0.8) 0%, rgba(11, 27, 60, 0.25) 55%, rgba(11, 27, 60, 0) 100%);
 }
 
 .sideCardContent {
@@ -342,7 +360,7 @@
 .engancheBadgeCircle span {
   font-size: 11px;
   text-transform: uppercase;
-  color: #7A85A0;
+  color: #5A6688;
   font-weight: 700;
   letter-spacing: 0.05em;
 }
@@ -372,7 +390,7 @@
 
 .medidaTcs {
   font-size: 13px;
-  color: #94A3B8;
+  color: #5A6688;
   font-weight: 500;
 }
 
@@ -607,7 +625,7 @@
 .footerPaymentSection h4 {
   font-size: 13px;
   font-weight: 600;
-  color: #94A3B8;
+  color: #5A6688;
   text-transform: none;
   letter-spacing: 0;
 }
@@ -646,7 +664,7 @@
   letter-spacing: 0.15em;
   text-transform: uppercase;
   font-weight: 800;
-  color: #3FC6F0;
+  color: #2B6BE4;
   display: inline-block;
 }
 
@@ -743,7 +761,7 @@
   position: absolute;
   top: 16px;
   right: 16px;
-  background-color: #EF4444;
+  background-color: #DC2626;
   color: #ffffff;
   width: 70px;
   height: 70px;
@@ -840,7 +858,7 @@
 }
 
 .productCard:hover .cotizarBtn {
-  background: linear-gradient(135deg, #2B6BE4, #3FC6F0);
+  background: linear-gradient(135deg, #2B6BE4, #0E7490);
 }
 
 /* ================================ */
@@ -929,7 +947,7 @@
   background: transparent;
   border: none;
   font-size: 32px;
-  color: #94A3B8;
+  color: #5A6688;
   cursor: pointer;
   transition: color 0.2s;
   z-index: 10;
@@ -1043,7 +1061,7 @@
 .originalPrice {
   font-size: 18px;
   text-decoration: line-through;
-  color: #94A3B8;
+  color: #5A6688;
   font-weight: 600;
 }
 
@@ -1055,7 +1073,7 @@
 
 .discountBadge {
   background-color: #FEF2F2;
-  color: #EF4444;
+  color: #DC2626;
   padding: 6px 12px;
   border-radius: 8px;
   font-size: 12px;
@@ -1101,7 +1119,7 @@
 
 .solicitarBtn {
   flex: 1.3;
-  background: linear-gradient(135deg, #2B6BE4, #3FC6F0);
+  background: linear-gradient(135deg, #2B6BE4, #0E7490);
   color: #ffffff;
   border: none;
   padding: 16px;
