@@ -34,9 +34,12 @@ function App() {
     }
   }, []);
 
-  // Cargar solicitudes del backend al inicializar o al abrir el dashboard (requiere sesión de admin)
+  // Cargar solicitudes del backend al abrir el dashboard/sadmin, y refrescar solas
+  // cada 1 minuto mientras quede abierto (requiere sesión de admin).
   useEffect(() => {
-    if ((view === 'dashboard' || view === 'sadmin') && adminToken) {
+    if (!((view === 'dashboard' || view === 'sadmin') && adminToken)) return;
+
+    const cargarSolicitudes = () => {
       fetch(`${backendUrl}/api/solicitudes`, {
         headers: { Authorization: `Bearer ${adminToken}` }
       })
@@ -62,12 +65,25 @@ function App() {
             fecha: s.created_at || s.fecha,
             ineFrente: s.ine_frente,
             ineReverso: s.ine_reverso,
-            selfie: s.selfie
+            selfie: s.selfie,
+            pagoConfirmado: s.pago_confirmado === true,
+            calle: s.calle,
+            numeroExterior: s.numero_exterior,
+            numeroInterior: s.numero_interior,
+            colonia: s.colonia,
+            alcaldiaMunicipio: s.alcaldia_municipio,
+            estado: s.estado,
+            codigoPostal: s.codigo_postal,
+            trackingNumber: s.tracking_number
           }));
           setSolicitudes(solicitudesAdaptadas);
         })
         .catch(err => console.error('Error al cargar solicitudes del backend:', err));
-    }
+    };
+
+    cargarSolicitudes();
+    const interval = setInterval(cargarSolicitudes, 60000);
+    return () => clearInterval(interval);
   }, [view, backendUrl, adminToken]);
 
   // Cargar lista de celulares para alimentar el CRUD
@@ -218,7 +234,6 @@ function App() {
           envioGratis: selectedPhone.envioGratis,
           costoEnvio: selectedPhone.costoEnvio
         }}
-        onFinalizado={() => handleVerificacionFinalizada()}
         onPagoConfirmado={handlePagoConfirmado}
         onVolver={() => setStep('cotizar')}
       />

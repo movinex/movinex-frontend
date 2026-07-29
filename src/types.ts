@@ -40,5 +40,14 @@ export interface Solicitud {
   ineFrente?: string; // Base64
   ineReverso?: string; // Base64
   selfie?: string; // Base64
+  pagoConfirmado?: boolean;
+  calle?: string;
+  numeroExterior?: string;
+  numeroInterior?: string;
+  colonia?: string;
+  alcaldiaMunicipio?: string;
+  estado?: string;
+  codigoPostal?: string;
+  trackingNumber?: string;
 }
 

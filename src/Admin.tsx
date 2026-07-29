@@ -270,6 +270,34 @@ export const Admin: React.FC<AdminProps> = ({ solicitudes, onUpdateStatus, onVol
                     </div>
                   </div>
 
+                  <div className={styles.sectionHeader} style={{ marginTop: '24px' }}>Pago y Envío</div>
+                  <div className={styles.infoGrid}>
+                    <div className={styles.infoItem}>
+                      <span className={styles.infoLabel}>Pago del Enganche</span>
+                      <span
+                        className={styles.infoValue}
+                        style={{ color: solicitudSeleccionada.pagoConfirmado ? '#16A34A' : '#D97706', fontWeight: 700 }}
+                      >
+                        {solicitudSeleccionada.pagoConfirmado ? '✓ Confirmado' : 'Pendiente'}
+                      </span>
+                    </div>
+                    {solicitudSeleccionada.trackingNumber && (
+                      <div className={styles.infoItem}>
+                        <span className={styles.infoLabel}>Número de Rastreo</span>
+                        <span className={styles.infoValue}>{solicitudSeleccionada.trackingNumber}</span>
+                      </div>
+                    )}
+                    {solicitudSeleccionada.calle && (
+                      <div className={styles.infoItem} style={{ gridColumn: 'span 2' }}>
+                        <span className={styles.infoLabel}>Dirección de Envío</span>
+                        <span className={styles.infoValue}>
+                          {solicitudSeleccionada.calle} {solicitudSeleccionada.numeroExterior}
+                          {solicitudSeleccionada.numeroInterior ? ` Int. ${solicitudSeleccionada.numeroInterior}` : ''}, {solicitudSeleccionada.colonia}, {solicitudSeleccionada.alcaldiaMunicipio}, {solicitudSeleccionada.estado}, CP {solicitudSeleccionada.codigoPostal}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
                   {solicitudSeleccionada.estatus === 'Pendiente' && (
                     <div className={styles.btnGroup}>
                       <button 
