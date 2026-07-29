@@ -21,6 +21,10 @@ function App() {
   const [phones, setPhones] = useState<Phone[]>([]);
   const [reloadTrigger, setReloadTrigger] = useState(0);
 
+  // Sesión de Super Admin (JWT emitido por /api/admin/login)
+  const [adminUser, setAdminUser] = useState<any>(null);
+  const [adminToken, setAdminToken] = useState<string | null>(null);
+
   const backendUrl = import.meta.env.VITE_BACKEND_URL || 'https://movinex-backend-production.up.railway.app';
 
   // Detectar la ruta privada /sadmin al inicializar la app
@@ -30,11 +34,20 @@ function App() {
     }
   }, []);
 
-  // Cargar solicitudes del backend al inicializar o al abrir el dashboard
+  // Cargar solicitudes del backend al inicializar o al abrir el dashboard (requiere sesión de admin)
   useEffect(() => {
-    if (view === 'dashboard' || view === 'sadmin') {
-      fetch(`${backendUrl}/api/solicitudes`)
-        .then(res => res.json())
+    if ((view === 'dashboard' || view === 'sadmin') && adminToken) {
+      fetch(`${backendUrl}/api/solicitudes`, {
+        headers: { Authorization: `Bearer ${adminToken}` }
+      })
+        .then(res => {
+          if (res.status === 401) {
+            setAdminUser(null);
+            setAdminToken(null);
+            throw new Error('Sesión expirada.');
+          }
+          return res.json();
+        })
         .then(data => {
           const solicitudesAdaptadas = data.map((s: any) => ({
             id: s.id,
@@ -55,7 +68,7 @@ function App() {
         })
         .catch(err => console.error('Error al cargar solicitudes del backend:', err));
     }
-  }, [view, backendUrl]);
+  }, [view, backendUrl, adminToken]);
 
   // Cargar lista de celulares para alimentar el CRUD
   useEffect(() => {
@@ -118,7 +131,10 @@ function App() {
     try {
       const response = await fetch(`${backendUrl}/api/solicitudes/${id}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(adminToken ? { Authorization: `Bearer ${adminToken}` } : {})
+        },
         body: JSON.stringify({ estatus: nuevoEstatus })
       });
 
@@ -145,6 +161,16 @@ function App() {
         }}
         phones={phones}
         onReloadPhones={() => setReloadTrigger(prev => prev + 1)}
+        adminUser={adminUser}
+        adminToken={adminToken}
+        onLoginSuccess={(user, token) => {
+          setAdminUser(user);
+          setAdminToken(token);
+        }}
+        onLogout={() => {
+          setAdminUser(null);
+          setAdminToken(null);
+        }}
       />
     );
   }

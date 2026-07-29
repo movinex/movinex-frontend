@@ -10,6 +10,10 @@ interface SadminProps {
   onVolver: () => void;
   phones: Phone[];
   onReloadPhones: () => void;
+  adminUser: any;
+  adminToken: string | null;
+  onLoginSuccess: (admin: any, token: string) => void;
+  onLogout: () => void;
 }
 
 export const SadminPortal: React.FC<SadminProps> = ({
@@ -17,9 +21,12 @@ export const SadminPortal: React.FC<SadminProps> = ({
   onUpdateStatus,
   onVolver,
   phones,
-  onReloadPhones
+  onReloadPhones,
+  adminUser,
+  adminToken,
+  onLoginSuccess,
+  onLogout
 }) => {
-  const [adminUser, setAdminUser] = useState<any>(null);
   const [activePortalTab, setActivePortalTab] = useState<'solicitudes' | 'celulares'>('solicitudes');
 
   // Form states for CRUD
@@ -79,7 +86,10 @@ export const SadminPortal: React.FC<SadminProps> = ({
 
       const response = await fetch(`${backendUrl}/api/celulares/imagen`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(adminToken ? { Authorization: `Bearer ${adminToken}` } : {})
+        },
         body: JSON.stringify({ imagen: base64 }),
       });
 
@@ -188,7 +198,10 @@ export const SadminPortal: React.FC<SadminProps> = ({
 
       const response = await fetch(url, {
         method,
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(adminToken ? { Authorization: `Bearer ${adminToken}` } : {})
+        },
         body: JSON.stringify(payload)
       });
 
@@ -213,7 +226,8 @@ export const SadminPortal: React.FC<SadminProps> = ({
 
     try {
       const response = await fetch(`${backendUrl}/api/celulares/${phoneId}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers: adminToken ? { Authorization: `Bearer ${adminToken}` } : undefined
       });
 
       if (response.ok) {
@@ -230,10 +244,10 @@ export const SadminPortal: React.FC<SadminProps> = ({
   };
 
   // If not logged in, render SadminLogin view
-  if (!adminUser) {
+  if (!adminUser || !adminToken) {
     return (
       <SadminLogin
-        onLoginSuccess={(user) => setAdminUser(user)}
+        onLoginSuccess={onLoginSuccess}
         onVolver={onVolver}
       />
     );
@@ -256,7 +270,7 @@ export const SadminPortal: React.FC<SadminProps> = ({
           <button className={styles.tabBtn} onClick={() => setActivePortalTab('celulares')} style={{ background: activePortalTab === 'celulares' ? 'rgba(255,255,255,0.1)' : 'transparent' }}>
             📱 Catálogo Celulares
           </button>
-          <button className={styles.logoutBtn} onClick={() => setAdminUser(null)}>
+          <button className={styles.logoutBtn} onClick={onLogout}>
             Salir
           </button>
         </div>
@@ -606,7 +620,7 @@ export const SadminPortal: React.FC<SadminProps> = ({
 };
 
 interface SadminLoginProps {
-  onLoginSuccess: (admin: any) => void;
+  onLoginSuccess: (admin: any, token: string) => void;
   onVolver: () => void;
 }
 
@@ -632,8 +646,8 @@ export const SadminLogin: React.FC<SadminLoginProps> = ({ onLoginSuccess, onVolv
 
       const data = await response.json();
 
-      if (response.ok && data.success) {
-        onLoginSuccess(data.admin);
+      if (response.ok && data.success && data.token) {
+        onLoginSuccess(data.admin, data.token);
       } else {
         setError(data.message || 'Usuario o contraseña incorrectos.');
       }
