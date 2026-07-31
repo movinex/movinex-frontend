@@ -74,7 +74,8 @@ function App() {
             alcaldiaMunicipio: s.alcaldia_municipio,
             estado: s.estado,
             codigoPostal: s.codigo_postal,
-            trackingNumber: s.tracking_number
+            trackingNumber: s.tracking_number,
+            labelUrl: s.label_url
           }));
           setSolicitudes(solicitudesAdaptadas);
         })

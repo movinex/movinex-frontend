@@ -10,7 +10,7 @@ interface AdminProps {
 
 export const Admin: React.FC<AdminProps> = ({ solicitudes, onUpdateStatus, onVolver }) => {
   const [solicitudSeleccionada, setSolicitudSeleccionada] = useState<Solicitud | null>(null);
-  const [filtroEstatus, setFiltroEstatus] = useState<'Todos' | 'Pendiente' | 'Aprobado' | 'Rechazado'>('Todos');
+  const [filtroEstatus, setFiltroEstatus] = useState<'Todos' | 'Pendiente' | 'Aprobado' | 'Rechazado' | 'Pendiente de envío' | 'Preparando paquete'>('Todos');
   const [activeTab, setActiveTab] = useState<'info' | 'documentos'>('info');
 
   // Loading states for image preloading
@@ -52,6 +52,17 @@ export const Admin: React.FC<AdminProps> = ({ solicitudes, onUpdateStatus, onVol
   const totalEnganchesAprobados = solicitudes
     .filter(s => s.estatus === 'Aprobado')
     .reduce((acc, s) => acc + s.enganche, 0);
+
+  const getStatusClass = (estatus: Solicitud['estatus']) => {
+    switch (estatus) {
+      case 'Pendiente': return styles.statusPending;
+      case 'Aprobado': return styles.statusApproved;
+      case 'Rechazado': return styles.statusRejected;
+      case 'Pendiente de envío': return styles.statusShipping;
+      case 'Preparando paquete': return styles.statusPacking;
+      default: return styles.statusPending;
+    }
+  };
 
   const handleResolver = (id: string, nuevoEstatus: 'Aprobado' | 'Rechazado') => {
     onUpdateStatus(id, nuevoEstatus);
@@ -139,7 +150,7 @@ export const Admin: React.FC<AdminProps> = ({ solicitudes, onUpdateStatus, onVol
           <div className={styles.panelHeader}>
             <div className={styles.panelTitle}>Créditos Recibidos</div>
             <div className={styles.filterBar}>
-              {(['Todos', 'Pendiente', 'Aprobado', 'Rechazado'] as const).map(est => (
+              {(['Todos', 'Pendiente', 'Aprobado', 'Pendiente de envío', 'Preparando paquete', 'Rechazado'] as const).map(est => (
                 <button
                   key={est}
                   className={`${styles.filterBtn} ${filtroEstatus === est ? styles.filterBtnActive : ''}`}
@@ -163,14 +174,19 @@ export const Admin: React.FC<AdminProps> = ({ solicitudes, onUpdateStatus, onVol
                   }}
                 >
                   <div className={styles.clientInfo}>
-                    <h4>{s.cliente}</h4>
+                    <h4>
+                      {s.pagoConfirmado && !s.calle && (
+                        <span
+                          className={styles.itemAlertDot}
+                          title="Pago confirmado, falta la dirección de envío"
+                        ></span>
+                      )}
+                      {s.cliente}
+                    </h4>
                     <p>{s.modelo} · {s.semanas} sem</p>
                     <small className={styles.fechaText}>{formatearFecha(s.fecha)}</small>
                   </div>
-                  <span className={`${styles.status} ${
-                    s.estatus === 'Pendiente' ? styles.statusPending : 
-                    s.estatus === 'Aprobado' ? styles.statusApproved : styles.statusRejected
-                  }`}>
+                  <span className={`${styles.status} ${getStatusClass(s.estatus)}`}>
                     {s.estatus}
                   </span>
                 </div>
@@ -192,10 +208,7 @@ export const Admin: React.FC<AdminProps> = ({ solicitudes, onUpdateStatus, onVol
                   <h2>Detalle del Cliente</h2>
                   <span className={styles.detailId}>ID Solicitud: {solicitudSeleccionada.id}</span>
                 </div>
-                <span className={`${styles.status} ${
-                  solicitudSeleccionada.estatus === 'Pendiente' ? styles.statusPending : 
-                  solicitudSeleccionada.estatus === 'Aprobado' ? styles.statusApproved : styles.statusRejected
-                }`}>
+                <span className={`${styles.status} ${getStatusClass(solicitudSeleccionada.estatus)}`}>
                   {solicitudSeleccionada.estatus}
                 </span>
               </div>
@@ -271,6 +284,13 @@ export const Admin: React.FC<AdminProps> = ({ solicitudes, onUpdateStatus, onVol
                   </div>
 
                   <div className={styles.sectionHeader} style={{ marginTop: '24px' }}>Pago y Envío</div>
+
+                  {solicitudSeleccionada.pagoConfirmado && !solicitudSeleccionada.calle && (
+                    <div className={styles.alertBanner}>
+                      ⚠️ Pago confirmado — falta que el cliente complete su dirección de envío
+                    </div>
+                  )}
+
                   <div className={styles.infoGrid}>
                     <div className={styles.infoItem}>
                       <span className={styles.infoLabel}>Pago del Enganche</span>
@@ -285,6 +305,19 @@ export const Admin: React.FC<AdminProps> = ({ solicitudes, onUpdateStatus, onVol
                       <div className={styles.infoItem}>
                         <span className={styles.infoLabel}>Número de Rastreo</span>
                         <span className={styles.infoValue}>{solicitudSeleccionada.trackingNumber}</span>
+                      </div>
+                    )}
+                    {solicitudSeleccionada.labelUrl && (
+                      <div className={styles.infoItem}>
+                        <span className={styles.infoLabel}>Guía de Envío</span>
+                        <a
+                          href={solicitudSeleccionada.labelUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={styles.guideLink}
+                        >
+                          📦 Ver guía de envío
+                        </a>
                       </div>
                     )}
                     {solicitudSeleccionada.calle && (

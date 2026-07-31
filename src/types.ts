@@ -35,7 +35,7 @@ export interface Solicitud {
   enganche: number;
   semanas: number;
   pagoSemanal: number;
-  estatus: 'Pendiente' | 'Aprobado' | 'Rechazado';
+  estatus: 'Pendiente' | 'Aprobado' | 'Rechazado' | 'Pendiente de envío' | 'Preparando paquete';
   fecha: string;
   ineFrente?: string; // Base64
   ineReverso?: string; // Base64
@@ -49,5 +49,6 @@ export interface Solicitud {
   estado?: string;
   codigoPostal?: string;
   trackingNumber?: string;
+  labelUrl?: string;
 }
 

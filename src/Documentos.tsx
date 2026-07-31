@@ -1,6 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import styles from "./Documentos.module.css";
 import logoBlanco from "./assets/movinex_blanco.webp";
+
+declare global {
+  interface Window {
+    ConektaCheckoutComponents: any;
+  }
+}
 
 interface DocumentosProps {
   planData: {
@@ -78,30 +84,124 @@ export const Documentos: React.FC<DocumentosProps> = ({
 
   const [solicitudId, setSolicitudId] = useState<string>("");
   const [esAprobadoDirecto, setEsAprobadoDirecto] = useState<boolean>(true);
-  const [confirmandoPago, setConfirmandoPago] = useState(false);
 
-  // TEMPORAL: mientras no esté integrado el webhook real de Conekta, se confirma
-  // el pago del enganche directo contra el endpoint simulado, sin esperar nada.
-  const handlePagarEnganche = async () => {
+  // Paso de pago del enganche: primero se verifica el celular por OTP de WhatsApp,
+  // después se paga con el Checkout Component embebido de Conekta (iframe hosteado
+  // por Conekta — la tarjeta del cliente nunca pasa por nuestro servidor).
+  const [pagoStep, setPagoStep] = useState<"resumen" | "otp" | "tarjeta">("resumen");
+  const [otpCodigo, setOtpCodigo] = useState("");
+  const [otpEnviando, setOtpEnviando] = useState(false);
+  const [otpError, setOtpError] = useState("");
+
+  const [checkoutId, setCheckoutId] = useState<string | null>(null);
+  const [procesandoPago, setProcesandoPago] = useState(false);
+  const [pagoError, setPagoError] = useState("");
+  const submitConektaRef = useRef<(() => void) | null>(null);
+
+  const backendUrl = import.meta.env.VITE_BACKEND_URL || 'https://movinex-backend-production.up.railway.app';
+
+  const handleSolicitarOtp = async () => {
     if (!solicitudId) return;
-    setConfirmandoPago(true);
+    setOtpEnviando(true);
+    setOtpError("");
     try {
-      const backendUrl = import.meta.env.VITE_BACKEND_URL || 'https://movinex-backend-production.up.railway.app';
-      const response = await fetch(
-        `${backendUrl}/api/solicitudes/${solicitudId}/confirmar-pago-simulado`,
-        { method: "POST" },
-      );
+      const response = await fetch(`${backendUrl}/api/otp/enviar`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ celular }),
+      });
       if (!response.ok) {
-        throw new Error("No se pudo confirmar el pago.");
+        const res = await response.json();
+        throw new Error(res.error || "No se pudo enviar el código de verificación.");
       }
-      onPagoConfirmado(solicitudId);
+      setPagoStep("otp");
     } catch (error: any) {
-      console.error(error);
-      setErrorMessage(error.message || "Ocurrió un error al confirmar el pago.");
-      setStatus("error");
+      setOtpError(error.message || "Ocurrió un error al enviar el código.");
     } finally {
-      setConfirmandoPago(false);
+      setOtpEnviando(false);
     }
+  };
+
+  const handleVerificarOtp = async () => {
+    setOtpEnviando(true);
+    setOtpError("");
+    try {
+      const response = await fetch(`${backendUrl}/api/otp/verificar`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ celular, codigo: otpCodigo }),
+      });
+      const res = await response.json();
+      if (!response.ok || !res.verificado) {
+        throw new Error(res.error || "Código incorrecto o expirado.");
+      }
+
+      const ordenResponse = await fetch(`${backendUrl}/api/solicitudes/${solicitudId}/crear-orden-enganche`, {
+        method: "POST",
+      });
+      const ordenRes = await ordenResponse.json();
+      if (!ordenResponse.ok) {
+        throw new Error(ordenRes.error || "No se pudo iniciar el pago.");
+      }
+
+      setCheckoutId(ordenRes.checkoutId);
+      setPagoStep("tarjeta");
+    } catch (error: any) {
+      setOtpError(error.message || "Ocurrió un error al verificar el código.");
+    } finally {
+      setOtpEnviando(false);
+    }
+  };
+
+  // Inicializa el Checkout Component de Conekta apenas tenemos el checkoutId.
+  useEffect(() => {
+    if (pagoStep !== "tarjeta" || !checkoutId) return;
+    if (!window.ConektaCheckoutComponents || !import.meta.env.VITE_CONEKTA_PUBLIC_KEY) {
+      setPagoError("No se pudo cargar el procesador de pagos. Recarga la página e intenta de nuevo.");
+      return;
+    }
+
+    window.ConektaCheckoutComponents.Integration({
+      config: {
+        locale: "es",
+        publicKey: import.meta.env.VITE_CONEKTA_PUBLIC_KEY,
+        targetIFrame: "#conekta-checkout-target",
+        checkoutRequestId: checkoutId,
+        useExternalSubmit: true,
+      },
+      callbacks: {
+        onUpdateSubmitTrigger: (submitFn: () => void) => {
+          submitConektaRef.current = submitFn;
+        },
+        onFinalizePayment: () => {
+          onPagoConfirmado(solicitudId);
+        },
+        onErrorPayment: (error: any) => {
+          setPagoError(error?.message_to_purchaser || error?.message || "La tarjeta fue rechazada. Verifica los datos.");
+          setProcesandoPago(false);
+        },
+      },
+    });
+
+    // React.StrictMode monta este efecto dos veces en desarrollo; Integration() no es
+    // idempotente, así que sin este cleanup la segunda inicialización pisa a la primera
+    // y el iframe queda en blanco. Limpiamos el contenedor antes de cada montaje real.
+    return () => {
+      submitConektaRef.current = null;
+      const target = document.getElementById("conekta-checkout-target");
+      if (target) target.innerHTML = "";
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pagoStep, checkoutId]);
+
+  const handlePagarConTarjeta = () => {
+    setPagoError("");
+    if (!submitConektaRef.current) {
+      setPagoError("El formulario de pago todavía se está cargando. Esperá un segundo e intentá de nuevo.");
+      return;
+    }
+    setProcesandoPago(true);
+    submitConektaRef.current();
   };
 
   const handleFileChange = (
@@ -131,7 +231,6 @@ export const Documentos: React.FC<DocumentosProps> = ({
       const formattedReverso = `data:image/jpeg;base64,${ineReversoB64}`;
       const formattedSelfie = `data:image/jpeg;base64,${selfieB64}`;
 
-      const backendUrl = import.meta.env.VITE_BACKEND_URL || 'https://movinex-backend-production.up.railway.app';
       const response = await fetch(
         `${backendUrl}/api/solicitudes`,
         {
@@ -268,13 +367,59 @@ export const Documentos: React.FC<DocumentosProps> = ({
                   </div>
                 </div>
               </div>
-              <button
-                className={styles.cta}
-                onClick={handlePagarEnganche}
-                disabled={confirmandoPago || !solicitudId}
-              >
-                {confirmandoPago ? "Confirmando pago..." : "Pagar enganche →"}
-              </button>
+              {pagoStep === "resumen" && (
+                <button
+                  className={styles.cta}
+                  onClick={handleSolicitarOtp}
+                  disabled={otpEnviando || !solicitudId}
+                >
+                  {otpEnviando ? "Enviando código..." : "Pagar enganche →"}
+                </button>
+              )}
+
+              {pagoStep === "otp" && (
+                <div style={{ textAlign: "left", marginTop: "10px" }}>
+                  <div className={styles.campo}>
+                    <label htmlFor="otpCodigo">Código enviado por WhatsApp al {celular}</label>
+                    <input
+                      id="otpCodigo"
+                      type="text"
+                      inputMode="numeric"
+                      placeholder="123456"
+                      maxLength={6}
+                      value={otpCodigo}
+                      onChange={(e) => setOtpCodigo(e.target.value.replace(/\D/g, ""))}
+                    />
+                    {otpError && <span className={styles.errorMsg}>{otpError}</span>}
+                  </div>
+                  <button
+                    className={styles.cta}
+                    onClick={handleVerificarOtp}
+                    disabled={otpEnviando || otpCodigo.length !== 6}
+                  >
+                    {otpEnviando ? "Verificando..." : "Verificar código"}
+                  </button>
+                  <button
+                    type="button"
+                    className={styles.cta}
+                    style={{ background: "#E4E8F1", color: "#5A6688", marginTop: "10px", boxShadow: "none" }}
+                    onClick={handleSolicitarOtp}
+                    disabled={otpEnviando}
+                  >
+                    Reenviar código
+                  </button>
+                </div>
+              )}
+
+              {pagoStep === "tarjeta" && (
+                <div style={{ textAlign: "left", marginTop: "10px" }}>
+                  <div id="conekta-checkout-target" style={{ height: "480px" }}></div>
+                  {pagoError && <span className={styles.errorMsg}>{pagoError}</span>}
+                  <button className={styles.cta} onClick={handlePagarConTarjeta} disabled={procesandoPago}>
+                    {procesandoPago ? "Procesando pago..." : `Pagar $${(planData.enganche + (planData.envioGratis !== false ? 0 : (planData.costoEnvio || 0))).toLocaleString()}`}
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>
