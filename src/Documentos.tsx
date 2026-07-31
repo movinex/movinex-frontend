@@ -1,12 +1,6 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState } from "react";
 import styles from "./Documentos.module.css";
 import logoBlanco from "./assets/movinex_blanco.webp";
-
-declare global {
-  interface Window {
-    ConektaCheckoutComponents: any;
-  }
-}
 
 interface DocumentosProps {
   planData: {
@@ -17,7 +11,6 @@ interface DocumentosProps {
     envioGratis?: boolean;
     costoEnvio?: number;
   };
-  onPagoConfirmado: (solicitudId: string) => void;
   onVolver: () => void;
 }
 
@@ -69,7 +62,6 @@ const compressAndGetBase64 = (file: File): Promise<string> => {
 
 export const Documentos: React.FC<DocumentosProps> = ({
   planData,
-  onPagoConfirmado,
   onVolver,
 }) => {
   const [celular, setCelular] = useState("");
@@ -86,17 +78,12 @@ export const Documentos: React.FC<DocumentosProps> = ({
   const [esAprobadoDirecto, setEsAprobadoDirecto] = useState<boolean>(true);
 
   // Paso de pago del enganche: primero se verifica el celular por OTP de WhatsApp,
-  // después se paga con el Checkout Component embebido de Conekta (iframe hosteado
-  // por Conekta — la tarjeta del cliente nunca pasa por nuestro servidor).
-  const [pagoStep, setPagoStep] = useState<"resumen" | "otp" | "tarjeta">("resumen");
+  // después se redirige a la página de pago hosteada por Conekta (Hosted Payment) —
+  // la tarjeta del cliente nunca pasa por nuestro servidor ni por nuestra página.
+  const [pagoStep, setPagoStep] = useState<"resumen" | "otp" | "redirigiendo">("resumen");
   const [otpCodigo, setOtpCodigo] = useState("");
   const [otpEnviando, setOtpEnviando] = useState(false);
   const [otpError, setOtpError] = useState("");
-
-  const [checkoutId, setCheckoutId] = useState<string | null>(null);
-  const [procesandoPago, setProcesandoPago] = useState(false);
-  const [pagoError, setPagoError] = useState("");
-  const submitConektaRef = useRef<(() => void) | null>(null);
 
   const backendUrl = import.meta.env.VITE_BACKEND_URL || 'https://movinex-backend-production.up.railway.app';
 
@@ -144,64 +131,12 @@ export const Documentos: React.FC<DocumentosProps> = ({
         throw new Error(ordenRes.error || "No se pudo iniciar el pago.");
       }
 
-      setCheckoutId(ordenRes.checkoutId);
-      setPagoStep("tarjeta");
+      setPagoStep("redirigiendo");
+      window.location.href = ordenRes.checkoutUrl;
     } catch (error: any) {
       setOtpError(error.message || "Ocurrió un error al verificar el código.");
-    } finally {
       setOtpEnviando(false);
     }
-  };
-
-  // Inicializa el Checkout Component de Conekta apenas tenemos el checkoutId.
-  useEffect(() => {
-    if (pagoStep !== "tarjeta" || !checkoutId) return;
-    if (!window.ConektaCheckoutComponents || !import.meta.env.VITE_CONEKTA_PUBLIC_KEY) {
-      setPagoError("No se pudo cargar el procesador de pagos. Recarga la página e intenta de nuevo.");
-      return;
-    }
-
-    window.ConektaCheckoutComponents.Integration({
-      config: {
-        locale: "es",
-        publicKey: import.meta.env.VITE_CONEKTA_PUBLIC_KEY,
-        targetIFrame: "#conekta-checkout-target",
-        checkoutRequestId: checkoutId,
-        useExternalSubmit: true,
-      },
-      callbacks: {
-        onUpdateSubmitTrigger: (submitFn: () => void) => {
-          submitConektaRef.current = submitFn;
-        },
-        onFinalizePayment: () => {
-          onPagoConfirmado(solicitudId);
-        },
-        onErrorPayment: (error: any) => {
-          setPagoError(error?.message_to_purchaser || error?.message || "La tarjeta fue rechazada. Verifica los datos.");
-          setProcesandoPago(false);
-        },
-      },
-    });
-
-    // React.StrictMode monta este efecto dos veces en desarrollo; Integration() no es
-    // idempotente, así que sin este cleanup la segunda inicialización pisa a la primera
-    // y el iframe queda en blanco. Limpiamos el contenedor antes de cada montaje real.
-    return () => {
-      submitConektaRef.current = null;
-      const target = document.getElementById("conekta-checkout-target");
-      if (target) target.innerHTML = "";
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pagoStep, checkoutId]);
-
-  const handlePagarConTarjeta = () => {
-    setPagoError("");
-    if (!submitConektaRef.current) {
-      setPagoError("El formulario de pago todavía se está cargando. Esperá un segundo e intentá de nuevo.");
-      return;
-    }
-    setProcesandoPago(true);
-    submitConektaRef.current();
   };
 
   const handleFileChange = (
@@ -411,13 +346,11 @@ export const Documentos: React.FC<DocumentosProps> = ({
                 </div>
               )}
 
-              {pagoStep === "tarjeta" && (
-                <div style={{ textAlign: "left", marginTop: "10px" }}>
-                  <div id="conekta-checkout-target" style={{ height: "480px" }}></div>
-                  {pagoError && <span className={styles.errorMsg}>{pagoError}</span>}
-                  <button className={styles.cta} onClick={handlePagarConTarjeta} disabled={procesandoPago}>
-                    {procesandoPago ? "Procesando pago..." : `Pagar $${(planData.enganche + (planData.envioGratis !== false ? 0 : (planData.costoEnvio || 0))).toLocaleString()}`}
-                  </button>
+              {pagoStep === "redirigiendo" && (
+                <div className={styles.estado} style={{ marginTop: "10px" }}>
+                  <div className={styles.spinner}></div>
+                  <div className={styles.et}>Redirigiendo al pago seguro...</div>
+                  <div className={styles.ed}>No cierres esta ventana.</div>
                 </div>
               )}
             </div>

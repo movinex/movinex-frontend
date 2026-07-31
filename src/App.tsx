@@ -15,7 +15,8 @@ function App() {
   const [selectedPhone, setSelectedPhone] = useState<Phone | null>(null);
   const [planSelected, setPlanSelected] = useState<{ semanas: number; pagoSemanal: number; enganche: number } | null>(null);
   const [solicitudPagadaId, setSolicitudPagadaId] = useState<string | null>(null);
-  
+  const [modeloPagado, setModeloPagado] = useState<string | null>(null);
+
   // Estado de solicitudes compartido y persistido
   const [solicitudes, setSolicitudes] = useState<Solicitud[]>([]);
   const [phones, setPhones] = useState<Phone[]>([]);
@@ -31,6 +32,19 @@ function App() {
   useEffect(() => {
     if (window.location.pathname === '/sadmin') {
       setView('sadmin');
+    }
+  }, []);
+
+  // Retomar el flujo al volver del pago hosteado de Conekta (Hosted Payment redirige
+  // acá con ?pago_exitoso=1&solicitud=...&modelo=...). El resto del estado de la SPA
+  // se perdió con la salida de la página, por eso viaja en la URL de retorno.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('pago_exitoso') === '1' && params.get('solicitud')) {
+      setSolicitudPagadaId(params.get('solicitud'));
+      setModeloPagado(params.get('modelo') || '');
+      setStep('domicilio');
+      window.history.replaceState({}, '', window.location.pathname);
     }
   }, []);
 
@@ -135,11 +149,6 @@ function App() {
     setStep('finalizado');
   };
 
-  const handlePagoConfirmado = (solicitudId: string) => {
-    setSolicitudPagadaId(solicitudId);
-    setStep('domicilio');
-  };
-
   const handleVolver = () => {
     setStep('landing');
   };
@@ -235,17 +244,16 @@ function App() {
           envioGratis: selectedPhone.envioGratis,
           costoEnvio: selectedPhone.costoEnvio
         }}
-        onPagoConfirmado={handlePagoConfirmado}
         onVolver={() => setStep('cotizar')}
       />
     );
   }
 
-  if (step === 'domicilio' && solicitudPagadaId && selectedPhone) {
+  if (step === 'domicilio' && solicitudPagadaId && modeloPagado) {
     return (
       <Domicilio
         solicitudId={solicitudPagadaId}
-        modelo={selectedPhone.modelo}
+        modelo={modeloPagado}
         onFinalizado={() => handleVerificacionFinalizada()}
       />
     );
@@ -265,13 +273,15 @@ function App() {
     }}>
       <h2 style={{ fontSize: '28px', color: '#0B1B3C', fontWeight: 800 }}>¡Gracias por elegir Movinex!</h2>
       <p style={{ margin: '20px 0', color: '#5A6688', fontSize: '15px', lineHeight: 1.5 }}>
-        Tu solicitud ha sido ingresada al sistema y aprobada con éxito. En menos de 24 horas te contactaremos para coordinar el envío de tu nuevo celular {selectedPhone?.modelo}.
+        Tu solicitud ha sido ingresada al sistema y aprobada con éxito. En menos de 24 horas te contactaremos para coordinar el envío de tu nuevo celular {modeloPagado || selectedPhone?.modelo}.
       </p>
       <button
         onClick={() => {
           setStep('landing');
           setSelectedPhone(null);
           setPlanSelected(null);
+          setSolicitudPagadaId(null);
+          setModeloPagado(null);
         }}
         style={{
           background: 'linear-gradient(135deg,#2B6BE4,#0E7490)',
