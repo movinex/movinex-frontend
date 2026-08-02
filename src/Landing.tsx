@@ -677,7 +677,13 @@ export const Landing: React.FC<LandingProps> = ({
         <div className={styles.footerContent}>
           <div className={styles.footerColumn}>
             <div className={styles.socialsWix}>
-              <a href="#" className={styles.socialIconLink}>
+              <a
+                href="https://www.facebook.com/profile.php?id=61590577951610"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Movinex en Facebook"
+                className={styles.socialIconLink}
+              >
                 <svg
                   width="24"
                   height="24"
@@ -687,7 +693,13 @@ export const Landing: React.FC<LandingProps> = ({
                   <path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c4.56-.93 8-4.96 8-9.75z" />
                 </svg>
               </a>
-              <a href="#" className={styles.socialIconLink}>
+              <a
+                href="https://www.instagram.com/movinex.mx/"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Movinex en Instagram"
+                className={styles.socialIconLink}
+              >
                 <svg
                   width="24"
                   height="24"
