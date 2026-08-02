@@ -91,7 +91,7 @@ export const Cotizador: React.FC<CotizadorProps> = ({ phone, onSiguiente, onVolv
             </div>
           </div>
 
-          {opcionActiva.ahorro && (
+          {!!opcionActiva.ahorro && (
             <div className={styles.leyenda}>
               <div className={styles.grande}>
                 ¡Ahorras <span>${opcionActiva.ahorro}</span> al liquidar a {opcionActiva.semanas} semanas!
