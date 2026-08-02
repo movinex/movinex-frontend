@@ -319,7 +319,7 @@ function CotizarRoute({
     <Cotizador
       phone={phone}
       onSiguiente={onSiguiente}
-      onVolver={() => navigate('/')}
+      onVolver={() => navigate('/tienda')}
     />
   );
 }
