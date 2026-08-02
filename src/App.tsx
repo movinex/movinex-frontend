@@ -1,57 +1,45 @@
 import { useState, useEffect } from 'react';
+import { Routes, Route, Navigate, useNavigate, useLocation, useParams, useSearchParams } from 'react-router';
 import { Landing } from './Landing';
 import { Cotizador } from './Cotizador';
 import { Documentos } from './Documentos';
 import { Domicilio } from './Domicilio';
 import { Admin } from './Admin';
-import { SadminPortal } from './Sadmin';
+import { SadminPortal, SadminLogin } from './Sadmin';
 import type { Phone, Solicitud } from './types';
 
-
+interface PlanSeleccionado {
+  semanas: number;
+  pagoSemanal: number;
+  enganche: number;
+}
 
 function App() {
-  const [view, setView] = useState<'tienda' | 'dashboard' | 'sadmin'>('tienda');
-  const [step, setStep] = useState<'landing' | 'cotizar' | 'documentos' | 'domicilio' | 'finalizado'>('landing');
+  const navigate = useNavigate();
+  const location = useLocation();
+
   const [selectedPhone, setSelectedPhone] = useState<Phone | null>(null);
-  const [planSelected, setPlanSelected] = useState<{ semanas: number; pagoSemanal: number; enganche: number } | null>(null);
+  const [planSelected, setPlanSelected] = useState<PlanSeleccionado | null>(null);
   const [solicitudPagadaId, setSolicitudPagadaId] = useState<string | null>(null);
   const [modeloPagado, setModeloPagado] = useState<string | null>(null);
 
   // Estado de solicitudes compartido y persistido
   const [solicitudes, setSolicitudes] = useState<Solicitud[]>([]);
   const [phones, setPhones] = useState<Phone[]>([]);
+  const [phonesLoaded, setPhonesLoaded] = useState(false);
   const [reloadTrigger, setReloadTrigger] = useState(0);
 
-  // Sesión de Super Admin (JWT emitido por /api/admin/login)
+  // Sesión de Super Admin (JWT emitido por /api/admin/login), compartida entre /dashboard y /sadmin
   const [adminUser, setAdminUser] = useState<any>(null);
   const [adminToken, setAdminToken] = useState<string | null>(null);
 
   const backendUrl = import.meta.env.VITE_BACKEND_URL || 'https://movinex-backend-production.up.railway.app';
 
-  // Detectar la ruta privada /sadmin al inicializar la app
-  useEffect(() => {
-    if (window.location.pathname === '/sadmin') {
-      setView('sadmin');
-    }
-  }, []);
-
-  // Retomar el flujo al volver del pago hosteado de Conekta (Hosted Payment redirige
-  // acá con ?pago_exitoso=1&solicitud=...&modelo=...). El resto del estado de la SPA
-  // se perdió con la salida de la página, por eso viaja en la URL de retorno.
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('pago_exitoso') === '1' && params.get('solicitud')) {
-      setSolicitudPagadaId(params.get('solicitud'));
-      setModeloPagado(params.get('modelo') || '');
-      setStep('domicilio');
-      window.history.replaceState({}, '', window.location.pathname);
-    }
-  }, []);
-
-  // Cargar solicitudes del backend al abrir el dashboard/sadmin, y refrescar solas
+  // Cargar solicitudes del backend al abrir /dashboard o /sadmin, y refrescar solas
   // cada 1 minuto mientras quede abierto (requiere sesión de admin).
   useEffect(() => {
-    if (!((view === 'dashboard' || view === 'sadmin') && adminToken)) return;
+    const esRutaAdmin = location.pathname === '/dashboard' || location.pathname === '/sadmin';
+    if (!(esRutaAdmin && adminToken)) return;
 
     const cargarSolicitudes = () => {
       fetch(`${backendUrl}/api/solicitudes`, {
@@ -99,7 +87,7 @@ function App() {
     cargarSolicitudes();
     const interval = setInterval(cargarSolicitudes, 60000);
     return () => clearInterval(interval);
-  }, [view, backendUrl, adminToken]);
+  }, [location.pathname, backendUrl, adminToken]);
 
   // Cargar lista de celulares para alimentar el CRUD
   useEffect(() => {
@@ -133,24 +121,18 @@ function App() {
           specsDimensionesPeso: p.specs_dimensiones_peso || ''
         }));
         setPhones(celularesMapeados);
+        setPhonesLoaded(true);
       })
       .catch(err => {
         console.error('Error al cargar celulares:', err);
         setPhones([]);
+        setPhonesLoaded(true);
       });
   }, [reloadTrigger, backendUrl]);
 
-  const handleCotizacionFinalizada = (data: { semanas: number; pagoSemanal: number; enganche: number }) => {
+  const handleCotizacionFinalizada = (data: PlanSeleccionado) => {
     setPlanSelected(data);
-    setStep('documentos');
-  };
-
-  const handleVerificacionFinalizada = () => {
-    setStep('finalizado');
-  };
-
-  const handleVolver = () => {
-    setStep('landing');
+    navigate('/documentos');
   };
 
   const handleUpdateStatus = async (id: string, nuevoEstatus: 'Aprobado' | 'Rechazado') => {
@@ -176,87 +158,241 @@ function App() {
     }
   };
 
-  if (view === 'sadmin') {
-    return (
-      <SadminPortal
-        solicitudes={solicitudes}
-        onUpdateStatus={handleUpdateStatus}
-        onVolver={() => {
-          setView('tienda');
-          window.history.pushState({}, '', '/');
-        }}
-        phones={phones}
-        onReloadPhones={() => setReloadTrigger(prev => prev + 1)}
-        adminUser={adminUser}
-        adminToken={adminToken}
-        onLoginSuccess={(user, token) => {
-          setAdminUser(user);
-          setAdminToken(token);
-        }}
-        onLogout={() => {
-          setAdminUser(null);
-          setAdminToken(null);
-        }}
+  return (
+    <Routes>
+      <Route
+        path="/sadmin"
+        element={
+          <SadminPortal
+            solicitudes={solicitudes}
+            onUpdateStatus={handleUpdateStatus}
+            onVolver={() => navigate('/')}
+            phones={phones}
+            onReloadPhones={() => setReloadTrigger(prev => prev + 1)}
+            adminUser={adminUser}
+            adminToken={adminToken}
+            onLoginSuccess={(user, token) => {
+              setAdminUser(user);
+              setAdminToken(token);
+            }}
+            onLogout={() => {
+              setAdminUser(null);
+              setAdminToken(null);
+            }}
+          />
+        }
       />
-    );
+
+      <Route
+        path="/dashboard"
+        element={
+          !adminUser || !adminToken ? (
+            <SadminLogin
+              onLoginSuccess={(user, token) => {
+                setAdminUser(user);
+                setAdminToken(token);
+              }}
+              onVolver={() => navigate('/')}
+            />
+          ) : (
+            <Admin
+              solicitudes={solicitudes}
+              onUpdateStatus={handleUpdateStatus}
+              onVolver={() => navigate('/')}
+            />
+          )
+        }
+      />
+
+      <Route
+        path="/cotizar/:phoneId"
+        element={
+          <CotizarRoute
+            phones={phones}
+            phonesLoaded={phonesLoaded}
+            selectedPhone={selectedPhone}
+            setSelectedPhone={setSelectedPhone}
+            onSiguiente={handleCotizacionFinalizada}
+          />
+        }
+      />
+
+      <Route
+        path="/documentos"
+        element={
+          <DocumentosRoute selectedPhone={selectedPhone} planSelected={planSelected} />
+        }
+      />
+
+      <Route
+        path="/domicilio"
+        element={
+          <DomicilioRoute
+            setSolicitudPagadaId={setSolicitudPagadaId}
+            setModeloPagado={setModeloPagado}
+          />
+        }
+      />
+
+      <Route
+        path="/finalizado"
+        element={
+          <FinalizadoRoute
+            solicitudPagadaId={solicitudPagadaId}
+            modeloPagado={modeloPagado}
+            selectedPhone={selectedPhone}
+            onVolverInicio={() => {
+              setSelectedPhone(null);
+              setPlanSelected(null);
+              setSolicitudPagadaId(null);
+              setModeloPagado(null);
+              navigate('/');
+            }}
+          />
+        }
+      />
+
+      <Route
+        path="/:page"
+        element={
+          <Landing
+            onSelectPhone={(phone) => {
+              setSelectedPhone(phone);
+              navigate(`/cotizar/${phone.id}`);
+            }}
+            onNavigateAdmin={() => navigate('/dashboard')}
+            showAdminButton={false}
+          />
+        }
+      />
+
+      <Route
+        path="/"
+        element={
+          <Landing
+            onSelectPhone={(phone) => {
+              setSelectedPhone(phone);
+              navigate(`/cotizar/${phone.id}`);
+            }}
+            onNavigateAdmin={() => navigate('/dashboard')}
+            showAdminButton={false}
+          />
+        }
+      />
+    </Routes>
+  );
+}
+
+// --- Componentes de ruta: envuelven las pantallas del flujo de crédito con los hooks
+// de react-router (useParams/useSearchParams) que necesitan y los guards por si falta
+// el estado previo (ej. refresh duro a mitad del flujo).
+
+function CotizarRoute({
+  phones,
+  phonesLoaded,
+  selectedPhone,
+  setSelectedPhone,
+  onSiguiente
+}: {
+  phones: Phone[];
+  phonesLoaded: boolean;
+  selectedPhone: Phone | null;
+  setSelectedPhone: (phone: Phone) => void;
+  onSiguiente: (data: PlanSeleccionado) => void;
+}) {
+  const { phoneId } = useParams<{ phoneId: string }>();
+  const navigate = useNavigate();
+  const phone = phones.find(p => p.id === phoneId) || null;
+
+  useEffect(() => {
+    if (phone && phone.id !== selectedPhone?.id) {
+      setSelectedPhone(phone);
+    }
+  }, [phone, selectedPhone, setSelectedPhone]);
+
+  if (!phone) {
+    if (!phonesLoaded) return null;
+    return <Navigate to="/" replace />;
   }
 
-  if (view === 'dashboard') {
-    return (
-      <Admin
-        solicitudes={solicitudes}
-        onUpdateStatus={handleUpdateStatus}
-        onVolver={() => setView('tienda')}
-      />
-    );
+  return (
+    <Cotizador
+      phone={phone}
+      onSiguiente={onSiguiente}
+      onVolver={() => navigate('/')}
+    />
+  );
+}
+
+function DocumentosRoute({
+  selectedPhone,
+  planSelected
+}: {
+  selectedPhone: Phone | null;
+  planSelected: PlanSeleccionado | null;
+}) {
+  const navigate = useNavigate();
+
+  if (!selectedPhone || !planSelected) {
+    return <Navigate to="/" replace />;
   }
 
-  // Render tienda steps
-  if (step === 'landing') {
-    return (
-      <Landing
-        onSelectPhone={(phone) => {
-          setSelectedPhone(phone);
-          setStep('cotizar');
-        }}
-        onNavigateAdmin={() => setView('dashboard')}
-        showAdminButton={false} // Hidden under normal traffic
-      />
-    );
+  return (
+    <Documentos
+      planData={{
+        ...planSelected,
+        modelo: selectedPhone.modelo,
+        envioGratis: selectedPhone.envioGratis,
+        costoEnvio: selectedPhone.costoEnvio
+      }}
+      onVolver={() => navigate(`/cotizar/${selectedPhone.id}`)}
+    />
+  );
+}
+
+function DomicilioRoute({
+  setSolicitudPagadaId,
+  setModeloPagado
+}: {
+  setSolicitudPagadaId: (id: string) => void;
+  setModeloPagado: (modelo: string) => void;
+}) {
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const solicitud = searchParams.get('solicitud');
+  const modelo = searchParams.get('modelo');
+
+  useEffect(() => {
+    if (solicitud) setSolicitudPagadaId(solicitud);
+    if (modelo) setModeloPagado(modelo);
+  }, [solicitud, modelo, setSolicitudPagadaId, setModeloPagado]);
+
+  if (!solicitud || !modelo) {
+    return <Navigate to="/" replace />;
   }
 
-  if (step === 'cotizar' && selectedPhone) {
-    return (
-      <Cotizador
-        phone={selectedPhone}
-        onSiguiente={handleCotizacionFinalizada}
-        onVolver={handleVolver}
-      />
-    );
-  }
+  return (
+    <Domicilio
+      solicitudId={solicitud}
+      modelo={modelo}
+      onFinalizado={() => navigate('/finalizado')}
+    />
+  );
+}
 
-  if (step === 'documentos' && planSelected && selectedPhone) {
-    return (
-      <Documentos
-        planData={{
-          ...planSelected,
-          modelo: selectedPhone.modelo,
-          envioGratis: selectedPhone.envioGratis,
-          costoEnvio: selectedPhone.costoEnvio
-        }}
-        onVolver={() => setStep('cotizar')}
-      />
-    );
-  }
-
-  if (step === 'domicilio' && solicitudPagadaId && modeloPagado) {
-    return (
-      <Domicilio
-        solicitudId={solicitudPagadaId}
-        modelo={modeloPagado}
-        onFinalizado={() => handleVerificacionFinalizada()}
-      />
-    );
+function FinalizadoRoute({
+  solicitudPagadaId,
+  modeloPagado,
+  selectedPhone,
+  onVolverInicio
+}: {
+  solicitudPagadaId: string | null;
+  modeloPagado: string | null;
+  selectedPhone: Phone | null;
+  onVolverInicio: () => void;
+}) {
+  if (!solicitudPagadaId) {
+    return <Navigate to="/" replace />;
   }
 
   return (
@@ -276,13 +412,7 @@ function App() {
         Tu solicitud ha sido ingresada al sistema y aprobada con éxito. En menos de 24 horas te contactaremos para coordinar el envío de tu nuevo celular {modeloPagado || selectedPhone?.modelo}.
       </p>
       <button
-        onClick={() => {
-          setStep('landing');
-          setSelectedPhone(null);
-          setPlanSelected(null);
-          setSolicitudPagadaId(null);
-          setModeloPagado(null);
-        }}
+        onClick={onVolverInicio}
         style={{
           background: 'linear-gradient(135deg,#2B6BE4,#0E7490)',
           color: '#ffffff',

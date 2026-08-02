@@ -1,8 +1,12 @@
 import React, { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router";
 import styles from "./Landing.module.css";
 import type { Phone } from "./types";
 import { LegalContent } from "./LegalContent";
 import { FaFacebook, FaInstagram } from "react-icons/fa6";
+
+const LANDING_SUBPAGES = ["movinex", "tienda", "privacidad", "terminos", "cookies", "envios"] as const;
+type LandingPage = "inicio" | (typeof LANDING_SUBPAGES)[number];
 
 // Carousel Banners (imágenes nuevas del usuario)
 import banner1 from "./assets/carrusel1.avif";
@@ -42,7 +46,12 @@ export const Landing: React.FC<LandingProps> = ({
   onNavigateAdmin,
   showAdminButton = false,
 }) => {
-  const [page, setPage] = useState<"inicio" | "movinex" | "tienda" | "privacidad" | "terminos" | "cookies" | "envios">("inicio");
+  const { page: pageParam } = useParams<{ page?: string }>();
+  const navigate = useNavigate();
+  const page: LandingPage = (LANDING_SUBPAGES as readonly string[]).includes(pageParam || "")
+    ? (pageParam as LandingPage)
+    : "inicio";
+  const irA = (p: LandingPage) => navigate(p === "inicio" ? "/" : `/${p}`);
   const [selectedQuickView, setSelectedQuickView] = useState<Phone | null>(
     null,
   );
@@ -206,24 +215,24 @@ export const Landing: React.FC<LandingProps> = ({
             src={logoColor}
             alt="Movinex Logo"
             className={styles.logo}
-            onClick={() => setPage("inicio")}
+            onClick={() => irA("inicio")}
             style={{ cursor: "pointer" }}
           />
           <nav className={styles.nav}>
             <button
-              onClick={() => setPage("inicio")}
+              onClick={() => irA("inicio")}
               className={`${styles.navLink} ${page === "inicio" ? styles.navLinkActive : ""}`}
             >
               Inicio
             </button>
             <button
-              onClick={() => setPage("tienda")}
+              onClick={() => irA("tienda")}
               className={`${styles.navLink} ${page === "tienda" ? styles.navLinkActive : ""}`}
             >
               Tienda
             </button>
             <button
-              onClick={() => setPage("movinex")}
+              onClick={() => irA("movinex")}
               className={`${styles.navLink} ${page === "movinex" ? styles.navLinkActive : ""}`}
             >
               Movinex
@@ -257,7 +266,7 @@ export const Landing: React.FC<LandingProps> = ({
                     <h1>{slide.title}</h1>
                     <p>{slide.subtitle}</p>
                     <button
-                      onClick={() => setPage("tienda")}
+                      onClick={() => irA("tienda")}
                       className={styles.ctaButtonWixSlide}
                     >
                       Cotizar
@@ -294,7 +303,7 @@ export const Landing: React.FC<LandingProps> = ({
                     enganche.
                   </p>
                   <button
-                    onClick={() => setPage("tienda")}
+                    onClick={() => irA("tienda")}
                     className={styles.ctaButtonSide}
                   >
                     Cotizar
@@ -312,7 +321,7 @@ export const Landing: React.FC<LandingProps> = ({
                   <h2>Paga por semana</h2>
                   <p>Elige pagar en 26 o 52 semanas.</p>
                   <button
-                    onClick={() => setPage("tienda")}
+                    onClick={() => irA("tienda")}
                     className={styles.ctaButtonSide}
                   >
                     Cotizar
@@ -702,19 +711,19 @@ export const Landing: React.FC<LandingProps> = ({
             <h4>Tienda</h4>
             <div className={styles.footerLinks}>
               <button
-                onClick={() => setPage("inicio")}
+                onClick={() => irA("inicio")}
                 className={styles.footerBtnLink}
               >
                 Inicio
               </button>
               <button
-                onClick={() => setPage("movinex")}
+                onClick={() => irA("movinex")}
                 className={styles.footerBtnLink}
               >
                 Movinex
               </button>
               <button
-                onClick={() => setPage("tienda")}
+                onClick={() => irA("tienda")}
                 className={styles.footerBtnLink}
               >
                 Tienda
@@ -737,25 +746,25 @@ export const Landing: React.FC<LandingProps> = ({
             <h4>Política</h4>
             <div className={styles.footerLinks}>
               <button
-                onClick={() => setPage("envios")}
+                onClick={() => irA("envios")}
                 className={styles.footerBtnLink}
               >
                 Envío y devoluciones
               </button>
               <button
-                onClick={() => setPage("terminos")}
+                onClick={() => irA("terminos")}
                 className={styles.footerBtnLink}
               >
                 Términos y condiciones
               </button>
               <button
-                onClick={() => setPage("privacidad")}
+                onClick={() => irA("privacidad")}
                 className={styles.footerBtnLink}
               >
                 Aviso de Privacidad
               </button>
               <button
-                onClick={() => setPage("cookies")}
+                onClick={() => irA("cookies")}
                 className={styles.footerBtnLink}
               >
                 Política de Cookies

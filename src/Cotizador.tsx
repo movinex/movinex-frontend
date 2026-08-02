@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router';
 import styles from './Cotizador.module.css';
 import type { Phone } from './types';
 import logoBlanco from './assets/movinex_blanco.webp';
@@ -111,7 +112,7 @@ export const Cotizador: React.FC<CotizadorProps> = ({ phone, onSiguiente, onVolv
           </button>
 
           <div className={styles.nota}>
-            Al dar clic aceptas la consulta de tu <b>Buro de Crédito</b>.
+            Al dar clic aceptas nuestros <Link to="/terminos"><b>Términos y condiciones</b></Link>.
           </div>
 
           <div className={styles.pasos}>
