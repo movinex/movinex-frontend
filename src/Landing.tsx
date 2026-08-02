@@ -217,16 +217,16 @@ export const Landing: React.FC<LandingProps> = ({
               Inicio
             </button>
             <button
-              onClick={() => setPage("movinex")}
-              className={`${styles.navLink} ${page === "movinex" ? styles.navLinkActive : ""}`}
-            >
-              Movinex
-            </button>
-            <button
               onClick={() => setPage("tienda")}
               className={`${styles.navLink} ${page === "tienda" ? styles.navLinkActive : ""}`}
             >
               Tienda
+            </button>
+            <button
+              onClick={() => setPage("movinex")}
+              className={`${styles.navLink} ${page === "movinex" ? styles.navLinkActive : ""}`}
+            >
+              Movinex
             </button>
             {showAdminButton && (
               <button onClick={onNavigateAdmin} className={styles.adminBtn}>
