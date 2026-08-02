@@ -608,6 +608,26 @@
   transform: translateY(-3px) scale(1.05);
 }
 
+.socialFacebook {
+  background: #1877F2;
+  color: #fff;
+}
+
+.socialFacebook:hover {
+  background: #0d5dc7;
+  color: #fff;
+}
+
+.socialInstagram {
+  background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%);
+  color: #fff;
+}
+
+.socialInstagram:hover {
+  filter: brightness(1.08);
+  color: #fff;
+}
+
 .footerPaymentSection {
   margin-top: 48px;
   border-top: 1px solid #E2E8F0;
