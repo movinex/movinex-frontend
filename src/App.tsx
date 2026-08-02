@@ -167,6 +167,7 @@ function App() {
             solicitudes={solicitudes}
             onUpdateStatus={handleUpdateStatus}
             onVolver={() => navigate('/')}
+            onVolverTienda={() => navigate('/tienda')}
             phones={phones}
             onReloadPhones={() => setReloadTrigger(prev => prev + 1)}
             adminUser={adminUser}
@@ -198,7 +199,7 @@ function App() {
             <Admin
               solicitudes={solicitudes}
               onUpdateStatus={handleUpdateStatus}
-              onVolver={() => navigate('/')}
+              onVolver={() => navigate('/tienda')}
             />
           )
         }

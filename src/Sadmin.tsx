@@ -8,6 +8,7 @@ interface SadminProps {
   solicitudes: Solicitud[];
   onUpdateStatus: (id: string, nuevoEstatus: 'Aprobado' | 'Rechazado') => void;
   onVolver: () => void;
+  onVolverTienda: () => void;
   phones: Phone[];
   onReloadPhones: () => void;
   adminUser: any;
@@ -20,6 +21,7 @@ export const SadminPortal: React.FC<SadminProps> = ({
   solicitudes,
   onUpdateStatus,
   onVolver,
+  onVolverTienda,
   phones,
   onReloadPhones,
   adminUser,
@@ -282,7 +284,7 @@ export const SadminPortal: React.FC<SadminProps> = ({
           <Admin
             solicitudes={solicitudes}
             onUpdateStatus={onUpdateStatus}
-            onVolver={onVolver}
+            onVolver={onVolverTienda}
           />
         ) : (
           <div className={styles.crudContainer}>
