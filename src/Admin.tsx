@@ -2,15 +2,17 @@ import React, { useState, useEffect } from 'react';
 import styles from './Admin.module.css';
 import type { Solicitud } from './types';
 
+type EstatusSolicitud = Solicitud['estatus'];
+
 interface AdminProps {
   solicitudes: Solicitud[];
-  onUpdateStatus: (id: string, nuevoEstatus: 'Aprobado' | 'Rechazado') => void;
+  onUpdateStatus: (id: string, nuevoEstatus: EstatusSolicitud) => void;
   onVolver: () => void;
 }
 
 export const Admin: React.FC<AdminProps> = ({ solicitudes, onUpdateStatus, onVolver }) => {
   const [solicitudSeleccionada, setSolicitudSeleccionada] = useState<Solicitud | null>(null);
-  const [filtroEstatus, setFiltroEstatus] = useState<'Todos' | 'Pendiente' | 'Aprobado' | 'Rechazado' | 'Pendiente de envío' | 'Preparando paquete'>('Todos');
+  const [filtroEstatus, setFiltroEstatus] = useState<'Todos' | EstatusSolicitud>('Todos');
   const [activeTab, setActiveTab] = useState<'info' | 'documentos'>('info');
 
   // Loading states for image preloading
@@ -60,11 +62,12 @@ export const Admin: React.FC<AdminProps> = ({ solicitudes, onUpdateStatus, onVol
       case 'Rechazado': return styles.statusRejected;
       case 'Pendiente de envío': return styles.statusShipping;
       case 'Preparando paquete': return styles.statusPacking;
+      case 'Enviado': return styles.statusShipped;
       default: return styles.statusPending;
     }
   };
 
-  const handleResolver = (id: string, nuevoEstatus: 'Aprobado' | 'Rechazado') => {
+  const handleResolver = (id: string, nuevoEstatus: EstatusSolicitud) => {
     onUpdateStatus(id, nuevoEstatus);
     // Actualizar el estado local para reflejar el cambio inmediato
     if (solicitudSeleccionada && solicitudSeleccionada.id === id) {
@@ -150,7 +153,7 @@ export const Admin: React.FC<AdminProps> = ({ solicitudes, onUpdateStatus, onVol
           <div className={styles.panelHeader}>
             <div className={styles.panelTitle}>Créditos Recibidos</div>
             <div className={styles.filterBar}>
-              {(['Todos', 'Pendiente', 'Aprobado', 'Pendiente de envío', 'Preparando paquete', 'Rechazado'] as const).map(est => (
+              {(['Todos', 'Pendiente', 'Aprobado', 'Pendiente de envío', 'Preparando paquete', 'Enviado', 'Rechazado'] as const).map(est => (
                 <button
                   key={est}
                   className={`${styles.filterBtn} ${filtroEstatus === est ? styles.filterBtnActive : ''}`}
@@ -339,11 +342,33 @@ export const Admin: React.FC<AdminProps> = ({ solicitudes, onUpdateStatus, onVol
                       >
                         Aprobar Solicitud
                       </button>
-                      <button 
-                        className={styles.btnReject} 
+                      <button
+                        className={styles.btnReject}
                         onClick={() => handleResolver(solicitudSeleccionada.id, 'Rechazado')}
                       >
                         Rechazar Crédito
+                      </button>
+                    </div>
+                  )}
+
+                  {solicitudSeleccionada.estatus === 'Pendiente de envío' && (
+                    <div className={styles.btnGroup}>
+                      <button
+                        className={styles.btnApprove}
+                        onClick={() => handleResolver(solicitudSeleccionada.id, 'Preparando paquete')}
+                      >
+                        Marcar como Preparando paquete
+                      </button>
+                    </div>
+                  )}
+
+                  {solicitudSeleccionada.estatus === 'Preparando paquete' && (
+                    <div className={styles.btnGroup}>
+                      <button
+                        className={styles.btnApprove}
+                        onClick={() => handleResolver(solicitudSeleccionada.id, 'Enviado')}
+                      >
+                        Marcar como Enviado
                       </button>
                     </div>
                   )}

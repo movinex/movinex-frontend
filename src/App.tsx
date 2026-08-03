@@ -135,7 +135,7 @@ function App() {
     navigate('/documentos');
   };
 
-  const handleUpdateStatus = async (id: string, nuevoEstatus: 'Aprobado' | 'Rechazado') => {
+  const handleUpdateStatus = async (id: string, nuevoEstatus: Solicitud['estatus']) => {
     try {
       const response = await fetch(`${backendUrl}/api/solicitudes/${id}`, {
         method: 'PATCH',

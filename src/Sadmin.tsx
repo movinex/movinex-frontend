@@ -6,7 +6,7 @@ import type { Phone, Solicitud } from './types';
 
 interface SadminProps {
   solicitudes: Solicitud[];
-  onUpdateStatus: (id: string, nuevoEstatus: 'Aprobado' | 'Rechazado') => void;
+  onUpdateStatus: (id: string, nuevoEstatus: Solicitud['estatus']) => void;
   onVolver: () => void;
   onVolverTienda: () => void;
   phones: Phone[];
