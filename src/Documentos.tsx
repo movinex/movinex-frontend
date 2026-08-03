@@ -85,14 +85,21 @@ export const Documentos: React.FC<DocumentosProps> = ({
   const [solicitudId, setSolicitudId] = useState<string>("");
   const [esAprobadoDirecto, setEsAprobadoDirecto] = useState<boolean>(true);
 
-  // Paso de pago del enganche: primero se verifica el celular por OTP de WhatsApp,
-  // después se paga con el Checkout Component embebido de Conekta (iframe hosteado
-  // por Conekta — la tarjeta del cliente nunca pasa por nuestro servidor).
-  const [pagoStep, setPagoStep] = useState<"resumen" | "otp" | "tarjeta">("resumen");
+  // Verificación del celular por OTP de WhatsApp, ANTES de poder llenar el resto del
+  // formulario — evita que un bot/script mande INE y selfie falsos sin un WhatsApp real
+  // detrás. El código vence a los 10 minutos (WhatsappOtpService del backend).
+  const [otpEnviado, setOtpEnviado] = useState(false);
+  const [otpVerificado, setOtpVerificado] = useState(false);
   const [otpCodigo, setOtpCodigo] = useState("");
   const [otpEnviando, setOtpEnviando] = useState(false);
   const [otpError, setOtpError] = useState("");
+  const [aceptaTerminos, setAceptaTerminos] = useState(false);
 
+  // Pago del enganche con el Checkout Component embebido de Conekta (iframe hosteado
+  // por Conekta — la tarjeta del cliente nunca pasa por nuestro servidor). El celular
+  // ya quedó verificado más arriba, así que acá no se vuelve a pedir OTP.
+  const [pagoStep, setPagoStep] = useState<"resumen" | "tarjeta">("resumen");
+  const [iniciandoPago, setIniciandoPago] = useState(false);
   const [checkoutId, setCheckoutId] = useState<string | null>(null);
   const [procesandoPago, setProcesandoPago] = useState(false);
   const [pagoError, setPagoError] = useState("");
@@ -101,8 +108,8 @@ export const Documentos: React.FC<DocumentosProps> = ({
 
   const backendUrl = import.meta.env.VITE_BACKEND_URL || 'https://movinex-backend-production.up.railway.app';
 
-  const handleSolicitarOtp = async () => {
-    if (!solicitudId) return;
+  const handleEnviarOtpInicial = async () => {
+    if (celular.length !== 10) return;
     setOtpEnviando(true);
     setOtpError("");
     try {
@@ -115,7 +122,8 @@ export const Documentos: React.FC<DocumentosProps> = ({
         const res = await response.json();
         throw new Error(res.error || "No se pudo enviar el código de verificación.");
       }
-      setPagoStep("otp");
+      setOtpEnviado(true);
+      setOtpCodigo("");
     } catch (error: any) {
       setOtpError(error.message || "Ocurrió un error al enviar el código.");
     } finally {
@@ -123,7 +131,7 @@ export const Documentos: React.FC<DocumentosProps> = ({
     }
   };
 
-  const handleVerificarOtp = async () => {
+  const handleVerificarOtpInicial = async () => {
     setOtpEnviando(true);
     setOtpError("");
     try {
@@ -136,7 +144,18 @@ export const Documentos: React.FC<DocumentosProps> = ({
       if (!response.ok || !res.verificado) {
         throw new Error(res.error || "Código incorrecto o expirado.");
       }
+      setOtpVerificado(true);
+    } catch (error: any) {
+      setOtpError(error.message || "Ocurrió un error al verificar el código.");
+    } finally {
+      setOtpEnviando(false);
+    }
+  };
 
+  const handleIniciarPago = async () => {
+    setIniciandoPago(true);
+    setPagoError("");
+    try {
       const ordenResponse = await fetch(`${backendUrl}/api/solicitudes/${solicitudId}/crear-orden-enganche`, {
         method: "POST",
       });
@@ -144,13 +163,12 @@ export const Documentos: React.FC<DocumentosProps> = ({
       if (!ordenResponse.ok) {
         throw new Error(ordenRes.error || "No se pudo iniciar el pago.");
       }
-
       setCheckoutId(ordenRes.checkoutId);
       setPagoStep("tarjeta");
     } catch (error: any) {
-      setOtpError(error.message || "Ocurrió un error al verificar el código.");
+      setPagoError(error.message || "Ocurrió un error al iniciar el pago.");
     } finally {
-      setOtpEnviando(false);
+      setIniciandoPago(false);
     }
   };
 
@@ -298,11 +316,13 @@ export const Documentos: React.FC<DocumentosProps> = ({
   };
 
   const isFormValid =
+    otpVerificado &&
     celular.trim().length >= 10 &&
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) &&
     ineFrente !== null &&
     ineReverso !== null &&
-    selfie !== null;
+    selfie !== null &&
+    aceptaTerminos;
 
   if (status === "subiendo") {
     return (
@@ -390,47 +410,16 @@ export const Documentos: React.FC<DocumentosProps> = ({
                 </div>
               </div>
               {pagoStep === "resumen" && (
-                <button
-                  className={styles.cta}
-                  onClick={handleSolicitarOtp}
-                  disabled={otpEnviando || !solicitudId}
-                >
-                  {otpEnviando ? "Enviando código..." : "Pagar enganche →"}
-                </button>
-              )}
-
-              {pagoStep === "otp" && (
-                <div style={{ textAlign: "left", marginTop: "10px" }}>
-                  <div className={styles.campo}>
-                    <label htmlFor="otpCodigo">Código enviado por WhatsApp al {celular}</label>
-                    <input
-                      id="otpCodigo"
-                      type="text"
-                      inputMode="numeric"
-                      placeholder="123456"
-                      maxLength={6}
-                      value={otpCodigo}
-                      onChange={(e) => setOtpCodigo(e.target.value.replace(/\D/g, ""))}
-                    />
-                    {otpError && <span className={styles.errorMsg}>{otpError}</span>}
-                  </div>
+                <>
+                  {pagoError && <span className={styles.errorMsg}>{pagoError}</span>}
                   <button
                     className={styles.cta}
-                    onClick={handleVerificarOtp}
-                    disabled={otpEnviando || otpCodigo.length !== 6}
+                    onClick={handleIniciarPago}
+                    disabled={iniciandoPago || !solicitudId}
                   >
-                    {otpEnviando ? "Verificando..." : "Verificar código"}
+                    {iniciandoPago ? "Preparando pago..." : "Pagar enganche →"}
                   </button>
-                  <button
-                    type="button"
-                    className={styles.cta}
-                    style={{ background: "#E4E8F1", color: "#5A6688", marginTop: "10px", boxShadow: "none" }}
-                    onClick={handleSolicitarOtp}
-                    disabled={otpEnviando}
-                  >
-                    Reenviar código
-                  </button>
-                </div>
+                </>
               )}
 
               {pagoStep === "tarjeta" && (
@@ -527,6 +516,7 @@ export const Documentos: React.FC<DocumentosProps> = ({
                 value={celular}
                 onChange={(e) => setCelular(e.target.value.replace(/\D/g, ""))}
                 maxLength={10}
+                disabled={otpVerificado}
                 className={celular.length > 0 && celular.length < 10 ? styles.inputError : ""}
                 required
               />
@@ -538,6 +528,59 @@ export const Documentos: React.FC<DocumentosProps> = ({
               </div>
             </div>
 
+            {!otpVerificado && !otpEnviado && (
+              <button
+                type="button"
+                className={styles.cta}
+                onClick={handleEnviarOtpInicial}
+                disabled={celular.length !== 10 || otpEnviando}
+              >
+                {otpEnviando ? "Enviando código..." : "Enviar código"}
+              </button>
+            )}
+
+            {!otpVerificado && otpEnviado && (
+              <div className={styles.campo}>
+                <label htmlFor="otpCodigo">Código enviado por WhatsApp al {celular}</label>
+                <input
+                  id="otpCodigo"
+                  type="text"
+                  inputMode="numeric"
+                  placeholder="123456"
+                  maxLength={6}
+                  value={otpCodigo}
+                  onChange={(e) => setOtpCodigo(e.target.value.replace(/\D/g, ""))}
+                />
+                {otpError && <span className={styles.errorMsg}>{otpError}</span>}
+                <div className={styles.hint}>El código vence en 10 minutos.</div>
+                <button
+                  type="button"
+                  className={styles.cta}
+                  onClick={handleVerificarOtpInicial}
+                  disabled={otpEnviando || otpCodigo.length !== 6}
+                >
+                  {otpEnviando ? "Verificando..." : "Verificar código"}
+                </button>
+                <button
+                  type="button"
+                  className={styles.cta}
+                  style={{ background: "#E4E8F1", color: "#5A6688", marginTop: "10px", boxShadow: "none" }}
+                  onClick={handleEnviarOtpInicial}
+                  disabled={otpEnviando}
+                >
+                  Reenviar código
+                </button>
+              </div>
+            )}
+
+            {otpVerificado && (
+              <div style={{ fontSize: "12px", color: "#16A34A", fontWeight: 700, marginTop: "4px" }}>
+                ✓ Número verificado
+              </div>
+            )}
+
+            {otpVerificado && (
+              <>
             <div className={styles.campo}>
               <label htmlFor="email">Correo electrónico</label>
               <input
@@ -701,6 +744,20 @@ export const Documentos: React.FC<DocumentosProps> = ({
               conforme a la Ley de Protección de Datos Personales.
             </div>
 
+            <label className={styles.privacidad} style={{ cursor: "pointer" }}>
+              <input
+                type="checkbox"
+                checked={aceptaTerminos}
+                onChange={(e) => setAceptaTerminos(e.target.checked)}
+                style={{ width: "18px", height: "18px", flexShrink: 0, marginTop: "1px" }}
+              />
+              Acepto los{" "}
+              <a href="/terminos" target="_blank" rel="noopener noreferrer">
+                Términos y condiciones
+              </a>
+              .
+            </label>
+
             <button
               type="submit"
               className={styles.cta}
@@ -708,6 +765,8 @@ export const Documentos: React.FC<DocumentosProps> = ({
             >
               Enviar y Verificar Identidad
             </button>
+              </>
+            )}
 
             <button
               type="button"
