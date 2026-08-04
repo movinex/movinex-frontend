@@ -4,9 +4,21 @@ import logoBlanco from './assets/movinex_blanco.webp';
 import { Admin } from './Admin';
 import type { Phone, Solicitud } from './types';
 
+interface DireccionInput {
+  calle: string;
+  numeroExterior: string;
+  numeroInterior?: string;
+  colonia: string;
+  alcaldiaMunicipio: string;
+  estado: string;
+  codigoPostal: string;
+}
+
 interface SadminProps {
   solicitudes: Solicitud[];
-  onUpdateStatus: (id: string, nuevoEstatus: Solicitud['estatus']) => void;
+  onUpdateStatus: (id: string, nuevoEstatus: Solicitud['estatus']) => Promise<void>;
+  onSaveImei: (id: string, imei: string) => Promise<void>;
+  onSaveDireccion: (id: string, direccion: DireccionInput) => Promise<void>;
   onVolver: () => void;
   onVolverTienda: () => void;
   phones: Phone[];
@@ -20,6 +32,8 @@ interface SadminProps {
 export const SadminPortal: React.FC<SadminProps> = ({
   solicitudes,
   onUpdateStatus,
+  onSaveImei,
+  onSaveDireccion,
   onVolver,
   onVolverTienda,
   phones,
@@ -284,6 +298,8 @@ export const SadminPortal: React.FC<SadminProps> = ({
           <Admin
             solicitudes={solicitudes}
             onUpdateStatus={onUpdateStatus}
+            onSaveImei={onSaveImei}
+            onSaveDireccion={onSaveDireccion}
             onVolver={onVolverTienda}
           />
         ) : (

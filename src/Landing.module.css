@@ -1458,6 +1458,9 @@
   .modalImgWrap {
     height: 240px;
   }
+  .modalActions {
+    margin-bottom: 16px;
+  }
 }
 
 /* ================================ */

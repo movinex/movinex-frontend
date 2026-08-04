@@ -4,13 +4,25 @@ import type { Solicitud } from './types';
 
 type EstatusSolicitud = Solicitud['estatus'];
 
+interface DireccionInput {
+  calle: string;
+  numeroExterior: string;
+  numeroInterior?: string;
+  colonia: string;
+  alcaldiaMunicipio: string;
+  estado: string;
+  codigoPostal: string;
+}
+
 interface AdminProps {
   solicitudes: Solicitud[];
-  onUpdateStatus: (id: string, nuevoEstatus: EstatusSolicitud) => void;
+  onUpdateStatus: (id: string, nuevoEstatus: EstatusSolicitud) => Promise<void>;
+  onSaveImei: (id: string, imei: string) => Promise<void>;
+  onSaveDireccion: (id: string, direccion: DireccionInput) => Promise<void>;
   onVolver: () => void;
 }
 
-export const Admin: React.FC<AdminProps> = ({ solicitudes, onUpdateStatus, onVolver }) => {
+export const Admin: React.FC<AdminProps> = ({ solicitudes, onUpdateStatus, onSaveImei, onSaveDireccion, onVolver }) => {
   const [solicitudSeleccionada, setSolicitudSeleccionada] = useState<Solicitud | null>(null);
   const [filtroEstatus, setFiltroEstatus] = useState<'Todos' | EstatusSolicitud>('Todos');
   const [activeTab, setActiveTab] = useState<'info' | 'documentos'>('info');
@@ -19,6 +31,25 @@ export const Admin: React.FC<AdminProps> = ({ solicitudes, onUpdateStatus, onVol
   const [loadFrente, setLoadFrente] = useState(false);
   const [loadReverso, setLoadReverso] = useState(false);
   const [loadSelfie, setLoadSelfie] = useState(false);
+
+  // Acción de estatus en curso (deshabilita el botón mientras espera al backend)
+  const [avanzandoEstatus, setAvanzandoEstatus] = useState(false);
+  const [errorEstatus, setErrorEstatus] = useState('');
+
+  // IMEI: se puede cargar/editar desde "Preparando paquete" en adelante, obligatorio
+  // antes de poder marcar como Enviado.
+  const [imeiInput, setImeiInput] = useState('');
+  const [guardandoImei, setGuardandoImei] = useState(false);
+  const [imeiGuardadoOk, setImeiGuardadoOk] = useState(false);
+
+  // Carga manual de domicilio desde el admin, para cuando el cliente pagó pero no
+  // llegó a completar el paso de dirección.
+  const [mostrarFormDireccion, setMostrarFormDireccion] = useState(false);
+  const [direccionForm, setDireccionForm] = useState<DireccionInput>({
+    calle: '', numeroExterior: '', numeroInterior: '', colonia: '', alcaldiaMunicipio: '', estado: '', codigoPostal: ''
+  });
+  const [guardandoDireccion, setGuardandoDireccion] = useState(false);
+  const [errorDireccion, setErrorDireccion] = useState('');
 
   // Seleccionar la primera solicitud por defecto al cargar o al cambiar filtros
   const solicitudesFiltradas = solicitudes.filter(s => 
@@ -45,6 +76,24 @@ export const Admin: React.FC<AdminProps> = ({ solicitudes, onUpdateStatus, onVol
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filtroEstatus, solicitudes, solicitudSeleccionada?.id]);
 
+  // Sincronizar los formularios de IMEI/dirección cuando cambia la solicitud seleccionada
+  useEffect(() => {
+    setImeiInput(solicitudSeleccionada?.imei || '');
+    setImeiGuardadoOk(false);
+    setErrorEstatus('');
+    setMostrarFormDireccion(false);
+    setErrorDireccion('');
+    setDireccionForm({
+      calle: solicitudSeleccionada?.calle || '',
+      numeroExterior: solicitudSeleccionada?.numeroExterior || '',
+      numeroInterior: solicitudSeleccionada?.numeroInterior || '',
+      colonia: solicitudSeleccionada?.colonia || '',
+      alcaldiaMunicipio: solicitudSeleccionada?.alcaldiaMunicipio || '',
+      estado: solicitudSeleccionada?.estado || '',
+      codigoPostal: solicitudSeleccionada?.codigoPostal || ''
+    });
+  }, [solicitudSeleccionada?.id]);
+
   // Cálculos de métricas
   const totalSolicitudes = solicitudes.length;
   const aprobados = solicitudes.filter(s => s.estatus === 'Aprobado').length;
@@ -67,11 +116,54 @@ export const Admin: React.FC<AdminProps> = ({ solicitudes, onUpdateStatus, onVol
     }
   };
 
-  const handleResolver = (id: string, nuevoEstatus: EstatusSolicitud) => {
-    onUpdateStatus(id, nuevoEstatus);
-    // Actualizar el estado local para reflejar el cambio inmediato
-    if (solicitudSeleccionada && solicitudSeleccionada.id === id) {
-      setSolicitudSeleccionada(prev => prev ? { ...prev, estatus: nuevoEstatus } : null);
+  const handleResolver = async (id: string, nuevoEstatus: EstatusSolicitud) => {
+    setErrorEstatus('');
+    setAvanzandoEstatus(true);
+    try {
+      await onUpdateStatus(id, nuevoEstatus);
+      // Actualizar el estado local para reflejar el cambio inmediato
+      if (solicitudSeleccionada && solicitudSeleccionada.id === id) {
+        setSolicitudSeleccionada(prev => prev ? { ...prev, estatus: nuevoEstatus } : null);
+      }
+    } catch (error: any) {
+      setErrorEstatus(error.message || 'No se pudo actualizar el estatus.');
+    } finally {
+      setAvanzandoEstatus(false);
+    }
+  };
+
+  const handleGuardarImei = async () => {
+    if (!solicitudSeleccionada || !imeiInput.trim()) return;
+    setGuardandoImei(true);
+    setImeiGuardadoOk(false);
+    try {
+      await onSaveImei(solicitudSeleccionada.id, imeiInput.trim());
+      setSolicitudSeleccionada(prev => prev ? { ...prev, imei: imeiInput.trim() } : null);
+      setImeiGuardadoOk(true);
+    } catch (error: any) {
+      setErrorEstatus(error.message || 'No se pudo guardar el IMEI.');
+    } finally {
+      setGuardandoImei(false);
+    }
+  };
+
+  const handleGuardarDireccion = async () => {
+    if (!solicitudSeleccionada) return;
+    const { calle, numeroExterior, colonia, alcaldiaMunicipio, estado, codigoPostal } = direccionForm;
+    if (!calle.trim() || !numeroExterior.trim() || !colonia.trim() || !alcaldiaMunicipio.trim() || !estado.trim() || !codigoPostal.trim()) {
+      setErrorDireccion('Completa todos los campos obligatorios.');
+      return;
+    }
+    setGuardandoDireccion(true);
+    setErrorDireccion('');
+    try {
+      await onSaveDireccion(solicitudSeleccionada.id, direccionForm);
+      setSolicitudSeleccionada(prev => prev ? { ...prev, ...direccionForm } : null);
+      setMostrarFormDireccion(false);
+    } catch (error: any) {
+      setErrorDireccion(error.message || 'No se pudo guardar el domicilio.');
+    } finally {
+      setGuardandoDireccion(false);
     }
   };
 
@@ -211,10 +303,38 @@ export const Admin: React.FC<AdminProps> = ({ solicitudes, onUpdateStatus, onVol
                   <h2>Detalle del Cliente</h2>
                   <span className={styles.detailId}>ID Solicitud: {solicitudSeleccionada.id}</span>
                 </div>
-                <span className={`${styles.status} ${getStatusClass(solicitudSeleccionada.estatus)}`}>
-                  {solicitudSeleccionada.estatus}
-                </span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  {solicitudSeleccionada.estatus === 'Preparando paquete' && (
+                    <button
+                      className={styles.btnApprove}
+                      style={{ width: 'auto', padding: '8px 16px', fontSize: '13px' }}
+                      onClick={() => handleResolver(solicitudSeleccionada.id, 'Pendiente de envío')}
+                      disabled={avanzandoEstatus}
+                    >
+                      {avanzandoEstatus ? 'Guardando...' : 'Paquete preparado →'}
+                    </button>
+                  )}
+                  {solicitudSeleccionada.estatus === 'Pendiente de envío' && (
+                    <button
+                      className={styles.btnApprove}
+                      style={{ width: 'auto', padding: '8px 16px', fontSize: '13px' }}
+                      onClick={() => handleResolver(solicitudSeleccionada.id, 'Enviado')}
+                      disabled={avanzandoEstatus || !solicitudSeleccionada.imei}
+                      title={!solicitudSeleccionada.imei ? 'Carga el IMEI antes de marcar como enviado' : undefined}
+                    >
+                      {avanzandoEstatus ? 'Guardando...' : 'Marcar como Enviado →'}
+                    </button>
+                  )}
+                  <span className={`${styles.status} ${getStatusClass(solicitudSeleccionada.estatus)}`}>
+                    {solicitudSeleccionada.estatus}
+                  </span>
+                </div>
               </div>
+              {errorEstatus && (
+                <div style={{ color: '#DC2626', fontSize: '13px', fontWeight: 600, marginTop: '-8px', marginBottom: '12px' }}>
+                  {errorEstatus}
+                </div>
+              )}
 
               {/* TABS DE SECCIÓN */}
               <div className={styles.tabs}>
@@ -291,6 +411,36 @@ export const Admin: React.FC<AdminProps> = ({ solicitudes, onUpdateStatus, onVol
                   {solicitudSeleccionada.pagoConfirmado && !solicitudSeleccionada.calle && (
                     <div className={styles.alertBanner}>
                       ⚠️ Pago confirmado — falta que el cliente complete su dirección de envío
+                      {!mostrarFormDireccion && (
+                        <button
+                          type="button"
+                          onClick={() => setMostrarFormDireccion(true)}
+                          style={{ marginLeft: '10px', background: 'none', border: 'none', color: '#2B6BE4', fontWeight: 700, cursor: 'pointer', textDecoration: 'underline', fontSize: 'inherit' }}
+                        >
+                          Cargarla manualmente
+                        </button>
+                      )}
+                    </div>
+                  )}
+
+                  {mostrarFormDireccion && (
+                    <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '16px', margin: '10px 0', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                      <input placeholder="Calle" value={direccionForm.calle} onChange={e => setDireccionForm(f => ({ ...f, calle: e.target.value }))} style={{ gridColumn: 'span 2', padding: '8px', borderRadius: '8px', border: '1px solid #CBD5E1' }} />
+                      <input placeholder="No. exterior" value={direccionForm.numeroExterior} onChange={e => setDireccionForm(f => ({ ...f, numeroExterior: e.target.value }))} style={{ padding: '8px', borderRadius: '8px', border: '1px solid #CBD5E1' }} />
+                      <input placeholder="No. interior (opcional)" value={direccionForm.numeroInterior} onChange={e => setDireccionForm(f => ({ ...f, numeroInterior: e.target.value }))} style={{ padding: '8px', borderRadius: '8px', border: '1px solid #CBD5E1' }} />
+                      <input placeholder="Colonia" value={direccionForm.colonia} onChange={e => setDireccionForm(f => ({ ...f, colonia: e.target.value }))} style={{ padding: '8px', borderRadius: '8px', border: '1px solid #CBD5E1' }} />
+                      <input placeholder="Alcaldía / Municipio" value={direccionForm.alcaldiaMunicipio} onChange={e => setDireccionForm(f => ({ ...f, alcaldiaMunicipio: e.target.value }))} style={{ padding: '8px', borderRadius: '8px', border: '1px solid #CBD5E1' }} />
+                      <input placeholder="Estado" value={direccionForm.estado} onChange={e => setDireccionForm(f => ({ ...f, estado: e.target.value }))} style={{ padding: '8px', borderRadius: '8px', border: '1px solid #CBD5E1' }} />
+                      <input placeholder="Código postal" value={direccionForm.codigoPostal} onChange={e => setDireccionForm(f => ({ ...f, codigoPostal: e.target.value }))} style={{ padding: '8px', borderRadius: '8px', border: '1px solid #CBD5E1' }} />
+                      {errorDireccion && <span style={{ gridColumn: 'span 2', color: '#DC2626', fontSize: '13px', fontWeight: 600 }}>{errorDireccion}</span>}
+                      <div style={{ gridColumn: 'span 2', display: 'flex', gap: '10px' }}>
+                        <button type="button" onClick={handleGuardarDireccion} disabled={guardandoDireccion} className={styles.btnApprove} style={{ width: 'auto', padding: '8px 16px', fontSize: '13px' }}>
+                          {guardandoDireccion ? 'Guardando...' : 'Guardar dirección y generar guía'}
+                        </button>
+                        <button type="button" onClick={() => setMostrarFormDireccion(false)} style={{ background: 'none', border: 'none', color: '#5A6688', cursor: 'pointer', fontSize: '13px' }}>
+                          Cancelar
+                        </button>
+                      </div>
                     </div>
                   )}
 
@@ -334,6 +484,35 @@ export const Admin: React.FC<AdminProps> = ({ solicitudes, onUpdateStatus, onVol
                     )}
                   </div>
 
+                  {solicitudSeleccionada.pagoConfirmado && (
+                    <div style={{ marginTop: '16px' }}>
+                      <span className={styles.infoLabel}>IMEI del celular {solicitudSeleccionada.estatus !== 'Enviado' && '(obligatorio antes de marcar como Enviado)'}</span>
+                      <div style={{ display: 'flex', gap: '10px', marginTop: '6px' }}>
+                        <input
+                          placeholder="15 dígitos"
+                          value={imeiInput}
+                          maxLength={15}
+                          inputMode="numeric"
+                          onChange={e => { setImeiInput(e.target.value.replace(/\D/g, '').slice(0, 15)); setImeiGuardadoOk(false); }}
+                          disabled={solicitudSeleccionada.estatus === 'Enviado'}
+                          style={{ flex: 1, padding: '10px', borderRadius: '8px', border: '1px solid #CBD5E1' }}
+                        />
+                        {solicitudSeleccionada.estatus !== 'Enviado' && (
+                          <button
+                            type="button"
+                            onClick={handleGuardarImei}
+                            disabled={guardandoImei || !imeiInput.trim() || imeiInput.trim() === (solicitudSeleccionada.imei || '')}
+                            className={styles.btnApprove}
+                            style={{ width: 'auto', padding: '10px 18px', fontSize: '13px' }}
+                          >
+                            {guardandoImei ? 'Guardando...' : (solicitudSeleccionada.imei ? 'Actualizar IMEI' : 'Guardar IMEI')}
+                          </button>
+                        )}
+                      </div>
+                      {imeiGuardadoOk && <span style={{ color: '#16A34A', fontSize: '12px', fontWeight: 700 }}>✓ IMEI guardado</span>}
+                    </div>
+                  )}
+
                   {solicitudSeleccionada.estatus === 'Pendiente' && (
                     <div className={styles.btnGroup}>
                       <button 
@@ -351,27 +530,6 @@ export const Admin: React.FC<AdminProps> = ({ solicitudes, onUpdateStatus, onVol
                     </div>
                   )}
 
-                  {solicitudSeleccionada.estatus === 'Pendiente de envío' && (
-                    <div className={styles.btnGroup}>
-                      <button
-                        className={styles.btnApprove}
-                        onClick={() => handleResolver(solicitudSeleccionada.id, 'Preparando paquete')}
-                      >
-                        Marcar como Preparando paquete
-                      </button>
-                    </div>
-                  )}
-
-                  {solicitudSeleccionada.estatus === 'Preparando paquete' && (
-                    <div className={styles.btnGroup}>
-                      <button
-                        className={styles.btnApprove}
-                        onClick={() => handleResolver(solicitudSeleccionada.id, 'Enviado')}
-                      >
-                        Marcar como Enviado
-                      </button>
-                    </div>
-                  )}
                 </div>
               ) : (
                 <div className={styles.documentBody}>

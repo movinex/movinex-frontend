@@ -50,5 +50,6 @@ export interface Solicitud {
   codigoPostal?: string;
   trackingNumber?: string;
   labelUrl?: string;
+  imei?: string;
 }
 

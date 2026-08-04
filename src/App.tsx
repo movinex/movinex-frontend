@@ -77,7 +77,8 @@ function App() {
             estado: s.estado,
             codigoPostal: s.codigo_postal,
             trackingNumber: s.tracking_number,
-            labelUrl: s.label_url
+            labelUrl: s.label_url,
+            imei: s.imei
           }));
           setSolicitudes(solicitudesAdaptadas);
         })
@@ -136,26 +137,79 @@ function App() {
   };
 
   const handleUpdateStatus = async (id: string, nuevoEstatus: Solicitud['estatus']) => {
-    try {
-      const response = await fetch(`${backendUrl}/api/solicitudes/${id}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(adminToken ? { Authorization: `Bearer ${adminToken}` } : {})
-        },
-        body: JSON.stringify({ estatus: nuevoEstatus })
-      });
+    const response = await fetch(`${backendUrl}/api/solicitudes/${id}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(adminToken ? { Authorization: `Bearer ${adminToken}` } : {})
+      },
+      body: JSON.stringify({ estatus: nuevoEstatus })
+    });
 
-      if (response.ok) {
-        setSolicitudes(prev =>
-          prev.map(s => (s.id === id ? { ...s, estatus: nuevoEstatus } : s))
-        );
-      } else {
-        console.error('Error al actualizar estatus en backend');
-      }
-    } catch (err) {
-      console.error('Error en patch request:', err);
+    if (!response.ok) {
+      const res = await response.json().catch(() => ({}));
+      throw new Error(res.error || 'No se pudo actualizar el estatus.');
     }
+
+    setSolicitudes(prev =>
+      prev.map(s => (s.id === id ? { ...s, estatus: nuevoEstatus } : s))
+    );
+  };
+
+  const handleSaveImei = async (id: string, imei: string) => {
+    const response = await fetch(`${backendUrl}/api/solicitudes/${id}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(adminToken ? { Authorization: `Bearer ${adminToken}` } : {})
+      },
+      body: JSON.stringify({ imei })
+    });
+
+    if (!response.ok) {
+      const res = await response.json().catch(() => ({}));
+      throw new Error(res.error || 'No se pudo guardar el IMEI.');
+    }
+
+    setSolicitudes(prev => prev.map(s => (s.id === id ? { ...s, imei } : s)));
+  };
+
+  const handleSaveDireccion = async (id: string, direccion: {
+    calle: string;
+    numeroExterior: string;
+    numeroInterior?: string;
+    colonia: string;
+    alcaldiaMunicipio: string;
+    estado: string;
+    codigoPostal: string;
+  }) => {
+    const response = await fetch(`${backendUrl}/api/solicitudes/${id}/domicilio`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        calle: direccion.calle,
+        numero_exterior: direccion.numeroExterior,
+        numero_interior: direccion.numeroInterior,
+        colonia: direccion.colonia,
+        alcaldia_municipio: direccion.alcaldiaMunicipio,
+        estado: direccion.estado,
+        codigo_postal: direccion.codigoPostal
+      })
+    });
+
+    const res = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      throw new Error(res.error || 'No se pudo guardar el domicilio.');
+    }
+
+    setSolicitudes(prev =>
+      prev.map(s => (s.id === id ? {
+        ...s,
+        ...direccion,
+        trackingNumber: res.trackingNumber || s.trackingNumber,
+        labelUrl: res.labelUrl || s.labelUrl
+      } : s))
+    );
   };
 
   return (
@@ -166,6 +220,8 @@ function App() {
           <SadminPortal
             solicitudes={solicitudes}
             onUpdateStatus={handleUpdateStatus}
+            onSaveImei={handleSaveImei}
+            onSaveDireccion={handleSaveDireccion}
             onVolver={() => navigate('/')}
             onVolverTienda={() => navigate('/tienda')}
             phones={phones}
@@ -199,6 +255,8 @@ function App() {
             <Admin
               solicitudes={solicitudes}
               onUpdateStatus={handleUpdateStatus}
+              onSaveImei={handleSaveImei}
+              onSaveDireccion={handleSaveDireccion}
               onVolver={() => navigate('/tienda')}
             />
           )
