@@ -99,7 +99,7 @@ export const Documentos: React.FC<DocumentosProps> = ({
   const backendUrl = import.meta.env.VITE_BACKEND_URL || 'https://movinex-backend-production.up.railway.app';
 
   const handleEnviarOtpInicial = async () => {
-    if (celular.length !== 10) return;
+    if (celular.length < 10) return;
     setOtpEnviando(true);
     setOtpError("");
     try {
@@ -442,16 +442,16 @@ export const Documentos: React.FC<DocumentosProps> = ({
                 placeholder="55 1234 5678"
                 value={celular}
                 onChange={(e) => setCelular(e.target.value.replace(/\D/g, ""))}
-                maxLength={10}
+                maxLength={15}
                 disabled={otpVerificado}
                 className={celular.length > 0 && celular.length < 10 ? styles.inputError : ""}
                 required
               />
               {celular.length > 0 && celular.length < 10 && (
-                <span className={styles.errorMsg}>El celular debe contener exactamente 10 dígitos</span>
+                <span className={styles.errorMsg}>El celular debe contener al menos 10 dígitos</span>
               )}
               <div className={styles.hint}>
-                Ahí te enviaremos el seguimiento de tu crédito.
+                Ahí te enviaremos el seguimiento de tu crédito. Si es de fuera de México, incluí el código de país (ej. 54 para Argentina).
               </div>
             </div>
 
@@ -460,7 +460,7 @@ export const Documentos: React.FC<DocumentosProps> = ({
                 type="button"
                 className={styles.cta}
                 onClick={handleEnviarOtpInicial}
-                disabled={celular.length !== 10 || otpEnviando}
+                disabled={celular.length < 10 || otpEnviando}
               >
                 {otpEnviando ? "Enviando código..." : "Enviar código"}
               </button>
