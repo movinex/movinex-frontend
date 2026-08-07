@@ -25,7 +25,11 @@ El frontend no tiene cliente de Supabase propio ni sus keys — todo lo que lee 
 - `GET /api/celulares`, `GET/POST/PUT/DELETE` para catálogo (admin), `POST /api/celulares/imagen` para subir fotos.
 - `GET/POST /api/solicitudes` — solicitudes de crédito (KYC + datos del cliente); `GET /api/solicitudes/estatus` — polling liviano de pago confirmado; `POST /api/solicitudes/:id/domicilio` — domicilio post-pago (genera guía en Skydropx).
 - `POST /api/admin/login` — login del panel admin.
-- Webhooks (`/api/webhooks/conekta`, `/api/webhooks/verificacion-cliente`) y `/api/mdm/command` no los llama el frontend directamente.
+- Webhooks (`/api/webhooks/stripe`, `/api/webhooks/verificacion-cliente`) y `/api/mdm/command` no los llama el frontend directamente.
+
+## Pago del enganche (Stripe, ago 2026)
+
+`Documentos.tsx` pide `POST /api/solicitudes/:id/crear-orden-enganche`, que devuelve una `checkoutUrl` de Stripe Checkout, y hace `window.location.href` a esa URL — el pago ocurre 100% en la página hosteada por Stripe, no hay Elements ni SDK de Stripe cargado en el frontend. Stripe regresa al cliente a `/domicilio?solicitud={id}&modelo={modelo}` si paga, o a `/` si cancela. **Ojo:** como es un redirect completo (no un `navigate()` de React Router), al cancelar se pierde el estado en memoria de `App.tsx` (`selectedPhone`/`planSelected`) — el cliente vuelve a la home y tiene que rehacer la cotización, aunque su solicitud (KYC ya enviado) sigue viva en la base. `/domicilio` sí sobrevive el reload porque lee `solicitud`/`modelo` de la URL vía `useSearchParams`, no de estado en memoria.
 
 ## Pendientes conocidos
 

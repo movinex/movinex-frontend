@@ -1,13 +1,7 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router";
 import styles from "./Documentos.module.css";
 import logoBlanco from "./assets/movinex_blanco.webp";
-
-declare global {
-  interface Window {
-    ConektaCheckoutComponents: any;
-  }
-}
 
 interface DocumentosProps {
   planData: {
@@ -95,16 +89,12 @@ export const Documentos: React.FC<DocumentosProps> = ({
   const [otpError, setOtpError] = useState("");
   const [aceptaTerminos, setAceptaTerminos] = useState(false);
 
-  // Pago del enganche con el Checkout Component embebido de Conekta (iframe hosteado
-  // por Conekta — la tarjeta del cliente nunca pasa por nuestro servidor). El celular
-  // ya quedó verificado más arriba, así que acá no se vuelve a pedir OTP.
-  const [pagoStep, setPagoStep] = useState<"resumen" | "tarjeta">("resumen");
+  // Pago del enganche con Stripe Checkout (página hosteada por Stripe — la tarjeta del
+  // cliente nunca pasa por nuestro servidor). El celular ya quedó verificado más
+  // arriba, así que acá no se vuelve a pedir OTP.
   const [iniciandoPago, setIniciandoPago] = useState(false);
-  const [checkoutId, setCheckoutId] = useState<string | null>(null);
-  const [procesandoPago, setProcesandoPago] = useState(false);
   const [pagoError, setPagoError] = useState("");
   const [aprobandoManual, setAprobandoManual] = useState(false);
-  const submitConektaRef = useRef<(() => void) | null>(null);
 
   const backendUrl = import.meta.env.VITE_BACKEND_URL || 'https://movinex-backend-production.up.railway.app';
 
@@ -152,6 +142,10 @@ export const Documentos: React.FC<DocumentosProps> = ({
     }
   };
 
+  // Pide al backend una Checkout Session de Stripe y redirige al cliente a la página
+  // hosteada por Stripe para pagar. Stripe lo trae de vuelta solo a /domicilio si el
+  // pago sale bien (o a "/" si cancela) — la confirmación real la hace el webhook
+  // checkout.session.completed, no esta respuesta.
   const handleIniciarPago = async () => {
     setIniciandoPago(true);
     setPagoError("");
@@ -163,69 +157,16 @@ export const Documentos: React.FC<DocumentosProps> = ({
       if (!ordenResponse.ok) {
         throw new Error(ordenRes.error || "No se pudo iniciar el pago.");
       }
-      setCheckoutId(ordenRes.checkoutId);
-      setPagoStep("tarjeta");
+      window.location.href = ordenRes.checkoutUrl;
     } catch (error: any) {
       setPagoError(error.message || "Ocurrió un error al iniciar el pago.");
-    } finally {
       setIniciandoPago(false);
     }
   };
 
-  // Inicializa el Checkout Component de Conekta apenas tenemos el checkoutId.
-  useEffect(() => {
-    if (pagoStep !== "tarjeta" || !checkoutId) return;
-    if (!window.ConektaCheckoutComponents || !import.meta.env.VITE_CONEKTA_PUBLIC_KEY) {
-      setPagoError("No se pudo cargar el procesador de pagos. Recarga la página e intenta de nuevo.");
-      return;
-    }
-
-    window.ConektaCheckoutComponents.Integration({
-      config: {
-        locale: "es",
-        publicKey: import.meta.env.VITE_CONEKTA_PUBLIC_KEY,
-        targetIFrame: "#conekta-checkout-target",
-        checkoutRequestId: checkoutId,
-        useExternalSubmit: true,
-      },
-      callbacks: {
-        onUpdateSubmitTrigger: (submitFn: () => void) => {
-          submitConektaRef.current = submitFn;
-        },
-        onFinalizePayment: () => {
-          navigate(`/domicilio?solicitud=${solicitudId}&modelo=${encodeURIComponent(planData.modelo)}`);
-        },
-        onErrorPayment: (error: any) => {
-          setPagoError(error?.message_to_purchaser || error?.message || "La tarjeta fue rechazada. Verifica los datos.");
-          setProcesandoPago(false);
-        },
-      },
-    });
-
-    // React.StrictMode monta este efecto dos veces en desarrollo; Integration() no es
-    // idempotente, así que sin este cleanup la segunda inicialización pisa a la primera
-    // y el iframe queda en blanco. Limpiamos el contenedor antes de cada montaje real.
-    return () => {
-      submitConektaRef.current = null;
-      const target = document.getElementById("conekta-checkout-target");
-      if (target) target.innerHTML = "";
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pagoStep, checkoutId]);
-
-  const handlePagarConTarjeta = () => {
-    setPagoError("");
-    if (!submitConektaRef.current) {
-      setPagoError("El formulario de pago todavía se está cargando. Esperá un segundo e intentá de nuevo.");
-      return;
-    }
-    setProcesandoPago(true);
-    submitConektaRef.current();
-  };
-
-  // Bypass TEMPORAL mientras la cuenta de Conekta siga sin validar (Trello MX-0058):
-  // salta el pago real y avanza igual al paso de Domicilio, para poder seguir probando
-  // Skydropx. Quitar en cuanto Conekta apruebe la cuenta y el checkout funcione normal.
+  // Bypass TEMPORAL: salta el pago real y avanza igual al paso de Domicilio, para
+  // poder seguir probando Skydropx sin cobrar una tarjeta real. Quitar antes de ir a
+  // producción definitiva (Trello MX-0061).
   const handleAprobarManual = async () => {
     setAprobandoManual(true);
     try {
@@ -409,38 +350,24 @@ export const Documentos: React.FC<DocumentosProps> = ({
                   </div>
                 </div>
               </div>
-              {pagoStep === "resumen" && (
-                <>
-                  {pagoError && <span className={styles.errorMsg}>{pagoError}</span>}
-                  <button
-                    className={styles.cta}
-                    onClick={handleIniciarPago}
-                    disabled={iniciandoPago || !solicitudId}
-                  >
-                    {iniciandoPago ? "Preparando pago..." : "Pagar enganche →"}
-                  </button>
-                </>
-              )}
-
-              {pagoStep === "tarjeta" && (
-                <div style={{ textAlign: "left", marginTop: "10px" }}>
-                  <div id="conekta-checkout-target" style={{ height: "480px" }}></div>
-                  {pagoError && <span className={styles.errorMsg}>{pagoError}</span>}
-                  <button className={styles.cta} onClick={handlePagarConTarjeta} disabled={procesandoPago}>
-                    {procesandoPago ? "Procesando pago..." : `Pagar $${(planData.enganche + (planData.envioGratis !== false ? 0 : (planData.costoEnvio || 0))).toLocaleString()}`}
-                  </button>
-                  {pagoError && (
-                    <button
-                      type="button"
-                      className={styles.cta}
-                      style={{ background: "#E4E8F1", color: "#5A6688", marginTop: "10px", boxShadow: "none" }}
-                      onClick={handleAprobarManual}
-                      disabled={aprobandoManual}
-                    >
-                      {aprobandoManual ? "Continuando..." : "Continuar sin pagar (modo prueba) →"}
-                    </button>
-                  )}
-                </div>
+              {pagoError && <span className={styles.errorMsg}>{pagoError}</span>}
+              <button
+                className={styles.cta}
+                onClick={handleIniciarPago}
+                disabled={iniciandoPago || !solicitudId}
+              >
+                {iniciandoPago ? "Preparando pago..." : "Pagar enganche →"}
+              </button>
+              {pagoError && (
+                <button
+                  type="button"
+                  className={styles.cta}
+                  style={{ background: "#E4E8F1", color: "#5A6688", marginTop: "10px", boxShadow: "none" }}
+                  onClick={handleAprobarManual}
+                  disabled={aprobandoManual}
+                >
+                  {aprobandoManual ? "Continuando..." : "Continuar sin pagar (modo prueba) →"}
+                </button>
               )}
             </div>
           </div>
