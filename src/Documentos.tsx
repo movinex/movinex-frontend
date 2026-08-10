@@ -194,6 +194,38 @@ export const Documentos: React.FC<DocumentosProps> = ({
     }
   };
 
+  // Dos botones en vez de un solo input cubriendo toda la tarjeta: "Tomar foto" abre la
+  // cámara directo en el celular (atributo `capture`), "Subir archivo" abre la galería/
+  // explorador normal, sin forzar una sobre la otra.
+  const botonCaptura = { flex: 1, textAlign: "center" as const, background: "#F1F5F9", border: "1.5px solid #E2E8F0", padding: "8px 10px", borderRadius: "10px", cursor: "pointer", fontSize: "12px", fontWeight: 600, color: "#334155" };
+
+  const renderBotonesCaptura = (
+    idPrefix: string,
+    captureMode: "environment" | "user",
+    setter: (file: File | null) => void,
+  ) => (
+    <div style={{ display: "flex", gap: "8px", marginBottom: "12px" }}>
+      <input
+        type="file"
+        accept="image/*"
+        capture={captureMode}
+        onChange={(e) => handleFileChange(e, setter)}
+        style={{ display: "none" }}
+        id={`${idPrefix}-camara`}
+      />
+      <label htmlFor={`${idPrefix}-camara`} style={botonCaptura}>📷 Tomar foto</label>
+
+      <input
+        type="file"
+        accept="image/*"
+        onChange={(e) => handleFileChange(e, setter)}
+        style={{ display: "none" }}
+        id={`${idPrefix}-archivo`}
+      />
+      <label htmlFor={`${idPrefix}-archivo`} style={botonCaptura}>📁 Subir archivo</label>
+    </div>
+  );
+
   const handleEnviar = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!celular || !email || !ineFrente || !ineReverso || !selfie) return;
@@ -532,13 +564,8 @@ export const Documentos: React.FC<DocumentosProps> = ({
             {/* Frente */}
             <div
               className={`${styles.drop} ${ineFrente ? styles.cargado : ""}`}
+              style={{ cursor: "default" }}
             >
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => handleFileChange(e, setIneFrente)}
-                required
-              />
               <div className={styles.thumb}>
                 {ineFrente ? (
                   <img src={URL.createObjectURL(ineFrente)} alt="Frente INE" />
@@ -573,17 +600,13 @@ export const Documentos: React.FC<DocumentosProps> = ({
               </div>
               <div className={styles.check}>✓</div>
             </div>
+            {renderBotonesCaptura("ine-frente", "environment", setIneFrente)}
 
             {/* Reverso */}
             <div
               className={`${styles.drop} ${ineReverso ? styles.cargado : ""}`}
+              style={{ cursor: "default" }}
             >
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => handleFileChange(e, setIneReverso)}
-                required
-              />
               <div className={styles.thumb}>
                 {ineReverso ? (
                   <img
@@ -621,15 +644,13 @@ export const Documentos: React.FC<DocumentosProps> = ({
               </div>
               <div className={styles.check}>✓</div>
             </div>
+            {renderBotonesCaptura("ine-reverso", "environment", setIneReverso)}
 
             {/* Selfie */}
-            <div className={`${styles.drop} ${selfie ? styles.cargado : ""}`}>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => handleFileChange(e, setSelfie)}
-                required
-              />
+            <div
+              className={`${styles.drop} ${selfie ? styles.cargado : ""}`}
+              style={{ cursor: "default" }}
+            >
               <div className={styles.thumb}>
                 {selfie ? (
                   <img src={URL.createObjectURL(selfie)} alt="Selfie" />
@@ -655,6 +676,7 @@ export const Documentos: React.FC<DocumentosProps> = ({
               </div>
               <div className={styles.check}>✓</div>
             </div>
+            {renderBotonesCaptura("selfie", "user", setSelfie)}
 
             <div className={styles.privacidad}>
               <svg
