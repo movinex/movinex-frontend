@@ -1,6 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import styles from './Admin.module.css';
 import type { Solicitud } from './types';
+import {
+  FiBarChart2,
+  FiClock,
+  FiCheckCircle,
+  FiXCircle,
+  FiDollarSign,
+  FiAlertTriangle,
+  FiLink,
+  FiCheck,
+  FiPackage,
+  FiFileText,
+  FiFolder,
+} from 'react-icons/fi';
+import { FaWhatsapp } from 'react-icons/fa';
 
 type EstatusSolicitud = Solicitud['estatus'];
 
@@ -205,35 +219,35 @@ export const Admin: React.FC<AdminProps> = ({ solicitudes, onUpdateStatus, onSav
       {/* METRICAS CLAVE */}
       <div className={styles.metricsGrid}>
         <div className={styles.metricCard}>
-          <span className={styles.metricIcon}>📊</span>
+          <span className={styles.metricIcon}><FiBarChart2 /></span>
           <div className={styles.metricContent}>
             <h3>Total Solicitudes</h3>
             <strong>{totalSolicitudes}</strong>
           </div>
         </div>
         <div className={styles.metricCard} style={{ borderLeft: '4px solid #FEF3C7' }}>
-          <span className={styles.metricIcon} style={{ color: '#D97706' }}>🕒</span>
+          <span className={styles.metricIcon} style={{ color: '#D97706' }}><FiClock /></span>
           <div className={styles.metricContent}>
             <h3>Pendientes</h3>
             <strong style={{ color: '#D97706' }}>{pendientes}</strong>
           </div>
         </div>
         <div className={styles.metricCard} style={{ borderLeft: '4px solid #D1FAE5' }}>
-          <span className={styles.metricIcon} style={{ color: '#16A34A' }}>✓</span>
+          <span className={styles.metricIcon} style={{ color: '#16A34A' }}><FiCheckCircle /></span>
           <div className={styles.metricContent}>
             <h3>Aprobados</h3>
             <strong style={{ color: '#16A34A' }}>{aprobados}</strong>
           </div>
         </div>
         <div className={styles.metricCard} style={{ borderLeft: '4px solid #FEE2E2' }}>
-          <span className={styles.metricIcon} style={{ color: '#DC2626' }}>✕</span>
+          <span className={styles.metricIcon} style={{ color: '#DC2626' }}><FiXCircle /></span>
           <div className={styles.metricContent}>
             <h3>Rechazados</h3>
             <strong style={{ color: '#DC2626' }}>{rechazados}</strong>
           </div>
         </div>
         <div className={styles.metricCard} style={{ borderLeft: '4px solid #2B6BE4' }}>
-          <span className={styles.metricIcon} style={{ color: '#2B6BE4' }}>💰</span>
+          <span className={styles.metricIcon} style={{ color: '#2B6BE4' }}><FiDollarSign /></span>
           <div className={styles.metricContent}>
             <h3>Enganches Aprobados</h3>
             <strong style={{ color: '#2B6BE4' }}>${totalEnganchesAprobados.toLocaleString()}</strong>
@@ -374,8 +388,9 @@ export const Admin: React.FC<AdminProps> = ({ solicitudes, onUpdateStatus, onSav
                           target="_blank" 
                           rel="noopener noreferrer"
                           className={styles.waLink}
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
                         >
-                          🟢 {solicitudSeleccionada.celular}
+                          <FaWhatsapp style={{ color: '#25D366' }} /> {solicitudSeleccionada.celular}
                         </a>
                       </span>
                     </div>
@@ -415,7 +430,8 @@ export const Admin: React.FC<AdminProps> = ({ solicitudes, onUpdateStatus, onSav
 
                   {solicitudSeleccionada.pagoConfirmado && !solicitudSeleccionada.calle && (
                     <div className={styles.alertBanner}>
-                      ⚠️ Pago confirmado — falta que el cliente complete su dirección de envío
+                      <FiAlertTriangle style={{ verticalAlign: '-2px', marginRight: '6px' }} />
+                      Pago confirmado — falta que el cliente complete su dirección de envío
                       {!mostrarFormDireccion && (
                         <button
                           type="button"
@@ -433,9 +449,9 @@ export const Admin: React.FC<AdminProps> = ({ solicitudes, onUpdateStatus, onSav
                           setLinkCopiadoOk(true);
                           setTimeout(() => setLinkCopiadoOk(false), 2500);
                         }}
-                        style={{ marginLeft: '10px', background: 'none', border: 'none', color: '#2B6BE4', fontWeight: 700, cursor: 'pointer', textDecoration: 'underline', fontSize: 'inherit' }}
+                        style={{ marginLeft: '10px', background: 'none', border: 'none', color: '#2B6BE4', fontWeight: 700, cursor: 'pointer', textDecoration: 'underline', fontSize: 'inherit', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
                       >
-                        {linkCopiadoOk ? '✓ ¡Copiado!' : '🔗 Copiar link para continuar'}
+                        {linkCopiadoOk ? (<><FiCheck /> ¡Copiado!</>) : (<><FiLink /> Copiar link para continuar</>)}
                       </button>
                     </div>
                   )}
@@ -466,9 +482,9 @@ export const Admin: React.FC<AdminProps> = ({ solicitudes, onUpdateStatus, onSav
                       <span className={styles.infoLabel}>Pago del Enganche</span>
                       <span
                         className={styles.infoValue}
-                        style={{ color: solicitudSeleccionada.pagoConfirmado ? '#16A34A' : '#D97706', fontWeight: 700 }}
+                        style={{ color: solicitudSeleccionada.pagoConfirmado ? '#16A34A' : '#D97706', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '4px' }}
                       >
-                        {solicitudSeleccionada.pagoConfirmado ? '✓ Confirmado' : 'Pendiente'}
+                        {solicitudSeleccionada.pagoConfirmado ? (<><FiCheck /> Confirmado</>) : 'Pendiente'}
                       </span>
                     </div>
                     {solicitudSeleccionada.trackingNumber && (
@@ -485,8 +501,9 @@ export const Admin: React.FC<AdminProps> = ({ solicitudes, onUpdateStatus, onSav
                           target="_blank"
                           rel="noopener noreferrer"
                           className={styles.guideLink}
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
                         >
-                          📦 Ver guía de envío
+                          <FiPackage /> Ver guía de envío
                         </a>
                       </div>
                     )}
@@ -498,8 +515,9 @@ export const Admin: React.FC<AdminProps> = ({ solicitudes, onUpdateStatus, onSav
                           target="_blank"
                           rel="noopener noreferrer"
                           className={styles.guideLink}
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
                         >
-                          🧾 Ver recibo de Stripe
+                          <FiFileText /> Ver recibo de Stripe
                         </a>
                       </div>
                     )}
@@ -539,7 +557,7 @@ export const Admin: React.FC<AdminProps> = ({ solicitudes, onUpdateStatus, onSav
                           </button>
                         )}
                       </div>
-                      {imeiGuardadoOk && <span style={{ color: '#16A34A', fontSize: '12px', fontWeight: 700 }}>✓ IMEI guardado</span>}
+                      {imeiGuardadoOk && <span style={{ color: '#16A34A', fontSize: '12px', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '4px' }}><FiCheck /> IMEI guardado</span>}
                     </div>
                   )}
 
@@ -638,7 +656,7 @@ export const Admin: React.FC<AdminProps> = ({ solicitudes, onUpdateStatus, onSav
             </div>
           ) : (
             <div className={styles.emptyDetail}>
-              <span className={styles.emptyIcon}>📂</span>
+              <span className={styles.emptyIcon}><FiFolder /></span>
               <p>Selecciona una solicitud de crédito en el listado para ver su detalle e historial.</p>
             </div>
           )}

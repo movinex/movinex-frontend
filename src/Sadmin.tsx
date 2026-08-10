@@ -3,6 +3,7 @@ import styles from './Sadmin.module.css';
 import logoBlanco from './assets/movinex_blanco.webp';
 import { Admin } from './Admin';
 import type { Phone, Solicitud } from './types';
+import { FiClipboard, FiSmartphone, FiUpload } from 'react-icons/fi';
 
 // Fórmula oficial de Movinex (Cotizador_Movinex_Celulares.xlsx, parámetros fijos de
 // negocio: 15% enganche, 228% anual, cargo de Seguridad y Bloqueo $17 + IVA
@@ -309,11 +310,11 @@ export const SadminPortal: React.FC<SadminProps> = ({
           </div>
         </div>
         <div className={styles.portalHeaderActions}>
-          <button className={styles.tabBtn} onClick={() => setActivePortalTab('solicitudes')} style={{ background: activePortalTab === 'solicitudes' ? 'rgba(255,255,255,0.1)' : 'transparent' }}>
-            📋 Ver Créditos
+          <button className={styles.tabBtn} onClick={() => setActivePortalTab('solicitudes')} style={{ background: activePortalTab === 'solicitudes' ? 'rgba(255,255,255,0.1)' : 'transparent', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+            <FiClipboard /> Ver Créditos
           </button>
-          <button className={styles.tabBtn} onClick={() => setActivePortalTab('celulares')} style={{ background: activePortalTab === 'celulares' ? 'rgba(255,255,255,0.1)' : 'transparent' }}>
-            📱 Catálogo Celulares
+          <button className={styles.tabBtn} onClick={() => setActivePortalTab('celulares')} style={{ background: activePortalTab === 'celulares' ? 'rgba(255,255,255,0.1)' : 'transparent', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+            <FiSmartphone /> Catálogo Celulares
           </button>
           <button className={styles.logoutBtn} onClick={onLogout}>
             Salir
@@ -450,10 +451,12 @@ export const SadminPortal: React.FC<SadminProps> = ({
                         fontSize: '13px',
                         fontWeight: '600',
                         color: '#334155',
-                        display: 'inline-block',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
                         marginBottom: 0
                       }}>
-                        {uploading ? 'Subiendo...' : '📁 Cargar Imagen'}
+                        {uploading ? 'Subiendo...' : (<><FiUpload /> Cargar Imagen</>)}
                       </label>
                       <input
                         type="text"
@@ -498,7 +501,7 @@ export const SadminPortal: React.FC<SadminProps> = ({
                 </div>
 
                 <div style={{ marginTop: '28px', borderTop: '1px solid #E2E8F0', paddingTop: '20px' }}>
-                  <h4 style={{ fontSize: '15px', color: '#0F172A', fontWeight: 700, marginBottom: '16px' }}>📋 Ficha Técnica (Especificaciones del Celular)</h4>
+                  <h4 style={{ fontSize: '15px', color: '#0F172A', fontWeight: 700, marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '6px' }}><FiClipboard /> Ficha Técnica (Especificaciones del Celular)</h4>
                   <div className={styles.formGrid}>
                     <div className={styles.formGroup}>
                       <label>Pantalla</label>

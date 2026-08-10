@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router";
 import styles from "./Documentos.module.css";
 import logoBlanco from "./assets/movinex_blanco.webp";
+import { FiCamera, FiUpload, FiCheck, FiAward, FiClock } from "react-icons/fi";
 
 interface DocumentosProps {
   planData: {
@@ -213,7 +214,9 @@ export const Documentos: React.FC<DocumentosProps> = ({
         style={{ display: "none" }}
         id={`${idPrefix}-camara`}
       />
-      <label htmlFor={`${idPrefix}-camara`} style={botonCaptura}>📷 Tomar foto</label>
+      <label htmlFor={`${idPrefix}-camara`} style={botonCaptura}>
+        <span style={{ display: "inline-flex", alignItems: "center", gap: "6px", justifyContent: "center" }}><FiCamera /> Tomar foto</span>
+      </label>
 
       <input
         type="file"
@@ -222,7 +225,9 @@ export const Documentos: React.FC<DocumentosProps> = ({
         style={{ display: "none" }}
         id={`${idPrefix}-archivo`}
       />
-      <label htmlFor={`${idPrefix}-archivo`} style={botonCaptura}>📁 Subir archivo</label>
+      <label htmlFor={`${idPrefix}-archivo`} style={botonCaptura}>
+        <span style={{ display: "inline-flex", alignItems: "center", gap: "6px", justifyContent: "center" }}><FiUpload /> Subir archivo</span>
+      </label>
     </div>
   );
 
@@ -355,10 +360,10 @@ export const Documentos: React.FC<DocumentosProps> = ({
                   </svg>
                 )}
               </div>
-              <div className={styles.et}>
-                {esAprobadoDirecto 
-                  ? "🎉 ¡Felicidades, fuiste autorizado!"
-                  : "⌛ Tu solicitud está en revisión manual"}
+              <div className={styles.et} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}>
+                {esAprobadoDirecto
+                  ? (<><FiAward /> ¡Felicidades, fuiste autorizado!</>)
+                  : (<><FiClock /> Tu solicitud está en revisión manual</>)}
               </div>
               <div className={styles.ed} style={{ fontSize: '14px', lineHeight: '1.6' }}>
                 {esAprobadoDirecto 
@@ -535,8 +540,8 @@ export const Documentos: React.FC<DocumentosProps> = ({
             )}
 
             {otpVerificado && (
-              <div style={{ fontSize: "12px", color: "#16A34A", fontWeight: 700, marginTop: "4px" }}>
-                ✓ Número verificado
+              <div style={{ fontSize: "12px", color: "#16A34A", fontWeight: 700, marginTop: "4px", display: "flex", alignItems: "center", gap: "4px" }}>
+                <FiCheck /> Número verificado
               </div>
             )}
 
@@ -599,7 +604,7 @@ export const Documentos: React.FC<DocumentosProps> = ({
                     : "Haz clic para tomar foto o subir"}
                 </div>
               </div>
-              <div className={styles.check}>✓</div>
+              <div className={styles.check}><FiCheck /></div>
             </div>
             {renderBotonesCaptura("ine-frente", "environment", setIneFrente)}
 
@@ -643,7 +648,7 @@ export const Documentos: React.FC<DocumentosProps> = ({
                     : "Haz clic para tomar foto o subir"}
                 </div>
               </div>
-              <div className={styles.check}>✓</div>
+              <div className={styles.check}><FiCheck /></div>
             </div>
             {renderBotonesCaptura("ine-reverso", "environment", setIneReverso)}
 
@@ -675,7 +680,7 @@ export const Documentos: React.FC<DocumentosProps> = ({
                     : "Tu rostro, bien iluminado"}
                 </div>
               </div>
-              <div className={styles.check}>✓</div>
+              <div className={styles.check}><FiCheck /></div>
             </div>
             {renderBotonesCaptura("selfie", "user", setSelfie)}
 
