@@ -392,9 +392,64 @@ function DocumentosRoute({
   planSelected: PlanSeleccionado | null;
 }) {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const solicitudIdParam = searchParams.get('solicitud');
+  const backendUrl = import.meta.env.VITE_BACKEND_URL || 'https://movinex-backend-production.up.railway.app';
+
+  // Si no hay estado en memoria (refresh, o volvió con el link más tarde) pero la URL
+  // trae ?solicitud=X, se reconstruye todo desde ahí — la solicitud ya se creó apenas
+  // se verificó el OTP (ver Documentos.tsx), así que el celular/plan ya están guardados.
+  const [resumen, setResumen] = useState<any>(null);
+  const [cargandoResumen, setCargandoResumen] = useState(false);
+  const [errorResumen, setErrorResumen] = useState(false);
+
+  useEffect(() => {
+    if (selectedPhone || planSelected || !solicitudIdParam) return;
+    setCargandoResumen(true);
+    setErrorResumen(false);
+    fetch(`${backendUrl}/api/solicitudes/${solicitudIdParam}/resumen`)
+      .then(res => {
+        if (!res.ok) throw new Error('No se pudo recuperar la solicitud.');
+        return res.json();
+      })
+      .then(data => setResumen(data))
+      .catch(() => setErrorResumen(true))
+      .finally(() => setCargandoResumen(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [solicitudIdParam]);
 
   if (!selectedPhone || !planSelected) {
-    return <Navigate to="/" replace />;
+    if (!solicitudIdParam) {
+      return <Navigate to="/" replace />;
+    }
+    if (errorResumen) {
+      return <Navigate to="/" replace />;
+    }
+    if (!resumen) {
+      return null; // cargando el resumen la primera vez
+    }
+    return (
+      <Documentos
+        planData={{
+          semanas: resumen.semanas,
+          pagoSemanal: resumen.pagoSemanal,
+          enganche: resumen.enganche,
+          modelo: resumen.modelo,
+          envioGratis: (resumen.costoEnvio || 0) === 0,
+          costoEnvio: resumen.costoEnvio
+        }}
+        initialSolicitudId={resumen.id}
+        initialCelular={resumen.celular}
+        initialEmail={resumen.email || ''}
+        initialOtpVerificado
+        initialDocsGuardados={{
+          ineFrente: resumen.tieneIneFrente,
+          ineReverso: resumen.tieneIneReverso,
+          selfie: resumen.tieneSelfie
+        }}
+        onVolver={() => navigate('/tienda')}
+      />
+    );
   }
 
   return (

@@ -14,6 +14,14 @@ interface DocumentosProps {
     costoEnvio?: number;
   };
   onVolver: () => void;
+  // Presentes solo al reanudar una solicitud desde /documentos?solicitud=X (ver
+  // DocumentosRoute en App.tsx) — el celular ya está verificado y la solicitud ya
+  // existe, así que el formulario arranca más adelante en vez de pedir el OTP de nuevo.
+  initialSolicitudId?: string;
+  initialCelular?: string;
+  initialEmail?: string;
+  initialOtpVerificado?: boolean;
+  initialDocsGuardados?: { ineFrente: boolean; ineReverso: boolean; selfie: boolean };
 }
 
 const compressAndGetBase64 = (file: File): Promise<string> => {
@@ -65,26 +73,40 @@ const compressAndGetBase64 = (file: File): Promise<string> => {
 export const Documentos: React.FC<DocumentosProps> = ({
   planData,
   onVolver,
+  initialSolicitudId,
+  initialCelular,
+  initialEmail,
+  initialOtpVerificado,
+  initialDocsGuardados,
 }) => {
   const navigate = useNavigate();
-  const [celular, setCelular] = useState("");
-  const [email, setEmail] = useState("");
+  const [celular, setCelular] = useState(initialCelular || "");
+  const [email, setEmail] = useState(initialEmail || "");
   const [ineFrente, setIneFrente] = useState<File | null>(null);
   const [ineReverso, setIneReverso] = useState<File | null>(null);
   const [selfie, setSelfie] = useState<File | null>(null);
+  // Independiente de los File de arriba: al reanudar una solicitud no hay un File en
+  // memoria (la foto ya se subió en otra sesión), pero igual hay que mostrar la
+  // tarjeta como cargada y dejar avanzar el formulario.
+  const [ineFrenteGuardado, setIneFrenteGuardado] = useState(initialDocsGuardados?.ineFrente || false);
+  const [ineReversoGuardado, setIneReversoGuardado] = useState(initialDocsGuardados?.ineReverso || false);
+  const [selfieGuardado, setSelfieGuardado] = useState(initialDocsGuardados?.selfie || false);
+  const [guardandoCampo, setGuardandoCampo] = useState<string | null>(null);
+  const [errorProgreso, setErrorProgreso] = useState("");
+
   const [status, setStatus] = useState<
     "form" | "subiendo" | "exito" | "error"
   >("form");
   const [errorMessage, setErrorMessage] = useState("");
 
-  const [solicitudId, setSolicitudId] = useState<string>("");
+  const [solicitudId, setSolicitudId] = useState<string>(initialSolicitudId || "");
   const [esAprobadoDirecto, setEsAprobadoDirecto] = useState<boolean>(true);
 
   // Verificación del celular por OTP de WhatsApp, ANTES de poder llenar el resto del
   // formulario — evita que un bot/script mande INE y selfie falsos sin un WhatsApp real
   // detrás. El código vence a los 10 minutos (WhatsappOtpService del backend).
   const [otpEnviado, setOtpEnviado] = useState(false);
-  const [otpVerificado, setOtpVerificado] = useState(false);
+  const [otpVerificado, setOtpVerificado] = useState(initialOtpVerificado || false);
   const [otpCodigo, setOtpCodigo] = useState("");
   const [otpEnviando, setOtpEnviando] = useState(false);
   const [otpError, setOtpError] = useState("");
@@ -122,6 +144,37 @@ export const Documentos: React.FC<DocumentosProps> = ({
     }
   };
 
+  // Crea la solicitud apenas se verifica el OTP (celular + plan elegido, todavía sin
+  // email/INE/selfie) para no perder el lead si se cae del formulario a mitad de
+  // camino, y refleja el id en la URL para poder reanudar. Separada de
+  // handleVerificarOtpInicial para poder reintentarla sola si falla, sin pedir el
+  // código de nuevo (el OTP ya quedó verificado del lado del backend).
+  const crearSolicitudSiHaceFalta = async () => {
+    if (solicitudId) return;
+    try {
+      const response = await fetch(`${backendUrl}/api/solicitudes/iniciar`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          celular: celular.trim(),
+          modelo: planData.modelo,
+          enganche: planData.enganche,
+          semanas: planData.semanas,
+          pago_semanal: planData.pagoSemanal,
+          costoEnvio: planData.envioGratis === false ? (planData.costoEnvio || 0) : 0,
+        }),
+      });
+      const res = await response.json();
+      if (!response.ok) {
+        throw new Error(res.error || "No se pudo iniciar tu solicitud.");
+      }
+      setSolicitudId(res.solicitud.id);
+      navigate(`/documentos?solicitud=${res.solicitud.id}`, { replace: true });
+    } catch (error: any) {
+      setOtpError(error.message || "No se pudo iniciar tu solicitud. Intenta de nuevo.");
+    }
+  };
+
   const handleVerificarOtpInicial = async () => {
     setOtpEnviando(true);
     setOtpError("");
@@ -136,10 +189,37 @@ export const Documentos: React.FC<DocumentosProps> = ({
         throw new Error(res.error || "Código incorrecto o expirado.");
       }
       setOtpVerificado(true);
+      await crearSolicitudSiHaceFalta();
     } catch (error: any) {
       setOtpError(error.message || "Ocurrió un error al verificar el código.");
     } finally {
       setOtpEnviando(false);
+    }
+  };
+
+  // Guarda un campo (email, o una foto ya en base64) apenas está listo, sin esperar al
+  // submit final — así no se pierde nada si el cliente se cae del formulario a mitad
+  // de camino. Se puede llamar varias veces, cada vez con lo que corresponda.
+  const guardarProgreso = async (campos: Record<string, string>, nombreCampo: string): Promise<boolean> => {
+    if (!solicitudId) return false;
+    setGuardandoCampo(nombreCampo);
+    setErrorProgreso("");
+    try {
+      const response = await fetch(`${backendUrl}/api/solicitudes/${solicitudId}/progreso`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(campos),
+      });
+      if (!response.ok) {
+        const res = await response.json().catch(() => ({}));
+        throw new Error(res.error || "No se pudo guardar.");
+      }
+      return true;
+    } catch (error: any) {
+      setErrorProgreso(error.message || "No se pudo guardar. Intenta de nuevo.");
+      return false;
+    } finally {
+      setGuardandoCampo(null);
     }
   };
 
@@ -186,12 +266,25 @@ export const Documentos: React.FC<DocumentosProps> = ({
     }
   };
 
-  const handleFileChange = (
+  // Además de guardar el File localmente (para la vista previa), sube la foto al
+  // backend ya mismo — no espera al submit final, así no se pierde si el cliente se
+  // cae del formulario a mitad de camino.
+  const handleFileChange = async (
     e: React.ChangeEvent<HTMLInputElement>,
     setFile: (file: File | null) => void,
+    campoBackend: "ine_frente" | "ine_reverso" | "selfie",
+    setGuardado: (v: boolean) => void,
   ) => {
-    if (e.target.files && e.target.files.length > 0) {
-      setFile(e.target.files[0]);
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setFile(file);
+    setGuardado(false);
+    try {
+      const base64 = await compressAndGetBase64(file);
+      const ok = await guardarProgreso({ [campoBackend]: `data:image/jpeg;base64,${base64}` }, campoBackend);
+      if (ok) setGuardado(true);
+    } catch {
+      // guardarProgreso ya dejó el error en errorProgreso
     }
   };
 
@@ -204,13 +297,15 @@ export const Documentos: React.FC<DocumentosProps> = ({
     idPrefix: string,
     captureMode: "environment" | "user",
     setter: (file: File | null) => void,
+    campoBackend: "ine_frente" | "ine_reverso" | "selfie",
+    setGuardado: (v: boolean) => void,
   ) => (
     <div style={{ display: "flex", gap: "8px", marginBottom: "12px" }}>
       <input
         type="file"
         accept="image/*"
         capture={captureMode}
-        onChange={(e) => handleFileChange(e, setter)}
+        onChange={(e) => handleFileChange(e, setter, campoBackend, setGuardado)}
         style={{ display: "none" }}
         id={`${idPrefix}-camara`}
       />
@@ -221,7 +316,7 @@ export const Documentos: React.FC<DocumentosProps> = ({
       <input
         type="file"
         accept="image/*"
-        onChange={(e) => handleFileChange(e, setter)}
+        onChange={(e) => handleFileChange(e, setter, campoBackend, setGuardado)}
         style={{ display: "none" }}
         id={`${idPrefix}-archivo`}
       />
@@ -231,42 +326,23 @@ export const Documentos: React.FC<DocumentosProps> = ({
     </div>
   );
 
+  // Todo lo demás (email, INE, selfie) ya se guardó progresivamente vía
+  // guardarProgreso — acá solo se cierra el ciclo: corre Verificamex con lo que ya
+  // está guardado y decide el estatus final.
   const handleEnviar = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!celular || !email || !ineFrente || !ineReverso || !selfie) return;
+    if (!solicitudId || !isFormValid) return;
 
     setStatus("subiendo");
     setErrorMessage("");
 
     try {
-      const [ineFrenteB64, ineReversoB64, selfieB64] = await Promise.all([
-        compressAndGetBase64(ineFrente),
-        compressAndGetBase64(ineReverso),
-        compressAndGetBase64(selfie),
-      ]);
-
-      const formattedFrente = `data:image/jpeg;base64,${ineFrenteB64}`;
-      const formattedReverso = `data:image/jpeg;base64,${ineReversoB64}`;
-      const formattedSelfie = `data:image/jpeg;base64,${selfieB64}`;
-
       const response = await fetch(
-        `${backendUrl}/api/solicitudes`,
+        `${backendUrl}/api/solicitudes/${solicitudId}/finalizar`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            celular: celular.trim(),
-            email: email.trim(),
-            modelo: planData.modelo,
-            enganche: planData.enganche,
-            semanas: planData.semanas,
-            pago_semanal: planData.pagoSemanal,
-            ine_frente: formattedFrente,
-            ine_reverso: formattedReverso,
-            selfie: formattedSelfie,
-            aceptaTerminos,
-            costoEnvio: planData.envioGratis === false ? (planData.costoEnvio || 0) : 0,
-          }),
+          body: JSON.stringify({ aceptaTerminos }),
         },
       );
       const res = await response.json();
@@ -275,10 +351,6 @@ export const Documentos: React.FC<DocumentosProps> = ({
         throw new Error(
           res.error || "Ocurrió un error al procesar tu solicitud.",
         );
-      }
-
-      if (res.solicitud?.id) {
-        setSolicitudId(res.solicitud.id);
       }
 
       const fueAprobado = res.solicitud?.estatus === "Aprobado";
@@ -299,9 +371,9 @@ export const Documentos: React.FC<DocumentosProps> = ({
     otpVerificado &&
     celular.trim().length >= 10 &&
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) &&
-    ineFrente !== null &&
-    ineReverso !== null &&
-    selfie !== null &&
+    ineFrenteGuardado &&
+    ineReversoGuardado &&
+    selfieGuardado &&
     aceptaTerminos;
 
   if (status === "subiendo") {
@@ -545,6 +617,19 @@ export const Documentos: React.FC<DocumentosProps> = ({
               </div>
             )}
 
+            {otpVerificado && !solicitudId && (
+              <div className={styles.campo}>
+                {otpError && <span className={styles.errorMsg}>{otpError}</span>}
+                <button
+                  type="button"
+                  className={styles.cta}
+                  onClick={crearSolicitudSiHaceFalta}
+                >
+                  Reintentar
+                </button>
+              </div>
+            )}
+
             {otpVerificado && (
               <>
             <div className={styles.campo}>
@@ -555,13 +640,23 @@ export const Documentos: React.FC<DocumentosProps> = ({
                 placeholder="tucorreo@ejemplo.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                onBlur={() => {
+                  if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                    guardarProgreso({ email: email.trim() }, "email");
+                  }
+                }}
                 className={email.length > 0 && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? styles.inputError : ""}
                 required
               />
               {email.length > 0 && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && (
                 <span className={styles.errorMsg}>Ingresa una dirección de correo electrónico válida</span>
               )}
+              {guardandoCampo === "email" && <span className={styles.hint}>Guardando...</span>}
             </div>
+
+            {errorProgreso && (
+              <div className={styles.errorMsg} style={{ marginBottom: "10px" }}>{errorProgreso}</div>
+            )}
 
             <div className={styles.lbl} style={{ marginTop: "20px" }}>
               Fotografía de tu INE y Selfie
@@ -569,7 +664,7 @@ export const Documentos: React.FC<DocumentosProps> = ({
 
             {/* Frente */}
             <div
-              className={`${styles.drop} ${ineFrente ? styles.cargado : ""}`}
+              className={`${styles.drop} ${(ineFrente || ineFrenteGuardado) ? styles.cargado : ""}`}
               style={{ cursor: "default" }}
             >
               <div className={styles.thumb}>
@@ -599,18 +694,20 @@ export const Documentos: React.FC<DocumentosProps> = ({
               <div className={styles.txt}>
                 <div className={styles.t}>Frente de tu INE</div>
                 <div className={styles.d}>
-                  {ineFrente
+                  {guardandoCampo === "ine_frente"
+                    ? "Guardando..."
+                    : (ineFrente || ineFrenteGuardado)
                     ? "Foto cargada correctamente"
                     : "Haz clic para tomar foto o subir"}
                 </div>
               </div>
               <div className={styles.check}><FiCheck /></div>
             </div>
-            {renderBotonesCaptura("ine-frente", "environment", setIneFrente)}
+            {renderBotonesCaptura("ine-frente", "environment", setIneFrente, "ine_frente", setIneFrenteGuardado)}
 
             {/* Reverso */}
             <div
-              className={`${styles.drop} ${ineReverso ? styles.cargado : ""}`}
+              className={`${styles.drop} ${(ineReverso || ineReversoGuardado) ? styles.cargado : ""}`}
               style={{ cursor: "default" }}
             >
               <div className={styles.thumb}>
@@ -643,18 +740,20 @@ export const Documentos: React.FC<DocumentosProps> = ({
               <div className={styles.txt}>
                 <div className={styles.t}>Reverso de tu INE</div>
                 <div className={styles.d}>
-                  {ineReverso
+                  {guardandoCampo === "ine_reverso"
+                    ? "Guardando..."
+                    : (ineReverso || ineReversoGuardado)
                     ? "Foto cargada correctamente"
                     : "Haz clic para tomar foto o subir"}
                 </div>
               </div>
               <div className={styles.check}><FiCheck /></div>
             </div>
-            {renderBotonesCaptura("ine-reverso", "environment", setIneReverso)}
+            {renderBotonesCaptura("ine-reverso", "environment", setIneReverso, "ine_reverso", setIneReversoGuardado)}
 
             {/* Selfie */}
             <div
-              className={`${styles.drop} ${selfie ? styles.cargado : ""}`}
+              className={`${styles.drop} ${(selfie || selfieGuardado) ? styles.cargado : ""}`}
               style={{ cursor: "default" }}
             >
               <div className={styles.thumb}>
@@ -675,14 +774,16 @@ export const Documentos: React.FC<DocumentosProps> = ({
               <div className={styles.txt}>
                 <div className={styles.t}>Selfie</div>
                 <div className={styles.d}>
-                  {selfie
+                  {guardandoCampo === "selfie"
+                    ? "Guardando..."
+                    : (selfie || selfieGuardado)
                     ? "Foto cargada correctamente"
                     : "Tu rostro, bien iluminado"}
                 </div>
               </div>
               <div className={styles.check}><FiCheck /></div>
             </div>
-            {renderBotonesCaptura("selfie", "user", setSelfie)}
+            {renderBotonesCaptura("selfie", "user", setSelfie, "selfie", setSelfieGuardado)}
 
             <div className={styles.privacidad}>
               <svg

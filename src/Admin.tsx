@@ -124,6 +124,7 @@ export const Admin: React.FC<AdminProps> = ({ solicitudes, onUpdateStatus, onSav
 
   const getStatusClass = (estatus: Solicitud['estatus']) => {
     switch (estatus) {
+      case 'Iniciada': return styles.statusIniciada;
       case 'Pendiente': return styles.statusPending;
       case 'Aprobado': return styles.statusApproved;
       case 'Rechazado': return styles.statusRejected;
@@ -263,7 +264,7 @@ export const Admin: React.FC<AdminProps> = ({ solicitudes, onUpdateStatus, onSav
           <div className={styles.panelHeader}>
             <div className={styles.panelTitle}>Créditos Recibidos</div>
             <div className={styles.filterBar}>
-              {(['Todos', 'Pendiente', 'Aprobado', 'Pendiente de envío', 'Preparando paquete', 'Enviado', 'Rechazado'] as const).map(est => (
+              {(['Todos', 'Iniciada', 'Pendiente', 'Aprobado', 'Pendiente de envío', 'Preparando paquete', 'Enviado', 'Rechazado'] as const).map(est => (
                 <button
                   key={est}
                   className={`${styles.filterBtn} ${filtroEstatus === est ? styles.filterBtnActive : ''}`}

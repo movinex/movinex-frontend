@@ -264,6 +264,11 @@
   text-align: center;
 }
 
+.statusIniciada {
+  background: #F1F5F9;
+  color: #64748B;
+}
+
 .statusPending {
   background: #FEF3C7;
   color: #D97706;
