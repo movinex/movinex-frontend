@@ -8,10 +8,10 @@ export const LegalContent: React.FC<{ page: "privacidad" | "terminos" | "cookies
         <div className={styles.aboutContent}>
           <span className={styles.eyebrow}>LEGAL</span>
           <h2>Aviso de Privacidad Integral</h2>
-          <p>NVX TECHNOLOGIES, S. DE R.L. DE C.V. — MOVINEX  ·  Vigente a partir del 20 de julio de 2026</p>
+          <p>NVX TECHNOLOGIES, S. DE R.L. DE C.V. — MOVINEX  ·  Vigente a partir del 6 de agosto de 2026</p>
           
           <h3>1. Identidad y domicilio del Responsable</h3>
-          <p>NVX TECHNOLOGIES, S. DE R.L. DE C.V., que opera comercialmente bajo la marca MOVINEX (en adelante, "Movinex", "nosotros" o el "Responsable"), con Registro Federal de Contribuyentes NTE2603034X5 y domicilio en Bosque de Arrayán número 1, interior 301 N1, Colonia Bosque Esmeralda, Atizapán de Zaragoza, Estado de México, C.P. 52930, es responsable del tratamiento de sus datos personales.</p>
+          <p>NVX TECHNOLOGIES, S. DE R.L. DE C.V., que opera comercialmente bajo la marca MOVINEX (en adelante, "Movinex", "nosotros" o el "Responsable"), con Registro Federal de Contribuyentes NTE2603034X5 y domicilio en Calle Bosque de Arrayán número exterior 1, interior LT 1 417, Colonia Bosque Esmeralda, Ciudad López Mateos, Atizapán de Zaragoza, Estado de México, C.P. 52930, es responsable del tratamiento de sus datos personales.</p>
           <p>Este Aviso se emite en cumplimiento de la Ley Federal de Protección de Datos Personales en Posesión de los Particulares (LFPDPPP), publicada en el Diario Oficial de la Federación el 20 de marzo de 2025, y su normativa aplicable.</p>
 
           <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "16px", marginBottom: "24px" }}>
@@ -43,7 +43,7 @@ export const LegalContent: React.FC<{ page: "privacidad" | "terminos" | "cookies
           <p>Imagen facial (fotografía tipo selfie), plantilla biométrica derivada de dicha imagen y resultado de la prueba de vida, obtenidos a través de nuestro proveedor de verificación de identidad.</p>
           
           <h4>2.4 Datos financieros y patrimoniales</h4>
-          <p>Datos de la tarjeta de débito o crédito con la que realiza sus pagos —los cuales son capturados y resguardados de forma tokenizada directamente por nuestro procesador de pagos, sin que Movinex almacene el número completo de su tarjeta—, ingresos declarados, ocupación, historial de pagos con Movinex y saldos pendientes.</p>
+          <p>Datos de la tarjeta de débito o crédito con la que realiza su pago inicial —los cuales son capturados y resguardados de forma tokenizada directamente por nuestros procesadores de pago, sin que Movinex almacene el número completo de su tarjeta—, ingresos declarados, ocupación, cuenta CLABE única asignada a su operación y datos de las transferencias que realice a la misma —incluyendo institución bancaria y cuenta ordenante—, historial de pagos con Movinex y saldos pendientes.</p>
           
           <h4>2.5 Datos del equipo financiado</h4>
           <p>Número IMEI, número de serie, marca, modelo, estado de activación y estado de bloqueo del dispositivo, así como identificadores técnicos generados por el software de bloqueo instalado en el equipo.</p>
@@ -61,8 +61,8 @@ export const LegalContent: React.FC<{ page: "privacidad" | "terminos" | "cookies
             <li>Verificar su identidad y validar la autenticidad de su identificación oficial, incluyendo la comparación biométrica de su rostro contra la fotografía de dicha identificación.</li>
             <li>Prevenir, detectar e investigar el fraude, la suplantación de identidad y el uso indebido de nuestros servicios.</li>
             <li>Evaluar su solicitud y determinar la aprobación, el monto, el plazo y las condiciones del financiamiento, mediante procesos que incluyen decisiones automatizadas conforme al numeral 4 de este Aviso.</li>
-            <li>Celebrar, formalizar, documentar y ejecutar el contrato de compraventa a plazos del equipo, así como el pagaré y demás documentos accesorios.</li>
-            <li>Procesar el pago inicial y los cargos recurrentes semanales a su medio de pago.</li>
+            <li>Celebrar, formalizar, documentar y ejecutar el contrato de compraventa a plazos del equipo, así como sus anexos y demás documentos accesorios.</li>
+            <li>Procesar el pago inicial a su medio de pago, asignarle una cuenta CLABE única y recibir, identificar, aplicar y conciliar los pagos semanales que usted realice a dicha cuenta.</li>
             <li>Gestionar la logística de envío y entrega del equipo, así como las incidencias de entrega.</li>
             <li>Activar, administrar, operar y, en su momento, desactivar el Servicio de Seguridad y Bloqueo del Equipo contratado por usted, incluyendo el bloqueo y desbloqueo remoto del dispositivo conforme a lo pactado.</li>
             <li>Realizar gestiones de cobranza extrajudicial y, en su caso, ejercer las acciones judiciales que correspondan.</li>
@@ -104,8 +104,8 @@ export const LegalContent: React.FC<{ page: "privacidad" | "terminos" | "cookies
             </thead>
             <tbody>
               <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Verificamex</td><td style={{ padding: "12px" }}>Verificación de identidad y validación biométrica</td><td style={{ padding: "12px" }}>Identificación, biométricos</td></tr>
-              <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Conekta</td><td style={{ padding: "12px" }}>Procesamiento de pagos y cobros recurrentes</td><td style={{ padding: "12px" }}>Identificación, contacto, financieros</td></tr>
-              <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Skydropx</td><td style={{ padding: "12px" }}>Generación de guías y logística de entrega</td><td style={{ padding: "12px" }}>Identificación, contacto, domicilio</td></tr>
+              <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Conekta y Stripe</td><td style={{ padding: "12px" }}>Procesamiento del pago inicial y asignación, recepción y conciliación de la cuenta CLABE única de cada operación. Stripe, Inc. es una entidad establecida en los Estados Unidos de América.</td><td style={{ padding: "12px" }}>Identificación, contacto, financieros</td></tr>
+              <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Skydropx y la empresa de paquetería contratada</td><td style={{ padding: "12px" }}>Generación de guías, envío, entrega y devoluciones del equipo</td><td style={{ padding: "12px" }}>Identificación, contacto, domicilio</td></tr>
               <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Trustonic (vía Bantos)</td><td style={{ padding: "12px" }}>Operación del Servicio de Seguridad y Bloqueo</td><td style={{ padding: "12px" }}>Datos del equipo, identificación</td></tr>
               <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Proveedor de nube</td><td style={{ padding: "12px" }}>Alojamiento y respaldo de bases de datos</td><td style={{ padding: "12px" }}>Todas las categorías</td></tr>
               <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Meta Platforms</td><td style={{ padding: "12px" }}>Comunicación por WhatsApp y publicidad digital</td><td style={{ padding: "12px" }}>Contacto, navegación</td></tr>
@@ -154,11 +154,11 @@ export const LegalContent: React.FC<{ page: "privacidad" | "terminos" | "cookies
           <p>Nuestro sitio web utiliza cookies, píxeles y tecnologías similares, tanto propias como de terceros, para el funcionamiento del sitio, el análisis de tráfico y la publicidad personalizada. Puede consultar el detalle y configurar sus preferencias en nuestra Política de Cookies, disponible en https://movinex.mx/politica-de-cookies, así como a través del panel de configuración que se muestra al ingresar al sitio.</p>
 
           <h3>9. Medidas de seguridad</h3>
-          <p>Movinex ha implementado medidas de seguridad administrativas, técnicas y físicas razonables para proteger sus datos personales contra daño, pérdida, alteración, destrucción, uso, acceso o tratamiento no autorizado. Entre ellas: cifrado en tránsito y en reposo, control de accesos por perfiles, tokenización de datos de tarjetas por parte del procesador de pagos, registro de accesos y acuerdos de confidencialidad con nuestro personal y proveedores.</p>
+          <p>Movinex ha implementado medidas de seguridad administrativas, técnicas y físicas razonables para proteger sus datos personales contra daño, pérdida, alteración, destrucción, uso, acceso o tratamiento no autorizado. Entre ellas: cifrado en tránsito y en reposo, control de accesos por perfiles, tokenización de datos de tarjetas por parte de nuestros procesadores de pago, registro de accesos y acuerdos de confidencialidad con nuestro personal y proveedores.</p>
           <p>En caso de que ocurra una vulneración de seguridad que afecte de forma significativa sus derechos patrimoniales o morales, se lo informaremos sin demora para que pueda tomar las medidas correspondientes.</p>
 
           <h3>10. Plazo de conservación</h3>
-          <p>Conservaremos sus datos personales durante la vigencia de la relación contractual y, posteriormente, durante los plazos de conservación exigidos por la legislación fiscal, mercantil y de prevención de lavado de dinero aplicables. Concluidos dichos plazos, sus datos serán bloqueados y posteriormente suprimidos de forma segura. Los datos biométricos se conservan únicamente por el plazo necesario para acreditar la debida verificación de identidad y la validez del consentimiento otorgado.</p>
+          <p>Conservaremos sus datos personales durante la vigencia de la relación contractual y, posteriormente, durante los plazos de conservación exigidos por la legislación fiscal, mercantil y de prevención de lavado de dinero aplicables. Conservaremos igualmente, por los mismos plazos, las constancias de aceptación y de firma electrónica de los documentos que usted acepte, así como las constancias de conservación de mensajes de datos emitidas conforme a la NOM-151-SCFI-2016. Concluidos dichos plazos, sus datos serán bloqueados y posteriormente suprimidos de forma segura. Los datos biométricos se conservan únicamente por el plazo necesario para acreditar la debida verificación de identidad y la validez del consentimiento otorgado.</p>
 
           <h3>11. Cambios al Aviso de Privacidad</h3>
           <p>Este Aviso puede sufrir modificaciones derivadas de cambios legislativos, de nuestras prácticas de privacidad o de nuestro modelo de negocio. Cualquier modificación será publicada en https://movinex.mx/aviso-de-privacidad, indicando la fecha de la última actualización. Le recomendamos consultar dicha página periódicamente. Cuando los cambios sean sustanciales, se lo notificaremos adicionalmente al correo electrónico o número de WhatsApp que tengamos registrado.</p>
@@ -173,7 +173,7 @@ export const LegalContent: React.FC<{ page: "privacidad" | "terminos" | "cookies
           <p>☐  Acepto</p>
           
           <h4>13.2 Datos financieros y patrimoniales</h4>
-          <p>Consiento expresamente el tratamiento de mis datos financieros y patrimoniales para la evaluación de mi solicitud, la formalización del contrato y el procesamiento de los cobros recurrentes, en los términos de este Aviso de Privacidad.</p>
+          <p>Consiento expresamente el tratamiento de mis datos financieros y patrimoniales para la evaluación de mi solicitud, la formalización del contrato, el cobro del pago inicial y la recepción, identificación y conciliación de los pagos que realice a la cuenta CLABE única asignada a mi operación, en los términos de este Aviso de Privacidad.</p>
           <p>☐  Acepto</p>
           
           <h4>13.3 Transferencia internacional</h4>
@@ -196,7 +196,7 @@ export const LegalContent: React.FC<{ page: "privacidad" | "terminos" | "cookies
         <div className={styles.aboutContent}>
           <span className={styles.eyebrow}>LEGAL</span>
           <h2>Términos y Condiciones</h2>
-          <p>NVX TECHNOLOGIES, S. DE R.L. DE C.V. — MOVINEX  ·  movinex.mx  ·  Vigente a partir del 20 de julio de 2026</p>
+          <p>NVX TECHNOLOGIES, S. DE R.L. DE C.V. — MOVINEX  ·  movinex.mx  ·  Vigente a partir del 6 de agosto de 2026</p>
           
           <p>Este documento contiene los Términos y Condiciones aplicables a los servicios de Movinex y se integra por cuatro secciones. La Sección C se emite conforme al artículo 66 de la Ley Federal de Protección al Consumidor.</p>
 
@@ -232,7 +232,7 @@ export const LegalContent: React.FC<{ page: "privacidad" | "terminos" | "cookies
               <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Denominación social</td><td style={{ padding: "12px" }}>NVX TECHNOLOGIES, S. DE R.L. DE C.V.</td></tr>
               <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Marca comercial</td><td style={{ padding: "12px" }}>MOVINEX</td></tr>
               <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>RFC</td><td style={{ padding: "12px" }}>NTE2603034X5</td></tr>
-              <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Domicilio</td><td style={{ padding: "12px" }}>Bosque de Arrayán 1, int. 301 N1, Col. Bosque Esmeralda, Atizapán de Zaragoza, Estado de México, C.P. 52930</td></tr>
+              <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Domicilio</td><td style={{ padding: "12px" }}>Calle Bosque de Arrayán número exterior 1, interior LT 1 417, Colonia Bosque Esmeralda, Ciudad López Mateos, Atizapán de Zaragoza, Estado de México, C.P. 52930</td></tr>
               <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Sitio web</td><td style={{ padding: "12px" }}><a href="https://movinex.mx" target="_blank" rel="noreferrer">https://movinex.mx</a></td></tr>
               <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Atención a clientes</td><td style={{ padding: "12px" }}>info@movinex.mx</td></tr>
               <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Privacidad y derechos ARCO</td><td style={{ padding: "12px" }}>privacidad@movinex.mx</td></tr>
@@ -282,7 +282,7 @@ export const LegalContent: React.FC<{ page: "privacidad" | "terminos" | "cookies
 
           <h4>B.5 Contratación electrónica y evidencia</h4>
           <p>Usted reconoce y acepta que la manifestación de su voluntad por medios electrónicos —incluyendo la marcación de casillas de aceptación, la captura de códigos de un solo uso enviados a su teléfono o correo, la verificación biométrica y la firma electrónica— produce los mismos efectos jurídicos que la firma autógrafa, en términos del Código de Comercio.</p>
-          <p>Movinex conserva registros electrónicos de dichas manifestaciones, incluyendo fecha, hora, dirección IP y versión del documento aceptado, los cuales constituyen prueba de la celebración del acto. Usted podrá solicitar copia de los documentos que haya aceptado escribiendo a info@movinex.mx.</p>
+          <p>Movinex conserva registros electrónicos de dichas manifestaciones, incluyendo fecha y hora, dirección IP, dispositivo utilizado, número al que se envió el código de un solo uso, cada casilla aceptada con su hora individual, y el identificador de versión y la huella digital (hash) del documento exacto que se le mostró. Estos registros constituyen prueba de la celebración del acto. Movinex obtiene además, respecto de cada operación, una constancia de conservación de mensajes de datos emitida por un Prestador de Servicios de Certificación acreditado, conforme a la NOM-151-SCFI-2016. Usted podrá solicitar copia de los documentos que haya aceptado y de dichas constancias escribiendo a info@movinex.mx.</p>
 
           <h4>B.6 Propiedad intelectual</h4>
           <p>Todos los contenidos del sitio —incluyendo la marca MOVINEX, logotipos, diseños, textos, imágenes, bases de datos, código fuente e interfaces— son propiedad de Movinex o de sus licenciantes y están protegidos por la legislación aplicable en materia de propiedad industrial y derechos de autor.</p>
@@ -305,13 +305,13 @@ export const LegalContent: React.FC<{ page: "privacidad" | "terminos" | "cookies
             <li>Ser persona física mayor de 18 años con plena capacidad de ejercicio.</li>
             <li>Contar con identificación oficial vigente y superar el proceso de verificación de identidad, que incluye validación biométrica.</li>
             <li>Proporcionar un domicilio de entrega dentro del territorio nacional.</li>
-            <li>Registrar un medio de pago válido a su nombre para el cobro del pago inicial y de los pagos periódicos.</li>
+            <li>Registrar una tarjeta de débito o crédito válida a su nombre para el pago inicial, y contar con una cuenta bancaria a su nombre desde la cual realizar los pagos semanales.</li>
             <li>Aceptar el Aviso de Privacidad, los presentes Términos y la Carátula de Condiciones de su operación.</li>
           </ul>
 
           <h4>C.2 Estructura del precio y del financiamiento</h4>
-          <p>Movinex opera un catálogo de equipos de distintas marcas, modelos y precios. Por ello, las condiciones se expresan a continuación en porcentajes, aplicables de manera uniforme a cualquier equipo del catálogo. Los importes exactos en pesos correspondientes al equipo que usted elija se le muestran, antes de contratar, en la Carátula de Condiciones y en la Tabla de Amortización.</p>
-          
+          <p>Movinex opera un catálogo de equipos de distintas marcas, modelos y precios. Por ello, las condiciones se expresan a continuación en porcentajes del precio de contado y en importes fijos en pesos, según corresponda, aplicables de manera uniforme a cualquier equipo del catálogo. Los importes exactos en pesos correspondientes al equipo que usted elija se le muestran, antes de contratar, en la Carátula de Condiciones y en la Tabla de Amortización.</p>
+
           <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "16px", marginBottom: "24px" }}>
             <thead>
               <tr style={{ backgroundColor: "#F8FAFC", borderBottom: "2px solid #E2E8F0" }}>
@@ -323,24 +323,24 @@ export const LegalContent: React.FC<{ page: "privacidad" | "terminos" | "cookies
               <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Precio de contado</td><td style={{ padding: "12px" }}>El precio publicado del equipo seleccionado, en pesos mexicanos, con IVA incluido.</td></tr>
               <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Pago inicial (enganche)</td><td style={{ padding: "12px" }}>15.00% del precio de contado.</td></tr>
               <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Monto a financiar</td><td style={{ padding: "12px" }}>85.00% del precio de contado.</td></tr>
-              <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Tasa de interés anual fija</td><td style={{ padding: "12px" }}>232.00% sobre saldos insolutos. No capitalizable.</td></tr>
-              <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Tasa de interés semanal</td><td style={{ padding: "12px" }}>4.4615% sobre saldos insolutos.</td></tr>
+              <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Tasa de interés anual fija</td><td style={{ padding: "12px" }}>228.00% anual sobre saldos insolutos. Tasa fija. No capitalizable.</td></tr>
+              <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Tasa de interés semanal</td><td style={{ padding: "12px" }}>4.3846% sobre saldos insolutos (228.00% ÷ 52).</td></tr>
               <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>IVA sobre intereses</td><td style={{ padding: "12px" }}>16.00% sobre el interés ordinario devengado en cada periodo.</td></tr>
-              <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Servicio de Seguridad y Bloqueo del Equipo</td><td style={{ padding: "12px" }}>0.80% semanal sobre el monto financiado original, más IVA del 16.00%. Servicio obligatorio.</td></tr>
+              <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Servicio de Seguridad y Bloqueo del Equipo</td><td style={{ padding: "12px" }}>$17.00 (diecisiete pesos 00/100 M.N.) semanales, más IVA del 16.00%; es decir, $19.72 semanales con IVA incluido. Importe fijo, con independencia del precio del equipo y del plazo. Servicio obligatorio.</td></tr>
               <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Interés moratorio</td><td style={{ padding: "12px" }}>No se cobra interés moratorio.</td></tr>
               <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Comisión por apertura</td><td style={{ padding: "12px" }}>No se cobra.</td></tr>
               <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Comisión por pago anticipado</td><td style={{ padding: "12px" }}>No se cobra.</td></tr>
-              <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Costo de envío</td><td style={{ padding: "12px" }}>Sin costo adicional.</td></tr>
+              <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Costo de envío</td><td style={{ padding: "12px" }}>Por cuenta del consumidor. Se calcula según el domicilio de entrega y se le muestra desglosado antes de que usted confirme la operación. Movinex puede ofrecer promociones de envío sin costo, sujetas a su vigencia y condiciones.</td></tr>
               <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Plazos disponibles</td><td style={{ padding: "12px" }}>26 o 52 pagos semanales, a elección del consumidor.</td></tr>
-              <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Sistema de amortización</td><td style={{ padding: "12px" }}>Francés. Pago periódico de importe constante.</td></tr>
-              <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Periodicidad de pago</td><td style={{ padding: "12px" }}>Semanal.</td></tr>
+              <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Sistema de amortización</td><td style={{ padding: "12px" }}>Francés. Pago periódico de importe constante. El pago semanal se redondea al peso cerrado; el último pago se ajusta para dejar el saldo en cero y nunca será mayor que el pago semanal ordinario.</td></tr>
+              <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Periodicidad y forma de pago</td><td style={{ padding: "12px" }}>Semanal. El pago inicial se cobra a la tarjeta que usted registre. Los pagos semanales los realiza usted mediante transferencia electrónica a una cuenta CLABE única asignada a su operación. Movinex no domicilia ni carga automáticamente los pagos semanales.</td></tr>
             </tbody>
           </table>
           <p>No existen cargos, comisiones ni conceptos distintos a los señalados en esta tabla. Cualquier concepto no listado no será exigible.</p>
 
           <h4>C.3 Costo total del financiamiento</h4>
-          <p>Los siguientes porcentajes resultan de aplicar las condiciones del numeral C.2 y son válidos para cualquier equipo del catálogo, con independencia de su precio:</p>
-          
+          <p>Los siguientes indicadores resultan de aplicar las condiciones del numeral C.2 y son válidos para cualquier equipo del catálogo. Los porcentajes se calculan sobre el monto financiado y no dependen del precio del equipo; el Servicio de Seguridad y Bloqueo es un importe fijo en pesos, por lo que su peso relativo sí varía según el precio del equipo:</p>
+
           <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "16px", marginBottom: "24px" }}>
             <thead>
               <tr style={{ backgroundColor: "#F8FAFC", borderBottom: "2px solid #E2E8F0" }}>
@@ -350,18 +350,18 @@ export const LegalContent: React.FC<{ page: "privacidad" | "terminos" | "cookies
               </tr>
             </thead>
             <tbody>
-              <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Pago semanal total, como % del monto financiado</td><td style={{ padding: "12px" }}>7.0817%</td><td style={{ padding: "12px" }}>6.5083%</td></tr>
-              <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Intereses ordinarios totales, como % del monto financiado</td><td style={{ padding: "12px" }}>72.5423%</td><td style={{ padding: "12px" }}>163.9376%</td></tr>
-              <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>IVA sobre intereses, como % del monto financiado</td><td style={{ padding: "12px" }}>11.6068%</td><td style={{ padding: "12px" }}>26.2300%</td></tr>
-              <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Servicio de Seguridad y Bloqueo, como % del monto financiado</td><td style={{ padding: "12px" }}>20.8000%</td><td style={{ padding: "12px" }}>41.6000%</td></tr>
-              <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>IVA sobre el Servicio, como % del monto financiado</td><td style={{ padding: "12px" }}>3.3280%</td><td style={{ padding: "12px" }}>6.6560%</td></tr>
-              <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Monto total a pagar en el plazo, como % del monto financiado</td><td style={{ padding: "12px" }}>208.2771%</td><td style={{ padding: "12px" }}>338.4236%</td></tr>
-              <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Costo total de la operación, como % del precio de contado</td><td style={{ padding: "12px" }}>192.0356%</td><td style={{ padding: "12px" }}>302.6601%</td></tr>
-              <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Costo Anual Total (CAT) sin IVA, informativo</td><td style={{ padding: "12px" }}>2,151.1%</td><td style={{ padding: "12px" }}>1,904.8%</td></tr>
-              <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Costo Anual Total (CAT) con IVA, informativo</td><td style={{ padding: "12px" }}>2,448.2%</td><td style={{ padding: "12px" }}>2,214.0%</td></tr>
+              <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Pago base semanal (capital + interés + IVA), como % del monto financiado</td><td style={{ padding: "12px" }}>7.0184%</td><td style={{ padding: "12px" }}>5.5033%</td></tr>
+              <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Intereses ordinarios totales, como % del monto financiado</td><td style={{ padding: "12px" }}>71.10%</td><td style={{ padding: "12px" }}>160.49%</td></tr>
+              <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>IVA sobre intereses, como % del monto financiado</td><td style={{ padding: "12px" }}>11.38%</td><td style={{ padding: "12px" }}>25.68%</td></tr>
+              <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Servicio de Seguridad y Bloqueo semanal, importe fijo con IVA incluido</td><td style={{ padding: "12px" }}>$19.72</td><td style={{ padding: "12px" }}>$19.72</td></tr>
+              <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Servicio de Seguridad y Bloqueo, total en el plazo con IVA incluido</td><td style={{ padding: "12px" }}>$512.72</td><td style={{ padding: "12px" }}>$1,025.44</td></tr>
+              <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Pago semanal total</td><td style={{ padding: "12px" }}>7.0184% del monto financiado más $19.72, redondeado al peso cerrado.</td><td style={{ padding: "12px" }}>5.5033% del monto financiado más $19.72, redondeado al peso cerrado.</td></tr>
+              <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Monto total a pagar en el plazo</td><td style={{ padding: "12px" }}>Suma de 26 pagos semanales. El último pago se ajusta y nunca es mayor que el pago ordinario.</td><td style={{ padding: "12px" }}>Suma de 52 pagos semanales. El último pago se ajusta y nunca es mayor que el pago ordinario.</td></tr>
+              <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Costo total de la operación</td><td style={{ padding: "12px" }}>Pago inicial más la suma de los pagos semanales. Se le muestra en pesos en su Carátula de Condiciones.</td><td style={{ padding: "12px" }}>Pago inicial más la suma de los pagos semanales. Se le muestra en pesos en su Carátula de Condiciones.</td></tr>
+              <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Costo Anual Total (CAT), informativo</td><td style={{ padding: "12px" }}>Se calcula para su equipo y su plazo, e incorpora la totalidad de los cargos obligatorios. Se le muestra en su Carátula de Condiciones antes de contratar.</td><td style={{ padding: "12px" }}>Se calcula para su equipo y su plazo, e incorpora la totalidad de los cargos obligatorios. Se le muestra en su Carátula de Condiciones antes de contratar.</td></tr>
             </tbody>
           </table>
-          <p>Nota sobre el CAT. Movinex no es una entidad financiera y por tanto no está obligada a publicar el Costo Anual Total. Se incluye de forma voluntaria, calculado conforme al criterio de tasa anual efectiva e incorporando la totalidad de los cargos obligatorios, con el único propósito de que usted pueda comparar esta oferta con otras del mercado.</p>
+          <p>Nota sobre el CAT. Movinex no es una entidad financiera y por tanto no está obligada a publicar el Costo Anual Total. Se incluye de forma voluntaria, calculado conforme al criterio de tasa anual efectiva e incorporando la totalidad de los cargos obligatorios, con el único propósito de que usted pueda comparar esta oferta con otras del mercado. Debido a que el Servicio de Seguridad y Bloqueo es un importe fijo en pesos, el CAT es mayor en los equipos de menor precio y menor en los de mayor precio; por ello se calcula y se le informa para cada operación en particular, en lugar de publicarse una cifra única para todo el catálogo.</p>
 
           <h4>Ejemplo representativo</h4>
           <p>Equipo con precio de contado de $2,499.00 M.N., a 52 pagos semanales:</p>
@@ -377,18 +377,18 @@ export const LegalContent: React.FC<{ page: "privacidad" | "terminos" | "cookies
               <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px" }}>Precio de contado</td><td style={{ padding: "12px" }}>$2,499.00</td></tr>
               <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px" }}>Pago inicial (15%)</td><td style={{ padding: "12px" }}>$374.85</td></tr>
               <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px" }}>Monto a financiar (85%)</td><td style={{ padding: "12px" }}>$2,124.15</td></tr>
-              <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px" }}>Pago semanal (capital + interés + IVA)</td><td style={{ padding: "12px" }}>$118.53</td></tr>
-              <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px" }}>Servicio de Seguridad y Bloqueo semanal + IVA</td><td style={{ padding: "12px" }}>$19.71</td></tr>
-              <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Pago semanal total</td><td style={{ padding: "12px", fontWeight: "700", color: "#2B6BE4" }}>$138.24</td></tr>
-              <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px" }}>Intereses ordinarios totales</td><td style={{ padding: "12px" }}>$3,482.25</td></tr>
-              <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px" }}>IVA sobre intereses</td><td style={{ padding: "12px" }}>$557.16</td></tr>
-              <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px" }}>Servicio de Seguridad y Bloqueo total (52 semanas)</td><td style={{ padding: "12px" }}>$883.65</td></tr>
-              <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px" }}>IVA sobre el Servicio</td><td style={{ padding: "12px" }}>$141.38</td></tr>
-              <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px" }}>Total a pagar en el plazo</td><td style={{ padding: "12px" }}>$7,188.59</td></tr>
-              <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Costo total (pago inicial + plazo)</td><td style={{ padding: "12px", fontWeight: "700" }}>$7,563.44</td></tr>
+              <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px" }}>Pago semanal (capital + interés + IVA)</td><td style={{ padding: "12px" }}>$117.28</td></tr>
+              <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px" }}>Servicio de Seguridad y Bloqueo semanal + IVA</td><td style={{ padding: "12px" }}>$19.72</td></tr>
+              <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Pago semanal total</td><td style={{ padding: "12px", fontWeight: "700", color: "#2B6BE4" }}>$137.00</td></tr>
+              <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px" }}>Intereses ordinarios totales</td><td style={{ padding: "12px" }}>$3,347.20</td></tr>
+              <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px" }}>IVA sobre intereses</td><td style={{ padding: "12px" }}>$535.55</td></tr>
+              <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px" }}>Servicio de Seguridad y Bloqueo total (52 semanas)</td><td style={{ padding: "12px" }}>$884.00</td></tr>
+              <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px" }}>IVA sobre el Servicio</td><td style={{ padding: "12px" }}>$141.44</td></tr>
+              <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px" }}>Total a pagar en el plazo</td><td style={{ padding: "12px" }}>$7,032.34</td></tr>
+              <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Costo total (pago inicial + plazo)</td><td style={{ padding: "12px", fontWeight: "700" }}>$7,407.19</td></tr>
             </tbody>
           </table>
-          <p><small>Ejemplo con fines ilustrativos. Las cifras aplicables a su operación son las de su Carátula de Condiciones y Tabla de Amortización. Pueden existir diferencias de centavos por redondeo.</small></p>
+          <p><small>Ejemplo con fines ilustrativos, calculado con las condiciones del numeral C.2. En este ejemplo el último pago es de $45.34, por efecto del redondeo del pago semanal al peso cerrado. No incluye el costo de envío, que se calcula según el domicilio de entrega. Las cifras aplicables a su operación son las de su Carátula de Condiciones y Tabla de Amortización.</small></p>
 
           <h4>C.4 Carátula de Condiciones y Tabla de Amortización</h4>
           <p>Antes de que usted formalice la operación, Movinex le muestra y pone a su disposición para descarga:</p>
@@ -396,7 +396,7 @@ export const LegalContent: React.FC<{ page: "privacidad" | "terminos" | "cookies
             <li>La Carátula de Condiciones, que contiene el precio de contado del equipo, el pago inicial, el monto financiado, la tasa de interés, el importe del Servicio de Seguridad y Bloqueo, el número y periodicidad de los pagos, el importe de cada pago y el monto total a pagar.</li>
             <li>La Tabla de Amortización completa, con el desglose por periodo de saldo inicial, interés, IVA sobre interés, capital, Servicio de Seguridad y Bloqueo, IVA sobre el Servicio, pago total y saldo final.</li>
           </ul>
-          <p>Usted recibirá copia de ambos documentos, junto con estos Términos, en el correo electrónico registrado. En caso de discrepancia entre estos Términos y su Carátula de Condiciones, prevalecerá lo más favorable al consumidor.</p>
+          <p>Al momento de despachar su equipo, Movinex emite y le remite el Anexo de Identificación del Equipo, que contiene la marca, el modelo, la capacidad, el color, el número de serie y el IMEI del dispositivo que le fue asignado. Dicho Anexo forma parte integrante de su operación y es el que identifica el bien sujeto a la reserva de dominio prevista en el numeral C.6. Usted recibirá copia de la Carátula de Condiciones, de la Tabla de Amortización y del Anexo de Identificación del Equipo, junto con estos Términos, en el correo electrónico registrado. En caso de discrepancia entre estos Términos y su Carátula de Condiciones, prevalecerá lo más favorable al consumidor.</p>
 
           <h4>C.5 Servicio de Seguridad y Bloqueo del Equipo</h4>
           <p>Este servicio es obligatorio y forma parte del costo total de la operación. Su importe se encuentra incorporado en su pago semanal y desglosado en la Carátula de Condiciones.</p>
@@ -408,8 +408,8 @@ export const LegalContent: React.FC<{ page: "privacidad" | "terminos" | "cookies
           <p>Durante la vigencia del financiamiento, usted puede solicitar a Movinex el bloqueo remoto de su equipo en caso de robo o extravío, sin costo adicional, comunicándose a los canales de atención. El bloqueo impide el uso del equipo por parte de terceros.</p>
           
           <h5>C.5.3 Bloqueo por falta de pago</h5>
-          <p>En caso de que no se realice un pago en la fecha pactada, el equipo será bloqueado a partir del día siguiente al vencimiento.</p>
-          <p>Durante el bloqueo el equipo conserva habilitadas las llamadas a números de emergencia, incluido el 911, así como la comunicación con los canales de atención de Movinex. Ninguna circunstancia da lugar a la desactivación de las llamadas de emergencia.</p>
+          <p>Movinex le enviará un recordatorio antes de cada fecha de vencimiento y un aviso previo al bloqueo, al correo electrónico y al WhatsApp registrados. En caso de que un pago no se acredite en la fecha pactada, el equipo será bloqueado a partir del día hábil siguiente al vencimiento.</p>
+          <p>Si usted realizó la transferencia dentro de la fecha pactada y esta se acredita con posterioridad, el bloqueo se levanta en cuanto el pago se identifique, sin cargo ni trámite alguno a su cargo. Durante el bloqueo el equipo conserva habilitadas las llamadas a números de emergencia, incluido el 911, así como la comunicación con los canales de atención de Movinex. Ninguna circunstancia da lugar a la desactivación de las llamadas de emergencia.</p>
           <p>El bloqueo no extingue ni suspende su obligación de pago, y no constituye una penalización económica adicional.</p>
           
           <h5>C.5.4 Desbloqueo</h5>
@@ -424,19 +424,19 @@ export const LegalContent: React.FC<{ page: "privacidad" | "terminos" | "cookies
 
           <h4>C.6 Reserva de dominio</h4>
           <p>Movinex conserva la propiedad del equipo hasta la liquidación total del precio. Usted adquiere la posesión y el uso del equipo desde su entrega, y la propiedad se transmite de pleno derecho al momento del pago final.</p>
-          <p>Mientras subsista la reserva de dominio, usted se obliga a no vender, empeñar, gravar ni transmitir el equipo a terceros.</p>
+          <p>El equipo sujeto a reserva de dominio es el identificado por su número de serie e IMEI en el Anexo de Identificación del Equipo a que se refiere el numeral C.4. Movinex podrá inscribir la reserva de dominio en el Registro Único de Garantías Mobiliarias (RUG) de la Secretaría de Economía, y se obliga a cancelar dicha inscripción una vez liquidada la operación. Mientras subsista la reserva de dominio, usted se obliga a no vender, empeñar, gravar ni transmitir el equipo a terceros.</p>
 
           <h4>C.7 Pagos</h4>
           <ul>
-            <li>Los pagos son semanales y se cargan automáticamente al medio de pago que usted registre, en las fechas señaladas en su Tabla de Amortización.</li>
-            <li>Es su responsabilidad mantener fondos suficientes y el medio de pago vigente. Puede actualizarlo en cualquier momento a través de nuestros canales de atención.</li>
-            <li>Movinex pone a su disposición medios alternativos de pago cuando el cargo automático no pueda procesarse.</li>
-            <li>Usted puede realizar pagos anticipados, parciales o totales, en cualquier momento y sin penalización alguna. Los pagos anticipados se aplican a capital y reducen los intereses futuros.</li>
-            <li>Movinex emitirá el comprobante fiscal digital correspondiente cuando usted lo solicite y proporcione sus datos de facturación.</li>
+            <li>Al formalizar su operación, Movinex le asigna una cuenta CLABE única, exclusiva de su financiamiento y vigente durante todo el plazo. Los pagos son semanales y usted los realiza mediante transferencia electrónica a dicha CLABE, en las fechas señaladas en su Tabla de Amortización.</li>
+            <li>Los pagos recibidos en su CLABE se identifican y se aplican automáticamente a su saldo. Es su responsabilidad realizar cada pago a más tardar en la fecha pactada. Le recomendamos transferir desde una cuenta a su nombre y conservar el comprobante de la operación.</li>
+            <li>Únicamente el pago inicial se cobra a la tarjeta de débito o crédito que usted registre al contratar. Movinex no realiza cargos automáticos ni domiciliaciones sobre sus pagos semanales.</li>
+            <li>Usted puede realizar pagos anticipados, parciales o totales, en cualquier momento y sin penalización alguna, a la misma CLABE. Los pagos anticipados se aplican a capital y reducen los intereses futuros. Puede consultar su saldo y solicitar la cifra de liquidación en cualquier momento a través de nuestros canales de atención.</li>
+            <li>Movinex emite de forma automática el comprobante fiscal digital por internet (CFDI) que corresponde a la operación y a cada pago recibido, y se lo remite al correo electrónico registrado. Si desea que el comprobante se emita con sus datos fiscales, proporciónelos antes de contratar; en caso contrario se emitirá conforme a las disposiciones fiscales aplicables.</li>
           </ul>
 
           <h4>C.8 Incumplimiento y cobranza</h4>
-          <p>Ante la falta de pago, Movinex podrá: (i) bloquear el equipo conforme al numeral C.5.3; (ii) realizar gestiones de cobranza; y (iii) transcurridos 90 días naturales de mora continua, declarar el vencimiento anticipado del saldo insoluto y ejercer las acciones legales que correspondan, incluida la recuperación del equipo en términos de la reserva de dominio.</p>
+          <p>Usted reconoce que el saldo insoluto que arroje su Tabla de Amortización, adicionado de los conceptos devengados y no pagados, constituye un adeudo líquido y exigible a su cargo. Ante la falta de pago, Movinex podrá: (i) bloquear el equipo conforme al numeral C.5.3; (ii) realizar gestiones de cobranza; y (iii) transcurridos 90 días naturales de mora continua, declarar el vencimiento anticipado del saldo insoluto y ejercer las acciones legales que correspondan, incluida la recuperación del equipo en términos de la reserva de dominio.</p>
           <p>La cobranza se realiza por Movinex, en horarios y con prácticas respetuosas, sin recurrir a amenazas, intimidación, lenguaje ofensivo, ni a la divulgación de su situación a terceros ajenos a la operación. Movinex no reporta su comportamiento de pago a sociedades de información crediticia.</p>
           <p>Si usted enfrenta una dificultad temporal de pago, comuníquese antes del vencimiento a info@movinex.mx o al 55 5502 8744; evaluaremos alternativas de reestructura.</p>
 
@@ -451,12 +451,12 @@ export const LegalContent: React.FC<{ page: "privacidad" | "terminos" | "cookies
               </tr>
             </thead>
             <tbody>
-              <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Cobertura</td><td style={{ padding: "12px" }}>Nacional, sin costo de envío.</td></tr>
-              <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Plazo máximo de entrega</td><td style={{ padding: "12px" }}>5 días hábiles desde la confirmación del pago inicial.</td></tr>
-              <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Incumplimiento del plazo por Movinex</td><td style={{ padding: "12px" }}>El consumidor puede cancelar con devolución íntegra del pago inicial.</td></tr>
+              <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Cobertura</td><td style={{ padding: "12px" }}>Nacional. El costo de envío corre por cuenta del consumidor y se muestra antes de confirmar la operación; pueden aplicar promociones de envío sin costo.</td></tr>
+              <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Plazo máximo de entrega</td><td style={{ padding: "12px" }}>De 3 a 7 días hábiles en zonas metropolitanas y hasta 12 días hábiles en zonas extendidas, desde la confirmación del pago inicial.</td></tr>
+              <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Incumplimiento del plazo por Movinex</td><td style={{ padding: "12px" }}>Transcurridos 5 días hábiles adicionales al plazo sin entrega, el consumidor puede cancelar con devolución íntegra del pago inicial y del costo de envío.</td></tr>
               <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Garantía</td><td style={{ padding: "12px" }}>12 meses desde la entrega, gestionada por Movinex sin costo.</td></tr>
               <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Reposición sin costo</td><td style={{ padding: "12px" }}>Equipo dañado, incompleto, incorrecto o no entregado.</td></tr>
-              <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Devolución por arrepentimiento</td><td style={{ padding: "12px" }}>No aplica una vez entregado y activado el equipo.</td></tr>
+              <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Devolución por arrepentimiento</td><td style={{ padding: "12px" }}>Usted puede revocar su consentimiento dentro de los 5 días hábiles siguientes a la entrega, conforme al artículo 56 de la Ley Federal de Protección al Consumidor. Concluido ese plazo no aplica devolución por arrepentimiento.</td></tr>
             </tbody>
           </table>
 
@@ -469,7 +469,7 @@ export const LegalContent: React.FC<{ page: "privacidad" | "terminos" | "cookies
           <p>Movinex podrá ceder o transmitir sus derechos de crédito a terceros, sin que ello modifique las condiciones pactadas ni imponga carga alguna al consumidor. Usted no podrá ceder sus obligaciones sin autorización escrita de Movinex.</p>
 
           <h4>C.12 Declaración del consumidor</h4>
-          <p>Manifiesto que se me mostró y puse a mi disposición, antes de contratar, el precio de contado del equipo, el monto del pago inicial, el monto financiado, la tasa de interés, el importe y carácter obligatorio del Servicio de Seguridad y Bloqueo del Equipo, el número y periodicidad de los pagos, el importe de cada pago y el monto total a pagar; que se me explicó el funcionamiento del bloqueo del equipo por falta de pago y la conservación de las llamadas de emergencia; y que acepto la Sección C de los presentes Términos y Condiciones.</p>
+          <p>Manifiesto que se me mostró y puse a mi disposición, antes de contratar, el precio de contado del equipo, el monto del pago inicial, el monto financiado, la tasa de interés, el importe y carácter obligatorio del Servicio de Seguridad y Bloqueo del Equipo, el número y periodicidad de los pagos, el importe de cada pago y el monto total a pagar; que se me explicó el funcionamiento del bloqueo del equipo por falta de pago y la conservación de las llamadas de emergencia; que se me asignó una cuenta CLABE única para realizar mis pagos semanales y que estos no se cargan automáticamente a ninguna tarjeta; y que acepto la Sección C de los presentes Términos y Condiciones, la cual firmo electrónicamente mediante la captura del código de un solo uso que Movinex envió a mi número registrado, con los efectos previstos en el numeral B.5.</p>
           <p>☐  Acepto</p>
 
           <h3>SECCIÓN D. Disposiciones comunes</h3>
@@ -535,10 +535,10 @@ export const LegalContent: React.FC<{ page: "privacidad" | "terminos" | "cookies
         <div className={styles.aboutContent}>
           <span className={styles.eyebrow}>LEGAL</span>
           <h2>Política de Cookies</h2>
-          <p>movinex.mx  ·  NVX TECHNOLOGIES, S. DE R.L. DE C.V. — MOVINEX  ·  Vigente a partir del 20 de julio de 2026</p>
+          <p>movinex.mx  ·  NVX TECHNOLOGIES, S. DE R.L. DE C.V. — MOVINEX  ·  Vigente a partir del 6 de agosto de 2026</p>
           
           <h3>1. Quiénes somos</h3>
-          <p>NVX TECHNOLOGIES, S. DE R.L. DE C.V. (“Movinex”), con RFC NTE2603034X5 y domicilio en Bosque de Arrayán 1, interior 301 N1, Colonia Bosque Esmeralda, Atizapán de Zaragoza, Estado de México, C.P. 52930, es responsable del sitio https://movinex.mx y del tratamiento de los datos recabados mediante cookies.</p>
+          <p>NVX TECHNOLOGIES, S. DE R.L. DE C.V. (“Movinex”), con RFC NTE2603034X5 y domicilio en Calle Bosque de Arrayán número exterior 1, interior LT 1 417, Colonia Bosque Esmeralda, Ciudad López Mateos, Atizapán de Zaragoza, Estado de México, C.P. 52930, es responsable del sitio https://movinex.mx y del tratamiento de los datos recabados mediante cookies.</p>
 
           <h3>2. Qué son las cookies</h3>
           <p>Las cookies son pequeños archivos que un sitio web almacena en su navegador o dispositivo. Permiten que el sitio funcione correctamente, recuerde sus preferencias y obtenga información sobre cómo se utiliza. Esta política aplica también a tecnologías similares como píxeles de seguimiento, etiquetas, SDK y almacenamiento local del navegador.</p>
@@ -588,9 +588,9 @@ export const LegalContent: React.FC<{ page: "privacidad" | "terminos" | "cookies
             </thead>
             <tbody>
               <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Meta Platforms</td><td style={{ padding: "12px" }}>Medición de campañas publicitarias, atribución de conversiones y construcción de audiencias.</td></tr>
-              <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Proveedor de analítica web</td><td style={{ padding: "12px" }}>Estadísticas de tráfico y comportamiento de navegación.</td></tr>
+              <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Proveedor de analítica web</td><td style={{ padding: "12px" }}>Estadísticas de tráfico, comportamiento de navegación y puntos de abandono del proceso de solicitud.</td></tr>
               <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Proveedor de infraestructura y hospedaje</td><td style={{ padding: "12px" }}>Seguridad, prevención de fraude y distribución de contenido.</td></tr>
-              <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Procesador de pagos</td><td style={{ padding: "12px" }}>Seguridad de la transacción y prevención de fraude en el cobro.</td></tr>
+              <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Conekta y Stripe (procesadores de pago)</td><td style={{ padding: "12px" }}>Seguridad de la transacción, autenticación del medio de pago y prevención de fraude en el cobro. Stripe, Inc. es una entidad establecida en los Estados Unidos de América.</td></tr>
             </tbody>
           </table>
 
@@ -654,7 +654,7 @@ export const LegalContent: React.FC<{ page: "privacidad" | "terminos" | "cookies
       <div className={styles.aboutContent}>
         <span className={styles.eyebrow}>LEGAL</span>
         <h2>Política de Envíos, Garantías y Devoluciones</h2>
-        <p>NVX TECHNOLOGIES, S. DE R.L. DE C.V. — MOVINEX  ·  Vigente a partir del 20 de julio de 2026</p>
+        <p>NVX TECHNOLOGIES, S. DE R.L. DE C.V. — MOVINEX  ·  Vigente a partir del 6 de agosto de 2026</p>
         
         <h3>1. Alcance</h3>
         <p>Esta Política regula el envío, la entrega, la garantía, la reposición y las devoluciones de los equipos comercializados por NVX TECHNOLOGIES, S. DE R.L. DE C.V. (“Movinex”) a través de https://movinex.mx. Forma parte integrante de los Términos y Condiciones de Venta a Crédito.</p>
@@ -669,12 +669,12 @@ export const LegalContent: React.FC<{ page: "privacidad" | "terminos" | "cookies
           </thead>
           <tbody>
             <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Cobertura</td><td style={{ padding: "12px" }}>Todo el territorio nacional.</td></tr>
-            <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Costo de envío</td><td style={{ padding: "12px" }}>Sin costo para el consumidor.</td></tr>
-            <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Plazo máximo de entrega</td><td style={{ padding: "12px" }}>5 días hábiles a partir de la confirmación del pago inicial.</td></tr>
+            <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Costo de envío</td><td style={{ padding: "12px" }}>Por cuenta del consumidor. El importe se calcula según el domicilio de entrega y se le muestra desglosado antes de que usted confirme la operación. Movinex puede ofrecer promociones de envío sin costo, sujetas a su vigencia y condiciones.</td></tr>
+            <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Plazo máximo de entrega</td><td style={{ padding: "12px" }}>De 3 a 7 días hábiles en zonas metropolitanas y de hasta 12 días hábiles en zonas extendidas o de difícil acceso. El plazo aplicable a su domicilio se le informa antes de que usted confirme la operación.</td></tr>
             <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Inicio del cómputo</td><td style={{ padding: "12px" }}>El día hábil siguiente a la confirmación del pago inicial por el procesador.</td></tr>
-            <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Paquetería</td><td style={{ padding: "12px" }}>Empresa de mensajería contratada por Movinex.</td></tr>
-            <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Seguimiento</td><td style={{ padding: "12px" }}>Número de guía enviado al correo y WhatsApp registrados.</td></tr>
-            <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Recepción</td><td style={{ padding: "12px" }}>Se requiere identificación oficial del titular o de la persona autorizada.</td></tr>
+            <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Paquetería</td><td style={{ padding: "12px" }}>Empresa de mensajería contratada por Movinex. Movinex opera de forma 100% digital: no cuenta con establecimientos físicos abiertos al público ni con servicio propio de recolección o entrega.</td></tr>
+            <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Seguimiento</td><td style={{ padding: "12px" }}>El número de guía se le proporciona a solicitud, dentro de las 24 horas hábiles siguientes, por correo electrónico o WhatsApp. Movinex habilitará el envío automático del número de guía al liberar su aplicación móvil.</td></tr>
+            <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Recepción</td><td style={{ padding: "12px" }}>La paquetería puede requerir identificación oficial del titular o de la persona autorizada para recibir el paquete en el domicilio registrado.</td></tr>
           </tbody>
         </table>
 
@@ -683,7 +683,7 @@ export const LegalContent: React.FC<{ page: "privacidad" | "terminos" | "cookies
         <p>Si tras tres intentos de entrega no es posible completarla por causas imputables al consumidor, el equipo retornará a Movinex y nos comunicaremos para acordar una nueva entrega. Este supuesto no suspende la obligación de pago.</p>
         
         <h4>2.2 Incumplimiento del plazo por Movinex</h4>
-        <p>Si Movinex no entrega dentro del plazo máximo de 5 días hábiles por causas que le sean imputables, usted podrá optar, a su elección, por: (i) la entrega en un nuevo plazo acordado; o (ii) la cancelación de la operación con devolución íntegra del pago inicial, sin penalización alguna. La devolución se realiza al mismo medio de pago dentro de los 10 días hábiles siguientes.</p>
+        <p>Si la entrega no se realiza dentro del plazo máximo aplicable a su domicilio, comuníquese con Movinex y daremos seguimiento con la paquetería sin costo para usted. Transcurridos 5 días hábiles adicionales a dicho plazo sin que la entrega se concrete, usted podrá optar, a su elección, por: (i) la entrega en un nuevo plazo acordado; o (ii) la cancelación de la operación con devolución íntegra del pago inicial y del costo de envío, sin penalización alguna. La devolución se realiza al mismo medio de pago dentro de los 10 días hábiles siguientes. Movinex responde ante usted por el cumplimiento de la empresa de paquetería que contrata. No le son imputables los retrasos derivados de caso fortuito o fuerza mayor, contingencias climatológicas, bloqueos de vías, ni de domicilios incorrectos, incompletos o inaccesibles.</p>
         
         <h4>2.3 Riesgo durante el traslado</h4>
         <p>El equipo viaja por cuenta y riesgo de Movinex hasta el momento de la entrega. El riesgo se transmite al consumidor a partir de la recepción del equipo.</p>
@@ -711,8 +711,8 @@ export const LegalContent: React.FC<{ page: "privacidad" | "terminos" | "cookies
           <tbody>
             <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Reporte del consumidor</td><td style={{ padding: "12px" }}>Dentro de las 72 horas siguientes a la entrega.</td></tr>
             <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Respuesta de Movinex</td><td style={{ padding: "12px" }}>Dentro de los 2 días hábiles siguientes al reporte.</td></tr>
-            <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Recolección del equipo</td><td style={{ padding: "12px" }}>Sin costo, coordinada por Movinex.</td></tr>
-            <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Envío del equipo de reposición</td><td style={{ padding: "12px" }}>Dentro de los 5 días hábiles siguientes a la recolección.</td></tr>
+            <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Devolución del equipo a Movinex</td><td style={{ padding: "12px" }}>Movinex le envía una guía de envío prepagada; usted únicamente entrega el paquete en la sucursal de paquetería más cercana. Sin costo alguno para usted.</td></tr>
+            <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Envío del equipo de reposición</td><td style={{ padding: "12px" }}>Dentro de los 5 días hábiles siguientes a la recepción del equipo devuelto.</td></tr>
           </tbody>
         </table>
         <p>Durante el proceso de reposición, Movinex no cobrará los pagos periódicos correspondientes al periodo en que usted no tuvo el equipo, y recorrerá el calendario de pagos en la misma proporción.</p>
@@ -725,9 +725,9 @@ export const LegalContent: React.FC<{ page: "privacidad" | "terminos" | "cookies
         <ol>
           <li>Reporte la falla a info@movinex.mx o al 55 5502 8744, describiendo el problema.</li>
           <li>Movinex le responderá dentro de los 2 días hábiles siguientes con el procedimiento a seguir.</li>
-          <li>Movinex coordina la recolección del equipo sin costo para usted.</li>
+          <li>Movinex le envía por correo electrónico o WhatsApp una guía de envío prepagada, sin costo para usted; únicamente debe entregar el paquete en la sucursal de paquetería más cercana.</li>
           <li>El equipo se repara o se repone conforme al dictamen del fabricante o proveedor.</li>
-          <li>Movinex le devuelve el equipo reparado o repuesto, sin costo de envío.</li>
+          <li>Movinex le devuelve el equipo reparado o repuesto a su domicilio, sin costo de envío para usted.</li>
         </ol>
 
         <h4>5.2 Qué no cubre</h4>
@@ -742,13 +742,13 @@ export const LegalContent: React.FC<{ page: "privacidad" | "terminos" | "cookies
         </ul>
 
         <h4>5.3 Efecto sobre sus pagos</h4>
-        <p>La obligación de pago del financiamiento no se suspende durante el proceso de garantía. Sin embargo, cuando la reparación o reposición exceda de 30 días naturales contados desde la recolección del equipo, Movinex no cobrará los pagos periódicos correspondientes al periodo excedente y recorrerá el calendario en la misma proporción.</p>
+        <p>La obligación de pago del financiamiento no se suspende durante el proceso de garantía. Sin embargo, cuando la reparación o reposición exceda de 30 días naturales contados desde que usted entrega el equipo a la paquetería con la guía prepagada, Movinex no cobrará los pagos periódicos correspondientes al periodo excedente y recorrerá el calendario en la misma proporción.</p>
 
         <h4>5.4 Respaldo de su información</h4>
         <p>Antes de entregar el equipo para reparación, respalde su información. Movinex y el fabricante no responden por la pérdida de datos, fotografías, contactos o aplicaciones almacenadas en el equipo.</p>
 
         <h3>6. Devoluciones</h3>
-        <p>No aplica devolución por arrepentimiento ni cancelación del financiamiento una vez que el equipo ha sido entregado y activado.</p>
+        <p>Derecho de revocación. Por tratarse de una operación celebrada íntegramente por medios electrónicos, usted puede revocar su consentimiento dentro de los cinco días hábiles siguientes a la entrega del equipo, sin responsabilidad alguna, conforme al artículo 56 de la Ley Federal de Protección al Consumidor. Para ejercerlo, comuníquelo a info@movinex.mx dentro de ese plazo y devuelva el equipo completo, con todos sus accesorios y empaque y sin daño, mediante la guía prepagada que Movinex le proporcionará sin costo. Movinex le reintegrará el pago inicial y el costo de envío dentro de los 10 días hábiles siguientes a la recepción del equipo. Concluido ese plazo, no aplica devolución por arrepentimiento ni cancelación del financiamiento una vez que el equipo ha sido entregado y activado.</p>
         <p>Esta limitación no restringe en modo alguno los derechos reconocidos en los numerales 2.2, 4 y 5 de esta Política, ni los derechos que la Ley Federal de Protección al Consumidor otorga al consumidor, los cuales son irrenunciables.</p>
         <p>Usted puede, en cualquier momento y sin penalización, liquidar anticipadamente el saldo insoluto de su financiamiento.</p>
 
