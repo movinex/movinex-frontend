@@ -227,6 +227,7 @@ export const Documentos: React.FC<DocumentosProps> = ({
             ine_frente: formattedFrente,
             ine_reverso: formattedReverso,
             selfie: formattedSelfie,
+            aceptaTerminos,
           }),
         },
       );
