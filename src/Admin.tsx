@@ -309,7 +309,8 @@ export const Admin: React.FC<AdminProps> = ({ solicitudes, onUpdateStatus, onSav
                       className={styles.btnApprove}
                       style={{ width: 'auto', padding: '8px 16px', fontSize: '13px' }}
                       onClick={() => handleResolver(solicitudSeleccionada.id, 'Pendiente de envío')}
-                      disabled={avanzandoEstatus}
+                      disabled={avanzandoEstatus || !solicitudSeleccionada.imei}
+                      title={!solicitudSeleccionada.imei ? 'Introducir IMEI' : undefined}
                     >
                       {avanzandoEstatus ? 'Guardando...' : 'Paquete preparado →'}
                     </button>
