@@ -260,6 +260,7 @@ export const Documentos: React.FC<DocumentosProps> = ({
             ine_reverso: formattedReverso,
             selfie: formattedSelfie,
             aceptaTerminos,
+            costoEnvio: planData.envioGratis === false ? (planData.costoEnvio || 0) : 0,
           }),
         },
       );
