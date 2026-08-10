@@ -473,6 +473,19 @@ export const Admin: React.FC<AdminProps> = ({ solicitudes, onUpdateStatus, onSav
                         </a>
                       </div>
                     )}
+                    {solicitudSeleccionada.reciboUrl && (
+                      <div className={styles.infoItem}>
+                        <span className={styles.infoLabel}>Comprobante de Pago</span>
+                        <a
+                          href={solicitudSeleccionada.reciboUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={styles.guideLink}
+                        >
+                          🧾 Ver recibo de Stripe
+                        </a>
+                      </div>
+                    )}
                     {solicitudSeleccionada.calle && (
                       <div className={styles.infoItem} style={{ gridColumn: 'span 2' }}>
                         <span className={styles.infoLabel}>Dirección de Envío</span>

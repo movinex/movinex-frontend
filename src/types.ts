@@ -51,5 +51,6 @@ export interface Solicitud {
   trackingNumber?: string;
   labelUrl?: string;
   imei?: string;
+  reciboUrl?: string;
 }
 

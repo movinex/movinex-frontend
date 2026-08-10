@@ -78,7 +78,8 @@ function App() {
             codigoPostal: s.codigo_postal,
             trackingNumber: s.tracking_number,
             labelUrl: s.label_url,
-            imei: s.imei
+            imei: s.imei,
+            reciboUrl: s.stripe_receipt_url
           }));
           setSolicitudes(solicitudesAdaptadas);
         })
