@@ -4,6 +4,32 @@ import logoBlanco from './assets/movinex_blanco.webp';
 import { Admin } from './Admin';
 import type { Phone, Solicitud } from './types';
 
+// Fórmula oficial de Movinex (Cotizador_Movinex_Celulares.xlsx, parámetros fijos de
+// negocio: 15% enganche, 228% anual, cargo de Seguridad y Bloqueo $17 + IVA
+// semanal, amortización francesa). Reemplaza la carga manual de enganche/pago
+// semanal en el catálogo — esos tres números salían antes copiados a mano del Excel.
+function calcularPlan(precioBase: number): { enganche: number; montoSemanal26: number; montoSemanal52: number } {
+  if (!precioBase || precioBase <= 0) {
+    return { enganche: 0, montoSemanal26: 0, montoSemanal52: 0 };
+  }
+
+  const enganche = Math.round(precioBase * 0.15 * 100) / 100;
+  const financiado = precioBase - enganche;
+  const tasaSemanalConIva = (2.28 / 52) * 1.16;
+  const cargoServicioConIva = 17 * 1.16; // $17 + 16% IVA = $19.72, fijo
+
+  const pagoBase = (semanas: number) => {
+    const factor = Math.pow(1 + tasaSemanalConIva, semanas);
+    return (financiado * tasaSemanalConIva * factor) / (factor - 1);
+  };
+
+  return {
+    enganche,
+    montoSemanal26: Math.round(pagoBase(26) + cargoServicioConIva),
+    montoSemanal52: Math.round(pagoBase(52) + cargoServicioConIva)
+  };
+}
+
 interface DireccionInput {
   calle: string;
   numeroExterior: string;
@@ -158,9 +184,12 @@ export const SadminPortal: React.FC<SadminProps> = ({
     setModelo(phone.modelo);
     setMarca(phone.marca);
     setPrecioBase(phone.precioBase);
-    setEnganche(phone.enganche);
-    setMontoSemanal26(phone.montoSemanal26);
-    setMontoSemanal52(phone.montoSemanal52);
+    // Recalculado con la fórmula oficial en vez de cargar lo guardado — así, si el
+    // celular se cargó con la tasa/cargo viejos, se corrige apenas se abre para editar.
+    const plan = calcularPlan(phone.precioBase);
+    setEnganche(plan.enganche);
+    setMontoSemanal26(plan.montoSemanal26);
+    setMontoSemanal52(plan.montoSemanal52);
     setImagenUrl(phone.imagen);
     setEnvioGratis(phone.envioGratis !== false);
     setCostoEnvio(phone.costoEnvio || 0);
@@ -360,7 +389,14 @@ export const SadminPortal: React.FC<SadminProps> = ({
                       type="number"
                       placeholder="ej. 12999"
                       value={precioBase}
-                      onChange={(e) => setPrecioBase(Number(e.target.value))}
+                      onChange={(e) => {
+                        const nuevoPrecio = Number(e.target.value);
+                        setPrecioBase(nuevoPrecio);
+                        const plan = calcularPlan(nuevoPrecio);
+                        setEnganche(plan.enganche);
+                        setMontoSemanal26(plan.montoSemanal26);
+                        setMontoSemanal52(plan.montoSemanal52);
+                      }}
                       required
                     />
                   </div>
@@ -369,10 +405,9 @@ export const SadminPortal: React.FC<SadminProps> = ({
                     <label>Pago Inicial (Enganche en Pesos)</label>
                     <input
                       type="number"
-                      placeholder="ej. 1999"
                       value={enganche}
-                      onChange={(e) => setEnganche(Number(e.target.value))}
-                      required
+                      disabled
+                      title="Calculado automáticamente: 15% del precio base."
                     />
                   </div>
 
@@ -380,10 +415,9 @@ export const SadminPortal: React.FC<SadminProps> = ({
                     <label>Pago Semanal (Plazo 26 Semanas)</label>
                     <input
                       type="number"
-                      placeholder="ej. 320"
                       value={montoSemanal26}
-                      onChange={(e) => setMontoSemanal26(Number(e.target.value))}
-                      required
+                      disabled
+                      title="Calculado automáticamente con la fórmula oficial de Movinex."
                     />
                   </div>
 
@@ -391,10 +425,9 @@ export const SadminPortal: React.FC<SadminProps> = ({
                     <label>Pago Semanal (Plazo 52 Semanas)</label>
                     <input
                       type="number"
-                      placeholder="ej. 175"
                       value={montoSemanal52}
-                      onChange={(e) => setMontoSemanal52(Number(e.target.value))}
-                      required
+                      disabled
+                      title="Calculado automáticamente con la fórmula oficial de Movinex."
                     />
                   </div>
 

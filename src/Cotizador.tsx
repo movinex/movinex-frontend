@@ -25,8 +25,8 @@ export const Cotizador: React.FC<CotizadorProps> = ({ phone, onSiguiente, onVolv
 
   // Opciones de plazos basadas en el teléfono seleccionado
   const plazos: PlazoOption[] = [
-    { semanas: 26, montoSemanal: phone.montoSemanal26, totalPagar: phone.totalPagar26, ahorro: phone.ahorro26 },
-    { semanas: 52, montoSemanal: phone.montoSemanal52, totalPagar: phone.totalPagar52 }
+    { semanas: 52, montoSemanal: phone.montoSemanal52, totalPagar: phone.totalPagar52 },
+    { semanas: 26, montoSemanal: phone.montoSemanal26, totalPagar: phone.totalPagar26, ahorro: phone.ahorro26 }
   ];
 
   const [plazoSeleccionado, setPlazoSeleccionado] = useState<number>(26);

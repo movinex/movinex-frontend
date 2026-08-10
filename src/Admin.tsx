@@ -51,6 +51,9 @@ export const Admin: React.FC<AdminProps> = ({ solicitudes, onUpdateStatus, onSav
   const [guardandoDireccion, setGuardandoDireccion] = useState(false);
   const [errorDireccion, setErrorDireccion] = useState('');
 
+  // Feedback breve del botón "Copiar link para continuar" (ver más abajo)
+  const [linkCopiadoOk, setLinkCopiadoOk] = useState(false);
+
   // Seleccionar la primera solicitud por defecto al cargar o al cambiar filtros
   const solicitudesFiltradas = solicitudes.filter(s => 
     filtroEstatus === 'Todos' ? true : s.estatus === filtroEstatus
@@ -83,6 +86,7 @@ export const Admin: React.FC<AdminProps> = ({ solicitudes, onUpdateStatus, onSav
     setErrorEstatus('');
     setMostrarFormDireccion(false);
     setErrorDireccion('');
+    setLinkCopiadoOk(false);
     setDireccionForm({
       calle: solicitudSeleccionada?.calle || '',
       numeroExterior: solicitudSeleccionada?.numeroExterior || '',
@@ -421,6 +425,18 @@ export const Admin: React.FC<AdminProps> = ({ solicitudes, onUpdateStatus, onSav
                           Cargarla manualmente
                         </button>
                       )}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const link = `${window.location.origin}/domicilio?solicitud=${solicitudSeleccionada.id}&modelo=${encodeURIComponent(solicitudSeleccionada.modelo)}`;
+                          navigator.clipboard.writeText(link);
+                          setLinkCopiadoOk(true);
+                          setTimeout(() => setLinkCopiadoOk(false), 2500);
+                        }}
+                        style={{ marginLeft: '10px', background: 'none', border: 'none', color: '#2B6BE4', fontWeight: 700, cursor: 'pointer', textDecoration: 'underline', fontSize: 'inherit' }}
+                      >
+                        {linkCopiadoOk ? '✓ ¡Copiado!' : '🔗 Copiar link para continuar'}
+                      </button>
                     </div>
                   )}
 
