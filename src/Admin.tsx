@@ -515,7 +515,7 @@ export const Admin: React.FC<AdminProps> = ({ solicitudes, onUpdateStatus, onSav
                           <button
                             type="button"
                             onClick={handleGuardarImei}
-                            disabled={guardandoImei || !imeiInput.trim() || imeiInput.trim() === (solicitudSeleccionada.imei || '')}
+                            disabled={guardandoImei || imeiInput.trim().length !== 15 || imeiInput.trim() === (solicitudSeleccionada.imei || '')}
                             className={styles.btnApprove}
                             style={{ width: 'auto', padding: '10px 18px', fontSize: '13px' }}
                           >
