@@ -383,11 +383,6 @@ export const Documentos: React.FC<DocumentosProps> = ({
           <div className={styles.body}>
             <div className={styles.estado}>
               <div className={styles.spinner}></div>
-              <div className={styles.et}>Verificando Identidad</div>
-              <div className={styles.ed}>
-                Estamos verificando tu INE ante fuentes oficiales. No cierres
-                esta ventana.
-              </div>
             </div>
           </div>
         </div>

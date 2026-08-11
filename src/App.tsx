@@ -7,6 +7,19 @@ import { Domicilio } from './Domicilio';
 import { Admin } from './Admin';
 import { SadminPortal, SadminLogin } from './Sadmin';
 import type { Phone, Solicitud } from './types';
+import landingStyles from './Landing.module.css';
+
+// Mismo loader de página completa que la carga inicial de la app (Landing.tsx) — sin
+// texto, solo el spinner, para que todos los estados de carga se vean iguales.
+function PageLoader() {
+  return (
+    <div className={landingStyles.pageLoaderOverlay}>
+      <div className={landingStyles.loaderContent}>
+        <div className={landingStyles.spinner}></div>
+      </div>
+    </div>
+  );
+}
 
 interface PlanSeleccionado {
   semanas: number;
@@ -426,11 +439,7 @@ function DocumentosRoute({
       return <Navigate to="/" replace />;
     }
     if (cargandoResumen || !resumen) {
-      return (
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh', color: '#5A6688' }}>
-          Cargando tu solicitud...
-        </div>
-      );
+      return <PageLoader />;
     }
     return (
       <Documentos
