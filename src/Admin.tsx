@@ -122,6 +122,25 @@ export const Admin: React.FC<AdminProps> = ({ solicitudes, onUpdateStatus, onSav
     .filter(s => s.estatus === 'Aprobado')
     .reduce((acc, s) => acc + s.enganche, 0);
 
+  // Qué le falta hacer al cliente en cada estatus, y a dónde mandarlo para retomar —
+  // un solo banner arriba de todo en vez de mensajes sueltos repartidos por la pantalla.
+  const getAccionPendiente = (s: Solicitud): { mensaje: string; link: string } | null => {
+    const origin = window.location.origin;
+    if (s.estatus === 'Iniciada') {
+      return { mensaje: 'Falta que el cliente valide su INE y selfie', link: `${origin}/documentos?solicitud=${s.id}` };
+    }
+    if (s.estatus === 'Pendiente') {
+      return { mensaje: 'La verificación no se completó automática — el cliente puede volver a intentar', link: `${origin}/documentos?solicitud=${s.id}` };
+    }
+    if (s.estatus === 'Aprobado' && !s.pagoConfirmado) {
+      return { mensaje: 'Falta que el cliente pague el enganche', link: `${origin}/documentos?solicitud=${s.id}` };
+    }
+    if (s.pagoConfirmado && !s.calle) {
+      return { mensaje: 'Pago confirmado — falta que el cliente complete su dirección de envío', link: `${origin}/domicilio?solicitud=${s.id}&modelo=${encodeURIComponent(s.modelo)}` };
+    }
+    return null;
+  };
+
   const getStatusClass = (estatus: Solicitud['estatus']) => {
     switch (estatus) {
       case 'Iniciada': return styles.statusIniciada;
@@ -356,6 +375,38 @@ export const Admin: React.FC<AdminProps> = ({ solicitudes, onUpdateStatus, onSav
                 </div>
               )}
 
+              {(() => {
+                const accion = getAccionPendiente(solicitudSeleccionada);
+                if (!accion) return null;
+                const esDomicilio = accion.link.includes('/domicilio');
+                return (
+                  <div className={styles.alertBanner} style={{ marginBottom: '16px' }}>
+                    <FiAlertTriangle style={{ verticalAlign: '-2px', marginRight: '6px' }} />
+                    {accion.mensaje}
+                    {esDomicilio && !mostrarFormDireccion && (
+                      <button
+                        type="button"
+                        onClick={() => setMostrarFormDireccion(true)}
+                        style={{ marginLeft: '10px', background: 'none', border: 'none', color: '#2B6BE4', fontWeight: 700, cursor: 'pointer', textDecoration: 'underline', fontSize: 'inherit' }}
+                      >
+                        Cargarla manualmente
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        navigator.clipboard.writeText(accion.link);
+                        setLinkCopiadoOk(true);
+                        setTimeout(() => setLinkCopiadoOk(false), 2500);
+                      }}
+                      style={{ marginLeft: '10px', background: 'none', border: 'none', color: '#2B6BE4', fontWeight: 700, cursor: 'pointer', textDecoration: 'underline', fontSize: 'inherit', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                    >
+                      {linkCopiadoOk ? (<><FiCheck /> ¡Copiado!</>) : (<><FiLink /> Copiar link para continuar</>)}
+                    </button>
+                  </div>
+                );
+              })()}
+
               {/* TABS DE SECCIÓN */}
               <div className={styles.tabs}>
                 <button 
@@ -432,53 +483,6 @@ export const Admin: React.FC<AdminProps> = ({ solicitudes, onUpdateStatus, onSav
                   </div>
 
                   <div className={styles.sectionHeader} style={{ marginTop: '24px' }}>Pago y Envío</div>
-
-                  {!solicitudSeleccionada.pagoConfirmado && solicitudSeleccionada.estatus !== 'Rechazado' && (
-                    <div className={styles.alertBanner}>
-                      <FiAlertTriangle style={{ verticalAlign: '-2px', marginRight: '6px' }} />
-                      Falta que el cliente pague el enganche
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const link = `${window.location.origin}/documentos?solicitud=${solicitudSeleccionada.id}`;
-                          navigator.clipboard.writeText(link);
-                          setLinkCopiadoOk(true);
-                          setTimeout(() => setLinkCopiadoOk(false), 2500);
-                        }}
-                        style={{ marginLeft: '10px', background: 'none', border: 'none', color: '#2B6BE4', fontWeight: 700, cursor: 'pointer', textDecoration: 'underline', fontSize: 'inherit', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
-                      >
-                        {linkCopiadoOk ? (<><FiCheck /> ¡Copiado!</>) : (<><FiLink /> Copiar link para continuar</>)}
-                      </button>
-                    </div>
-                  )}
-
-                  {solicitudSeleccionada.pagoConfirmado && !solicitudSeleccionada.calle && (
-                    <div className={styles.alertBanner}>
-                      <FiAlertTriangle style={{ verticalAlign: '-2px', marginRight: '6px' }} />
-                      Pago confirmado — falta que el cliente complete su dirección de envío
-                      {!mostrarFormDireccion && (
-                        <button
-                          type="button"
-                          onClick={() => setMostrarFormDireccion(true)}
-                          style={{ marginLeft: '10px', background: 'none', border: 'none', color: '#2B6BE4', fontWeight: 700, cursor: 'pointer', textDecoration: 'underline', fontSize: 'inherit' }}
-                        >
-                          Cargarla manualmente
-                        </button>
-                      )}
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const link = `${window.location.origin}/domicilio?solicitud=${solicitudSeleccionada.id}&modelo=${encodeURIComponent(solicitudSeleccionada.modelo)}`;
-                          navigator.clipboard.writeText(link);
-                          setLinkCopiadoOk(true);
-                          setTimeout(() => setLinkCopiadoOk(false), 2500);
-                        }}
-                        style={{ marginLeft: '10px', background: 'none', border: 'none', color: '#2B6BE4', fontWeight: 700, cursor: 'pointer', textDecoration: 'underline', fontSize: 'inherit', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
-                      >
-                        {linkCopiadoOk ? (<><FiCheck /> ¡Copiado!</>) : (<><FiLink /> Copiar link para continuar</>)}
-                      </button>
-                    </div>
-                  )}
 
                   {mostrarFormDireccion && (
                     <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '16px', margin: '10px 0', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
