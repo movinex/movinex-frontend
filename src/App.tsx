@@ -425,8 +425,12 @@ function DocumentosRoute({
     if (errorResumen) {
       return <Navigate to="/" replace />;
     }
-    if (!resumen) {
-      return null; // cargando el resumen la primera vez
+    if (cargandoResumen || !resumen) {
+      return (
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh', color: '#5A6688' }}>
+          Cargando tu solicitud...
+        </div>
+      );
     }
     return (
       <Documentos
