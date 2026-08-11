@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Routes, Route, Navigate, useNavigate, useLocation, useParams, useSearchParams } from 'react-router';
 import { Landing } from './Landing';
 import { Cotizador } from './Cotizador';
@@ -42,11 +42,81 @@ function App() {
   const [phonesLoaded, setPhonesLoaded] = useState(false);
   const [reloadTrigger, setReloadTrigger] = useState(0);
 
-  // Sesión de Super Admin (JWT emitido por /api/admin/login), compartida entre /dashboard y /sadmin
-  const [adminUser, setAdminUser] = useState<any>(null);
-  const [adminToken, setAdminToken] = useState<string | null>(null);
+  // Sesión de Super Admin (JWT emitido por /api/admin/login), compartida entre /dashboard
+  // y /sadmin — persistida en localStorage para que un refresh de página no desloguee.
+  const [adminUser, setAdminUser] = useState<any>(() => {
+    const guardado = localStorage.getItem('movinex_admin_user');
+    return guardado ? JSON.parse(guardado) : null;
+  });
+  const [adminToken, setAdminToken] = useState<string | null>(() => localStorage.getItem('movinex_admin_token'));
+
+  const handleLoginSuccess = (user: any, token: string) => {
+    localStorage.setItem('movinex_admin_user', JSON.stringify(user));
+    localStorage.setItem('movinex_admin_token', token);
+    setAdminUser(user);
+    setAdminToken(token);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('movinex_admin_user');
+    localStorage.removeItem('movinex_admin_token');
+    setAdminUser(null);
+    setAdminToken(null);
+  };
 
   const backendUrl = import.meta.env.VITE_BACKEND_URL || 'https://movinex-backend-production.up.railway.app';
+
+  // Cuenta regresiva hasta el próximo refresh automático (60s) — se resetea cada vez
+  // que se cargan las solicitudes, sea por el intervalo o por el botón manual.
+  const [segundosParaRefresh, setSegundosParaRefresh] = useState(60);
+
+  const cargarSolicitudes = useCallback(() => {
+    if (!adminToken) return;
+    fetch(`${backendUrl}/api/solicitudes`, {
+      headers: { Authorization: `Bearer ${adminToken}` }
+    })
+      .then(res => {
+        if (res.status === 401) {
+          handleLogout();
+          throw new Error('Sesión expirada.');
+        }
+        return res.json();
+      })
+      .then(data => {
+        const solicitudesAdaptadas = data.map((s: any) => ({
+          id: s.id,
+          cliente: s.cliente,
+          curp: s.curp,
+          celular: s.celular,
+          email: s.email,
+          modelo: s.modelo,
+          enganche: s.enganche,
+          semanas: s.semanas,
+          pagoSemanal: s.pago_semanal,
+          estatus: s.estatus,
+          fecha: s.created_at || s.fecha,
+          ineFrente: s.ine_frente,
+          ineReverso: s.ine_reverso,
+          selfie: s.selfie,
+          pagoConfirmado: s.pago_confirmado === true,
+          calle: s.calle,
+          numeroExterior: s.numero_exterior,
+          numeroInterior: s.numero_interior,
+          colonia: s.colonia,
+          alcaldiaMunicipio: s.alcaldia_municipio,
+          estado: s.estado,
+          codigoPostal: s.codigo_postal,
+          trackingNumber: s.tracking_number,
+          labelUrl: s.label_url,
+          imei: s.imei,
+          reciboUrl: s.stripe_receipt_url
+        }));
+        setSolicitudes(solicitudesAdaptadas);
+      })
+      .catch(err => console.error('Error al cargar solicitudes del backend:', err))
+      .finally(() => setSegundosParaRefresh(60));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [adminToken, backendUrl]);
 
   // Cargar solicitudes del backend al abrir /dashboard o /sadmin, y refrescar solas
   // cada 1 minuto mientras quede abierto (requiere sesión de admin).
@@ -54,56 +124,16 @@ function App() {
     const esRutaAdmin = location.pathname === '/dashboard' || location.pathname === '/sadmin';
     if (!(esRutaAdmin && adminToken)) return;
 
-    const cargarSolicitudes = () => {
-      fetch(`${backendUrl}/api/solicitudes`, {
-        headers: { Authorization: `Bearer ${adminToken}` }
-      })
-        .then(res => {
-          if (res.status === 401) {
-            setAdminUser(null);
-            setAdminToken(null);
-            throw new Error('Sesión expirada.');
-          }
-          return res.json();
-        })
-        .then(data => {
-          const solicitudesAdaptadas = data.map((s: any) => ({
-            id: s.id,
-            cliente: s.cliente,
-            curp: s.curp,
-            celular: s.celular,
-            email: s.email,
-            modelo: s.modelo,
-            enganche: s.enganche,
-            semanas: s.semanas,
-            pagoSemanal: s.pago_semanal,
-            estatus: s.estatus,
-            fecha: s.created_at || s.fecha,
-            ineFrente: s.ine_frente,
-            ineReverso: s.ine_reverso,
-            selfie: s.selfie,
-            pagoConfirmado: s.pago_confirmado === true,
-            calle: s.calle,
-            numeroExterior: s.numero_exterior,
-            numeroInterior: s.numero_interior,
-            colonia: s.colonia,
-            alcaldiaMunicipio: s.alcaldia_municipio,
-            estado: s.estado,
-            codigoPostal: s.codigo_postal,
-            trackingNumber: s.tracking_number,
-            labelUrl: s.label_url,
-            imei: s.imei,
-            reciboUrl: s.stripe_receipt_url
-          }));
-          setSolicitudes(solicitudesAdaptadas);
-        })
-        .catch(err => console.error('Error al cargar solicitudes del backend:', err));
-    };
-
     cargarSolicitudes();
     const interval = setInterval(cargarSolicitudes, 60000);
-    return () => clearInterval(interval);
-  }, [location.pathname, backendUrl, adminToken]);
+    const countdown = setInterval(() => {
+      setSegundosParaRefresh(prev => (prev <= 1 ? 60 : prev - 1));
+    }, 1000);
+    return () => {
+      clearInterval(interval);
+      clearInterval(countdown);
+    };
+  }, [location.pathname, adminToken, cargarSolicitudes]);
 
   // Cargar lista de celulares para alimentar el CRUD
   useEffect(() => {
@@ -243,14 +273,10 @@ function App() {
             onReloadPhones={() => setReloadTrigger(prev => prev + 1)}
             adminUser={adminUser}
             adminToken={adminToken}
-            onLoginSuccess={(user, token) => {
-              setAdminUser(user);
-              setAdminToken(token);
-            }}
-            onLogout={() => {
-              setAdminUser(null);
-              setAdminToken(null);
-            }}
+            onLoginSuccess={handleLoginSuccess}
+            onLogout={handleLogout}
+            onRefrescar={cargarSolicitudes}
+            segundosParaRefresh={segundosParaRefresh}
           />
         }
       />
@@ -260,10 +286,7 @@ function App() {
         element={
           !adminUser || !adminToken ? (
             <SadminLogin
-              onLoginSuccess={(user, token) => {
-                setAdminUser(user);
-                setAdminToken(token);
-              }}
+              onLoginSuccess={handleLoginSuccess}
               onVolver={() => navigate('/')}
             />
           ) : (
@@ -273,6 +296,8 @@ function App() {
               onSaveImei={handleSaveImei}
               onSaveDireccion={handleSaveDireccion}
               onVolver={() => navigate('/tienda')}
+              onRefrescar={cargarSolicitudes}
+              segundosParaRefresh={segundosParaRefresh}
             />
           )
         }

@@ -13,6 +13,7 @@ import {
   FiPackage,
   FiFileText,
   FiFolder,
+  FiRefreshCw,
 } from 'react-icons/fi';
 import { FaWhatsapp } from 'react-icons/fa';
 
@@ -34,9 +35,11 @@ interface AdminProps {
   onSaveImei: (id: string, imei: string) => Promise<void>;
   onSaveDireccion: (id: string, direccion: DireccionInput) => Promise<void>;
   onVolver: () => void;
+  onRefrescar: () => void;
+  segundosParaRefresh: number;
 }
 
-export const Admin: React.FC<AdminProps> = ({ solicitudes, onUpdateStatus, onSaveImei, onSaveDireccion, onVolver }) => {
+export const Admin: React.FC<AdminProps> = ({ solicitudes, onUpdateStatus, onSaveImei, onSaveDireccion, onVolver, onRefrescar, segundosParaRefresh }) => {
   const [solicitudSeleccionada, setSolicitudSeleccionada] = useState<Solicitud | null>(null);
   const [filtroEstatus, setFiltroEstatus] = useState<'Todos' | EstatusSolicitud>('Todos');
   const [activeTab, setActiveTab] = useState<'info' | 'documentos'>('info');
@@ -281,7 +284,16 @@ export const Admin: React.FC<AdminProps> = ({ solicitudes, onUpdateStatus, onSav
         {/* PANEL IZQUIERDO: LISTADO */}
         <div className={styles.panel}>
           <div className={styles.panelHeader}>
-            <div className={styles.panelTitle}>Créditos Recibidos</div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
+              <div className={styles.panelTitle}>Créditos Recibidos</div>
+              <button
+                type="button"
+                onClick={onRefrescar}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#F1F5F9', border: '1.5px solid #E2E8F0', borderRadius: '10px', padding: '6px 12px', fontSize: '12px', fontWeight: 600, color: '#334155', cursor: 'pointer' }}
+              >
+                <FiRefreshCw /> Refresh ({segundosParaRefresh}s)
+              </button>
+            </div>
             <div className={styles.filterBar}>
               {(['Todos', 'Iniciada', 'Pendiente', 'Aprobado', 'Pendiente de envío', 'Preparando paquete', 'Enviado', 'Rechazado'] as const).map(est => (
                 <button

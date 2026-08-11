@@ -54,6 +54,8 @@ interface SadminProps {
   adminToken: string | null;
   onLoginSuccess: (admin: any, token: string) => void;
   onLogout: () => void;
+  onRefrescar: () => void;
+  segundosParaRefresh: number;
 }
 
 export const SadminPortal: React.FC<SadminProps> = ({
@@ -68,7 +70,9 @@ export const SadminPortal: React.FC<SadminProps> = ({
   adminUser,
   adminToken,
   onLoginSuccess,
-  onLogout
+  onLogout,
+  onRefrescar,
+  segundosParaRefresh
 }) => {
   const [activePortalTab, setActivePortalTab] = useState<'solicitudes' | 'celulares'>('solicitudes');
 
@@ -331,6 +335,8 @@ export const SadminPortal: React.FC<SadminProps> = ({
             onSaveImei={onSaveImei}
             onSaveDireccion={onSaveDireccion}
             onVolver={onVolverTienda}
+            onRefrescar={onRefrescar}
+            segundosParaRefresh={segundosParaRefresh}
           />
         ) : (
           <div className={styles.crudContainer}>
