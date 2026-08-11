@@ -70,6 +70,7 @@ function App() {
           const solicitudesAdaptadas = data.map((s: any) => ({
             id: s.id,
             cliente: s.cliente,
+            curp: s.curp,
             celular: s.celular,
             email: s.email,
             modelo: s.modelo,

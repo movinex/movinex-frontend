@@ -382,6 +382,10 @@ export const Admin: React.FC<AdminProps> = ({ solicitudes, onUpdateStatus, onSav
                       <span className={styles.infoValue}>{solicitudSeleccionada.cliente}</span>
                     </div>
                     <div className={styles.infoItem}>
+                      <span className={styles.infoLabel}>CURP</span>
+                      <span className={styles.infoValue}>{solicitudSeleccionada.curp || '—'}</span>
+                    </div>
+                    <div className={styles.infoItem}>
                       <span className={styles.infoLabel}>Teléfono (WhatsApp)</span>
                       <span className={styles.infoValue}>
                         <a 

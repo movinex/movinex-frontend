@@ -29,6 +29,7 @@ export interface Phone {
 export interface Solicitud {
   id: string;
   cliente: string;
+  curp?: string;
   celular: string;
   email: string;
   modelo: string;
