@@ -432,48 +432,57 @@ export const Documentos: React.FC<DocumentosProps> = ({
                   ? (<><FiAward /> ¡Felicidades, fuiste autorizado!</>)
                   : (<><FiClock /> Tu solicitud está en revisión manual</>)}
               </div>
-              <div className={styles.ed} style={{ fontSize: '14px', lineHeight: '1.6' }}>
-                {esAprobadoDirecto 
-                  ? `Tu identidad quedó validada. El siguiente paso es el pago inicial para procesar el envío de tu ${planData.modelo}:`
-                  : `Tu identidad está siendo analizada por nuestro equipo de prevención. Para agilizar el proceso y reservar tu ${planData.modelo}, puedes proceder a realizar tu pago inicial:`}
-                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '12px', borderRadius: '10px', marginTop: '10px', display: 'flex', flexDirection: 'column', gap: '6px', textAlign: 'left' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <span style={{ color: '#64748B' }}>Enganche requerido:</span>
-                    <span style={{ fontWeight: '700', color: '#0F172A' }}>${planData.enganche.toLocaleString()}</span>
+              {esAprobadoDirecto ? (
+                <>
+                  <div className={styles.ed} style={{ fontSize: '14px', lineHeight: '1.6' }}>
+                    {`Tu identidad quedó validada. El siguiente paso es el pago inicial para procesar el envío de tu ${planData.modelo}:`}
+                    <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '12px', borderRadius: '10px', marginTop: '10px', display: 'flex', flexDirection: 'column', gap: '6px', textAlign: 'left' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <span style={{ color: '#64748B' }}>Enganche requerido:</span>
+                        <span style={{ fontWeight: '700', color: '#0F172A' }}>${planData.enganche.toLocaleString()}</span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <span style={{ color: '#64748B' }}>Costo de envío:</span>
+                        <span style={{ fontWeight: '700', color: planData.envioGratis !== false ? '#10B981' : '#0F172A' }}>
+                          {planData.envioGratis !== false ? '¡Gratis!' : `$${(planData.costoEnvio || 0).toLocaleString()}`}
+                        </span>
+                      </div>
+                      <div style={{ borderTop: '1px dashed #CBD5E1', margin: '6px 0' }}></div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '15px', fontWeight: '800' }}>
+                        <span style={{ color: '#2B6BE4' }}>Total Inicial a pagar:</span>
+                        <span style={{ color: '#2B6BE4' }}>
+                          ${(planData.enganche + (planData.envioGratis !== false ? 0 : (planData.costoEnvio || 0))).toLocaleString()}
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <span style={{ color: '#64748B' }}>Costo de envío:</span>
-                    <span style={{ fontWeight: '700', color: planData.envioGratis !== false ? '#10B981' : '#0F172A' }}>
-                      {planData.envioGratis !== false ? '¡Gratis!' : `$${(planData.costoEnvio || 0).toLocaleString()}`}
-                    </span>
-                  </div>
-                  <div style={{ borderTop: '1px dashed #CBD5E1', margin: '6px 0' }}></div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '15px', fontWeight: '800' }}>
-                    <span style={{ color: '#2B6BE4' }}>Total Inicial a pagar:</span>
-                    <span style={{ color: '#2B6BE4' }}>
-                      ${(planData.enganche + (planData.envioGratis !== false ? 0 : (planData.costoEnvio || 0))).toLocaleString()}
-                    </span>
-                  </div>
+                  {pagoError && <span className={styles.errorMsg}>{pagoError}</span>}
+                  <button
+                    className={styles.cta}
+                    onClick={handleIniciarPago}
+                    disabled={iniciandoPago || !solicitudId}
+                  >
+                    {iniciandoPago ? "Preparando pago..." : "Pagar enganche →"}
+                  </button>
+                  {pagoError && (
+                    <button
+                      type="button"
+                      className={styles.cta}
+                      style={{ background: "#E4E8F1", color: "#5A6688", marginTop: "10px", boxShadow: "none" }}
+                      onClick={handleAprobarManual}
+                      disabled={aprobandoManual}
+                    >
+                      {aprobandoManual ? "Continuando..." : "Continuar sin pagar (modo prueba) →"}
+                    </button>
+                  )}
+                </>
+              ) : (
+                // Todavía no se puede pagar: la identidad no quedó validada automática y
+                // un rechazo/aprobación manual puede cambiar las condiciones (o directamente
+                // no proceder) — no tiene sentido cobrarle antes de esa revisión.
+                <div className={styles.ed} style={{ fontSize: '14px', lineHeight: '1.6' }}>
+                  {`Tu identidad está siendo analizada por nuestro equipo. Te vamos a avisar por WhatsApp en cuanto tu solicitud del ${planData.modelo} esté aprobada para poder continuar con el pago.`}
                 </div>
-              </div>
-              {pagoError && <span className={styles.errorMsg}>{pagoError}</span>}
-              <button
-                className={styles.cta}
-                onClick={handleIniciarPago}
-                disabled={iniciandoPago || !solicitudId}
-              >
-                {iniciandoPago ? "Preparando pago..." : "Pagar enganche →"}
-              </button>
-              {pagoError && (
-                <button
-                  type="button"
-                  className={styles.cta}
-                  style={{ background: "#E4E8F1", color: "#5A6688", marginTop: "10px", boxShadow: "none" }}
-                  onClick={handleAprobarManual}
-                  disabled={aprobandoManual}
-                >
-                  {aprobandoManual ? "Continuando..." : "Continuar sin pagar (modo prueba) →"}
-                </button>
               )}
             </div>
           </div>
