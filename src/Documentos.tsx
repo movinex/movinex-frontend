@@ -26,6 +26,11 @@ interface DocumentosProps {
   // corrió y no pasó — el frente del INE y la selfie no deben mostrarse como "cargada
   // correctamente" en ese caso, porque son justo la causa de que quedó en revisión.
   initialVerificacionFallida?: boolean;
+  // Si la solicitud ya se finalizó (estatus distinto de "Iniciada"), hay que ir directo
+  // a la pantalla de pago/revisión en vez de mostrar el formulario de nuevo — ya no
+  // hay nada que completar, solo pagar (o esperar la revisión manual).
+  initialStatus?: "form" | "exito";
+  initialEsAprobadoDirecto?: boolean;
 }
 
 const compressAndGetBase64 = (file: File): Promise<string> => {
@@ -83,6 +88,8 @@ export const Documentos: React.FC<DocumentosProps> = ({
   initialOtpVerificado,
   initialDocsGuardados,
   initialVerificacionFallida,
+  initialStatus,
+  initialEsAprobadoDirecto,
 }) => {
   const navigate = useNavigate();
   const [celular, setCelular] = useState(initialCelular || "");
@@ -105,11 +112,11 @@ export const Documentos: React.FC<DocumentosProps> = ({
 
   const [status, setStatus] = useState<
     "form" | "subiendo" | "exito" | "error"
-  >("form");
+  >(initialStatus || "form");
   const [errorMessage, setErrorMessage] = useState("");
 
   const [solicitudId, setSolicitudId] = useState<string>(initialSolicitudId || "");
-  const [esAprobadoDirecto, setEsAprobadoDirecto] = useState<boolean>(true);
+  const [esAprobadoDirecto, setEsAprobadoDirecto] = useState<boolean>(initialEsAprobadoDirecto ?? true);
 
   // Verificación del celular por OTP de WhatsApp, ANTES de poder llenar el resto del
   // formulario — evita que un bot/script mande INE y selfie falsos sin un WhatsApp real
