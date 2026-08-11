@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router";
 import styles from "./Documentos.module.css";
 import logoBlanco from "./assets/movinex_blanco.webp";
-import { FiCamera, FiUpload, FiCheck, FiAward, FiClock } from "react-icons/fi";
+import { FiCamera, FiUpload, FiCheck, FiAward, FiClock, FiAlertTriangle } from "react-icons/fi";
 
 interface DocumentosProps {
   planData: {
@@ -22,6 +22,10 @@ interface DocumentosProps {
   initialEmail?: string;
   initialOtpVerificado?: boolean;
   initialDocsGuardados?: { ineFrente: boolean; ineReverso: boolean; selfie: boolean };
+  // true si la verificación automática (OCR del INE y/o comparación biométrica) ya
+  // corrió y no pasó — el frente del INE y la selfie no deben mostrarse como "cargada
+  // correctamente" en ese caso, porque son justo la causa de que quedó en revisión.
+  initialVerificacionFallida?: boolean;
 }
 
 const compressAndGetBase64 = (file: File): Promise<string> => {
@@ -78,6 +82,7 @@ export const Documentos: React.FC<DocumentosProps> = ({
   initialEmail,
   initialOtpVerificado,
   initialDocsGuardados,
+  initialVerificacionFallida,
 }) => {
   const navigate = useNavigate();
   const [celular, setCelular] = useState(initialCelular || "");
@@ -93,6 +98,10 @@ export const Documentos: React.FC<DocumentosProps> = ({
   const [selfieGuardado, setSelfieGuardado] = useState(initialDocsGuardados?.selfie || false);
   const [guardandoCampo, setGuardandoCampo] = useState<string | null>(null);
   const [errorProgreso, setErrorProgreso] = useState("");
+  // El frente del INE y la selfie no se pueden mostrar como "cargada correctamente"
+  // (verde) cuando la verificación automática ya corrió y no pasó — confunde, porque
+  // esas dos fotos son justo la causa de que la solicitud haya quedado en revisión.
+  const [verificacionFallida, setVerificacionFallida] = useState(initialVerificacionFallida || false);
 
   const [status, setStatus] = useState<
     "form" | "subiendo" | "exito" | "error"
@@ -200,8 +209,8 @@ export const Documentos: React.FC<DocumentosProps> = ({
   // Guarda un campo (email, o una foto ya en base64) apenas está listo, sin esperar al
   // submit final — así no se pierde nada si el cliente se cae del formulario a mitad
   // de camino. Se puede llamar varias veces, cada vez con lo que corresponda.
-  const guardarProgreso = async (campos: Record<string, string>, nombreCampo: string): Promise<boolean> => {
-    if (!solicitudId) return false;
+  const guardarProgreso = async (campos: Record<string, string>, nombreCampo: string): Promise<any | null> => {
+    if (!solicitudId) return null;
     setGuardandoCampo(nombreCampo);
     setErrorProgreso("");
     try {
@@ -210,14 +219,14 @@ export const Documentos: React.FC<DocumentosProps> = ({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(campos),
       });
+      const res = await response.json().catch(() => ({}));
       if (!response.ok) {
-        const res = await response.json().catch(() => ({}));
         throw new Error(res.error || "No se pudo guardar.");
       }
-      return true;
+      return res.solicitud || null;
     } catch (error: any) {
       setErrorProgreso(error.message || "No se pudo guardar. Intenta de nuevo.");
-      return false;
+      return null;
     } finally {
       setGuardandoCampo(null);
     }
@@ -281,8 +290,16 @@ export const Documentos: React.FC<DocumentosProps> = ({
     setGuardado(false);
     try {
       const base64 = await compressAndGetBase64(file);
-      const ok = await guardarProgreso({ [campoBackend]: `data:image/jpeg;base64,${base64}` }, campoBackend);
-      if (ok) setGuardado(true);
+      const solicitudActualizada = await guardarProgreso({ [campoBackend]: `data:image/jpeg;base64,${base64}` }, campoBackend);
+      if (solicitudActualizada) {
+        setGuardado(true);
+        // El frente y la selfie disparan la verificación automática en el backend — la
+        // respuesta ya trae el resultado fresco, así que el aviso se actualiza al toque
+        // en vez de quedar con el de una verificación vieja.
+        if (campoBackend === "ine_frente" || campoBackend === "selfie") {
+          setVerificacionFallida(solicitudActualizada.ocr_ok === false || solicitudActualizada.biometrico_ok === false);
+        }
+      }
     } catch {
       // guardarProgreso ya dejó el error en errorProgreso
     }
@@ -667,46 +684,56 @@ export const Documentos: React.FC<DocumentosProps> = ({
             </div>
 
             {/* Frente */}
-            <div
-              className={`${styles.drop} ${(ineFrente || ineFrenteGuardado) ? styles.cargado : ""}`}
-              style={{ cursor: "default" }}
-            >
-              <div className={styles.thumb}>
-                {ineFrente ? (
-                  <img src={URL.createObjectURL(ineFrente)} alt="Frente INE" />
-                ) : (
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  >
-                    <rect
-                      x="3"
-                      y="4"
-                      width="18"
-                      height="16"
-                      rx="2"
-                      ry="2"
-                    ></rect>
-                    <line x1="16" y1="2" x2="16" y2="4"></line>
-                    <line x1="8" y1="2" x2="8" y2="4"></line>
-                    <line x1="3" y1="10" x2="21" y2="10"></line>
-                  </svg>
-                )}
-              </div>
-              <div className={styles.txt}>
-                <div className={styles.t}>Frente de tu INE</div>
-                <div className={styles.d}>
-                  {guardandoCampo === "ine_frente"
-                    ? "Guardando..."
-                    : (ineFrente || ineFrenteGuardado)
-                    ? "Foto cargada correctamente"
-                    : "Haz clic para tomar foto o subir"}
+            {(() => {
+              const cargada = ineFrente || ineFrenteGuardado;
+              const necesitaRevision = cargada && verificacionFallida;
+              return (
+                <div
+                  className={`${styles.drop} ${cargada && !necesitaRevision ? styles.cargado : ""}`}
+                  style={{ cursor: "default", ...(necesitaRevision ? { borderColor: "#F59E0B", borderStyle: "solid", background: "#FFFBEB" } : {}) }}
+                >
+                  <div className={styles.thumb}>
+                    {ineFrente ? (
+                      <img src={URL.createObjectURL(ineFrente)} alt="Frente INE" />
+                    ) : (
+                      <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                      >
+                        <rect
+                          x="3"
+                          y="4"
+                          width="18"
+                          height="16"
+                          rx="2"
+                          ry="2"
+                        ></rect>
+                        <line x1="16" y1="2" x2="16" y2="4"></line>
+                        <line x1="8" y1="2" x2="8" y2="4"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                      </svg>
+                    )}
+                  </div>
+                  <div className={styles.txt}>
+                    <div className={styles.t}>Frente de tu INE</div>
+                    <div className={styles.d} style={necesitaRevision ? { color: "#B45309", fontWeight: 600 } : undefined}>
+                      {guardandoCampo === "ine_frente"
+                        ? "Guardando..."
+                        : necesitaRevision
+                        ? "No se pudo verificar — vuelve a tomarla bien iluminada y sin reflejos"
+                        : cargada
+                        ? "Foto cargada correctamente"
+                        : "Haz clic para tomar foto o subir"}
+                    </div>
+                  </div>
+                  <div className={styles.check} style={necesitaRevision ? { display: "flex", background: "#F59E0B" } : undefined}>
+                    {necesitaRevision ? <FiAlertTriangle /> : <FiCheck />}
+                  </div>
                 </div>
-              </div>
-              <div className={styles.check}><FiCheck /></div>
-            </div>
+              );
+            })()}
             {renderBotonesCaptura("ine-frente", "environment", setIneFrente, "ine_frente", setIneFrenteGuardado)}
 
             {/* Reverso */}
@@ -756,37 +783,47 @@ export const Documentos: React.FC<DocumentosProps> = ({
             {renderBotonesCaptura("ine-reverso", "environment", setIneReverso, "ine_reverso", setIneReversoGuardado)}
 
             {/* Selfie */}
-            <div
-              className={`${styles.drop} ${(selfie || selfieGuardado) ? styles.cargado : ""}`}
-              style={{ cursor: "default" }}
-            >
-              <div className={styles.thumb}>
-                {selfie ? (
-                  <img src={URL.createObjectURL(selfie)} alt="Selfie" />
-                ) : (
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  >
-                    <circle cx="12" cy="9" r="4"></circle>
-                    <path d="M5 20c0-3.3 3.1-6 7-6s7 2.7 7 6"></path>
-                  </svg>
-                )}
-              </div>
-              <div className={styles.txt}>
-                <div className={styles.t}>Selfie</div>
-                <div className={styles.d}>
-                  {guardandoCampo === "selfie"
-                    ? "Guardando..."
-                    : (selfie || selfieGuardado)
-                    ? "Foto cargada correctamente"
-                    : "Tu rostro, bien iluminado"}
+            {(() => {
+              const cargada = selfie || selfieGuardado;
+              const necesitaRevision = cargada && verificacionFallida;
+              return (
+                <div
+                  className={`${styles.drop} ${cargada && !necesitaRevision ? styles.cargado : ""}`}
+                  style={{ cursor: "default", ...(necesitaRevision ? { borderColor: "#F59E0B", borderStyle: "solid", background: "#FFFBEB" } : {}) }}
+                >
+                  <div className={styles.thumb}>
+                    {selfie ? (
+                      <img src={URL.createObjectURL(selfie)} alt="Selfie" />
+                    ) : (
+                      <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                      >
+                        <circle cx="12" cy="9" r="4"></circle>
+                        <path d="M5 20c0-3.3 3.1-6 7-6s7 2.7 7 6"></path>
+                      </svg>
+                    )}
+                  </div>
+                  <div className={styles.txt}>
+                    <div className={styles.t}>Selfie</div>
+                    <div className={styles.d} style={necesitaRevision ? { color: "#B45309", fontWeight: 600 } : undefined}>
+                      {guardandoCampo === "selfie"
+                        ? "Guardando..."
+                        : necesitaRevision
+                        ? "No se pudo verificar contra tu INE — vuelve a tomarla de frente y bien iluminada"
+                        : cargada
+                        ? "Foto cargada correctamente"
+                        : "Tu rostro, bien iluminado"}
+                    </div>
+                  </div>
+                  <div className={styles.check} style={necesitaRevision ? { display: "flex", background: "#F59E0B" } : undefined}>
+                    {necesitaRevision ? <FiAlertTriangle /> : <FiCheck />}
+                  </div>
                 </div>
-              </div>
-              <div className={styles.check}><FiCheck /></div>
-            </div>
+              );
+            })()}
             {renderBotonesCaptura("selfie", "user", setSelfie, "selfie", setSelfieGuardado)}
 
             <div className={styles.privacidad}>

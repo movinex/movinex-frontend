@@ -486,6 +486,7 @@ function DocumentosRoute({
           ineReverso: resumen.tieneIneReverso,
           selfie: resumen.tieneSelfie
         }}
+        initialVerificacionFallida={resumen.ocrOk === false || resumen.biometricoOk === false}
         onVolver={() => navigate('/tienda')}
       />
     );
