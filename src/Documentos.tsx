@@ -293,11 +293,21 @@ export const Documentos: React.FC<DocumentosProps> = ({
       const solicitudActualizada = await guardarProgreso({ [campoBackend]: `data:image/jpeg;base64,${base64}` }, campoBackend);
       if (solicitudActualizada) {
         setGuardado(true);
-        // El frente y la selfie disparan la verificación automática en el backend — la
-        // respuesta ya trae el resultado fresco, así que el aviso se actualiza al toque
-        // en vez de quedar con el de una verificación vieja.
+        // El backend ya no espera a Verificamex para responder acá (por eso esto es
+        // rápido) — corre OCR/biométrico en segundo plano, así que el resultado fresco
+        // todavía no está en esta respuesta. Se consulta una vez, unos segundos
+        // después, para que el aviso ámbar se actualice solo sin tener que recargar.
         if (campoBackend === "ine_frente" || campoBackend === "selfie") {
-          setVerificacionFallida(solicitudActualizada.ocr_ok === false || solicitudActualizada.biometrico_ok === false);
+          setTimeout(() => {
+            fetch(`${backendUrl}/api/solicitudes/${solicitudId}/resumen`)
+              .then((r) => (r.ok ? r.json() : null))
+              .then((resumen) => {
+                if (resumen) {
+                  setVerificacionFallida(resumen.ocrOk === false || resumen.biometricoOk === false);
+                }
+              })
+              .catch(() => {});
+          }, 2500);
         }
       }
     } catch {
