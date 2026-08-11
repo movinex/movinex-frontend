@@ -433,6 +433,25 @@ export const Admin: React.FC<AdminProps> = ({ solicitudes, onUpdateStatus, onSav
 
                   <div className={styles.sectionHeader} style={{ marginTop: '24px' }}>Pago y Envío</div>
 
+                  {!solicitudSeleccionada.pagoConfirmado && solicitudSeleccionada.estatus !== 'Rechazado' && (
+                    <div className={styles.alertBanner}>
+                      <FiAlertTriangle style={{ verticalAlign: '-2px', marginRight: '6px' }} />
+                      Falta que el cliente pague el enganche
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const link = `${window.location.origin}/documentos?solicitud=${solicitudSeleccionada.id}`;
+                          navigator.clipboard.writeText(link);
+                          setLinkCopiadoOk(true);
+                          setTimeout(() => setLinkCopiadoOk(false), 2500);
+                        }}
+                        style={{ marginLeft: '10px', background: 'none', border: 'none', color: '#2B6BE4', fontWeight: 700, cursor: 'pointer', textDecoration: 'underline', fontSize: 'inherit', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                      >
+                        {linkCopiadoOk ? (<><FiCheck /> ¡Copiado!</>) : (<><FiLink /> Copiar link para continuar</>)}
+                      </button>
+                    </div>
+                  )}
+
                   {solicitudSeleccionada.pagoConfirmado && !solicitudSeleccionada.calle && (
                     <div className={styles.alertBanner}>
                       <FiAlertTriangle style={{ verticalAlign: '-2px', marginRight: '6px' }} />
