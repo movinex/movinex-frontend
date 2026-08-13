@@ -428,7 +428,7 @@ export const Landing: React.FC<LandingProps> = ({
                   <img src={imgPorQue1} alt="Con nosotros si calificas" />
                 </div>
                 <h3>Con nosotros si calificas</h3>
-                <p>
+                <p className={styles.porQueDesc}>
                   Olvídate del papeleo, aquí es sin historial bancario, sin
                   tarjetas, sin aval.
                 </p>
@@ -438,7 +438,7 @@ export const Landing: React.FC<LandingProps> = ({
                   <img src={imgPorQue2} alt="Números claros desde el día uno" />
                 </div>
                 <h3>Números claros desde el día uno</h3>
-                <p>
+                <p className={styles.porQueDesc}>
                   Lo que ves es lo que pagas. Sin cobros extra y si te
                   atrasas, no te cobramos de más.
                 </p>
@@ -451,7 +451,7 @@ export const Landing: React.FC<LandingProps> = ({
                   />
                 </div>
                 <h3>Te lo enviamos directo a tu puerta</h3>
-                <p>
+                <p className={styles.porQueDesc}>
                   Nada de filas ni de perder el tiempo en tiendas físicas. Tú
                   lo pides, nosotros lo enviamos.
                 </p>

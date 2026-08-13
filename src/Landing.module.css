@@ -466,6 +466,7 @@
 
 .porQueGrid {
   display: flex;
+  align-items: flex-start;
   gap: 40px;
   max-width: 1120px;
 }
@@ -488,6 +489,11 @@
   height: 100%;
   object-fit: cover;
   display: block;
+  transition: transform 0.35s ease;
+}
+
+.porQueCard:hover .porQueImgWrap img {
+  transform: scale(1.05);
 }
 
 .porQueCard h3 {
@@ -497,7 +503,7 @@
   margin: 0;
 }
 
-.porQueCard p {
+.porQueDesc {
   font-size: 15px;
   line-height: 1.5;
   color: #050d1d;
