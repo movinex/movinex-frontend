@@ -53,5 +53,6 @@ export interface Solicitud {
   labelUrl?: string;
   imei?: string;
   reciboUrl?: string;
+  metodoPagoEnganche?: 'card' | 'oxxo' | 'customer_balance';
 }
 

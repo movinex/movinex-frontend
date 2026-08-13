@@ -109,7 +109,8 @@ function App() {
           trackingNumber: s.tracking_number,
           labelUrl: s.label_url,
           imei: s.imei,
-          reciboUrl: s.stripe_receipt_url
+          reciboUrl: s.stripe_receipt_url,
+          metodoPagoEnganche: s.metodo_pago_enganche
         }));
         setSolicitudes(solicitudesAdaptadas);
       })

@@ -157,6 +157,15 @@ export const Admin: React.FC<AdminProps> = ({ solicitudes, onUpdateStatus, onSav
     }
   };
 
+  const getMetodoPagoLabel = (metodo?: Solicitud['metodoPagoEnganche']) => {
+    switch (metodo) {
+      case 'card': return 'Tarjeta';
+      case 'oxxo': return 'OXXO';
+      case 'customer_balance': return 'Transferencia (SPEI)';
+      default: return null;
+    }
+  };
+
   const handleResolver = async (id: string, nuevoEstatus: EstatusSolicitud) => {
     setErrorEstatus('');
     setAvanzandoEstatus(true);
@@ -527,6 +536,14 @@ export const Admin: React.FC<AdminProps> = ({ solicitudes, onUpdateStatus, onSav
                         {solicitudSeleccionada.pagoConfirmado ? (<><FiCheck /> Confirmado</>) : 'Pendiente'}
                       </span>
                     </div>
+                    {getMetodoPagoLabel(solicitudSeleccionada.metodoPagoEnganche) && (
+                      <div className={styles.infoItem}>
+                        <span className={styles.infoLabel}>Método de Pago</span>
+                        <span className={styles.infoValue}>
+                          {getMetodoPagoLabel(solicitudSeleccionada.metodoPagoEnganche)}
+                        </span>
+                      </div>
+                    )}
                     {solicitudSeleccionada.trackingNumber && (
                       <div className={styles.infoItem}>
                         <span className={styles.infoLabel}>Número de Rastreo</span>

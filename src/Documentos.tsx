@@ -133,7 +133,6 @@ export const Documentos: React.FC<DocumentosProps> = ({
   // arriba, así que acá no se vuelve a pedir OTP.
   const [iniciandoPago, setIniciandoPago] = useState(false);
   const [pagoError, setPagoError] = useState("");
-  const [aprobandoManual, setAprobandoManual] = useState(false);
 
   const backendUrl = import.meta.env.VITE_BACKEND_URL || 'https://movinex-backend-production.up.railway.app';
 
@@ -258,27 +257,6 @@ export const Documentos: React.FC<DocumentosProps> = ({
     } catch (error: any) {
       setPagoError(error.message || "Ocurrió un error al iniciar el pago.");
       setIniciandoPago(false);
-    }
-  };
-
-  // Bypass TEMPORAL: salta el pago real y avanza igual al paso de Domicilio, para
-  // poder seguir probando Skydropx sin cobrar una tarjeta real. Quitar antes de ir a
-  // producción definitiva (Trello MX-0061).
-  const handleAprobarManual = async () => {
-    setAprobandoManual(true);
-    try {
-      const response = await fetch(`${backendUrl}/api/solicitudes/${solicitudId}/aprobar-pago-manual`, {
-        method: "POST",
-      });
-      if (!response.ok) {
-        const res = await response.json();
-        throw new Error(res.error || "No se pudo aprobar el pago manualmente.");
-      }
-      navigate(`/domicilio?solicitud=${solicitudId}&modelo=${encodeURIComponent(planData.modelo)}`);
-    } catch (error: any) {
-      setPagoError(error.message || "No se pudo continuar. Intenta de nuevo.");
-    } finally {
-      setAprobandoManual(false);
     }
   };
 
@@ -498,17 +476,6 @@ export const Documentos: React.FC<DocumentosProps> = ({
                   >
                     {iniciandoPago ? "Preparando pago..." : "Pagar enganche →"}
                   </button>
-                  {pagoError && (
-                    <button
-                      type="button"
-                      className={styles.cta}
-                      style={{ background: "#E4E8F1", color: "#5A6688", marginTop: "10px", boxShadow: "none" }}
-                      onClick={handleAprobarManual}
-                      disabled={aprobandoManual}
-                    >
-                      {aprobandoManual ? "Continuando..." : "Continuar sin pagar (modo prueba) →"}
-                    </button>
-                  )}
                 </>
               ) : (
                 // Todavía no se puede pagar: la identidad no quedó validada automática y
