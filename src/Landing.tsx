@@ -3,23 +3,27 @@ import { useParams, useNavigate } from "react-router";
 import styles from "./Landing.module.css";
 import type { Phone } from "./types";
 import { LegalContent } from "./LegalContent";
-import { FaFacebook, FaInstagram } from "react-icons/fa6";
+import { FaFacebook, FaInstagram, FaWhatsapp } from "react-icons/fa6";
+import { FiMenu, FiX } from "react-icons/fi";
+import { PiCookieBold } from "react-icons/pi";
 
 const LANDING_SUBPAGES = ["movinex", "tienda", "privacidad", "terminos", "cookies", "envios"] as const;
 type LandingPage = "inicio" | (typeof LANDING_SUBPAGES)[number];
 
-// Carousel Banners (imágenes nuevas del usuario)
-import banner1 from "./assets/carrusel1.avif";
-import banner2 from "./assets/carrusel2.avif";
-import banner3 from "./assets/carrusel3.avif";
+// Hero (video en loop, entregado por la diseñadora)
+import heroVideo from "./assets/hero-video.mp4";
 
-// Fold assets (imágenes nuevas del usuario)
-import imgFoldEnganche from "./assets/los mejores celulares.webp";
-import imgFoldDudas from "./assets/tienes dudas.webp";
+// "Cómo funciona" — imagen del paso activo (Figma)
+import imgComoFunciona from "./assets/figma-carrusel-paso2.webp";
 
-// Card backgrounds (existing PNGs como fallback para las tarjetas dobles)
-import imgCardIne from "./assets/Copia de Degradado horizontal izquierda a derecha 3.png";
-import imgCardRitmo from "./assets/Copia de Que se degrade de menos a mas 3.png";
+// "Por qué Movinex" — imágenes de las 3 tarjetas (Figma)
+import imgPorQue1 from "./assets/figma-card1.webp";
+import imgPorQue2 from "./assets/figma-card2.webp";
+import imgPorQue3 from "./assets/figma-card3.webp";
+
+// Logo en monocromo, para el footer sobre fondo azul marino (Figma)
+import logoMoviMono from "./assets/logo-movi-mono.svg";
+import logoNexMono from "./assets/logo-nex-mono.svg";
 
 // Brand logos (imágenes nuevas del usuario)
 import marca1 from "./assets/marca1.webp";
@@ -55,39 +59,49 @@ export const Landing: React.FC<LandingProps> = ({
   const [selectedQuickView, setSelectedQuickView] = useState<Phone | null>(
     null,
   );
-  const [currentSlide, setCurrentSlide] = useState(0);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Prevent TS6133 unused prop error while Backoffice is commented
   ((_x: any) => {})(onNavigateAdmin);
 
-  const slides = [
+  // Cierra el menú móvil al cambiar de página
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [page]);
+
+  const pasos = [
     {
-      image: banner1,
-      title: "Tu próximo celular, a tu ritmo",
-      subtitle:
-        "Estrena con solo 15% de enganche y paga por semana. Sin tarjeta, sin buró. Solo tu INE.",
+      titulo: "El que tú elijas",
+      descripcion:
+        "Elige el celular que quieras de nuestro catálogo y llévatelo con tan solo el 15% de enganche.",
     },
     {
-      image: banner2,
-      title: "Solo con tu INE",
-      subtitle:
-        "Te aprobamos con tu pura identificación. Estrena con 15% de enganche. Sin buró, sin tarjeta.",
+      titulo: "Sin filas ni papeleos",
+      descripcion:
+        "Obtén tu aprobación en minutos, solo con tu INE y WhatsApp. Cero papeleo, cero complicaciones.",
     },
     {
-      image: banner3,
-      title: "A tu ritmo",
-      subtitle: "Elige pagar en 26 o 52 semanas. Paga por semana.",
+      titulo: "Paga cada semana",
+      descripcion: "Elige tu plazo: 26 o 52 pagos semanales. Sin sorpresas.",
+    },
+    {
+      titulo: "Donde tú elijas",
+      descripcion:
+        "Sin filas ni esperas. Pide en línea y recíbelo en la puerta de tu casa.",
     },
   ];
+  const PASO_DURACION_MS = 5000;
+  const [pasoActivo, setPasoActivo] = useState(1);
 
-  // Auto-play slides
+  // Avanza automáticamente al siguiente paso; se reinicia cada vez que
+  // pasoActivo cambia, ya sea por el timer o por un click manual.
   useEffect(() => {
     if (page !== "inicio") return;
-    const interval = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % slides.length);
-    }, 5000);
-    return () => clearInterval(interval);
-  }, [page, slides.length]);
+    const timer = setTimeout(() => {
+      setPasoActivo((prev) => (prev + 1) % pasos.length);
+    }, PASO_DURACION_MS);
+    return () => clearTimeout(timer);
+  }, [page, pasoActivo, pasos.length]);
 
   const [phones, setPhones] = useState<Phone[]>([]);
   const [loading, setLoading] = useState(true);
@@ -166,14 +180,11 @@ export const Landing: React.FC<LandingProps> = ({
   useEffect(() => {
     // List of initial images that need to be preloaded
     const criticalUrls = [
-      banner1,
-      banner2,
-      banner3,
       logoColor,
-      imgCardIne,
-      imgCardRitmo,
-      imgFoldEnganche,
-      imgFoldDudas
+      imgComoFunciona,
+      imgPorQue1,
+      imgPorQue2,
+      imgPorQue3,
     ];
 
     let loadedCount = 0;
@@ -226,16 +237,13 @@ export const Landing: React.FC<LandingProps> = ({
               Inicio
             </button>
             <button
-              onClick={() => irA("tienda")}
-              className={`${styles.navLink} ${page === "tienda" ? styles.navLinkActive : ""}`}
-            >
-              Tienda
-            </button>
-            <button
               onClick={() => irA("movinex")}
               className={`${styles.navLink} ${page === "movinex" ? styles.navLinkActive : ""}`}
             >
-              Movinex
+              Quienes Somos
+            </button>
+            <button onClick={() => irA("tienda")} className={styles.ctaCotizar}>
+              Cotiza aquí
             </button>
             {showAdminButton && (
               <button onClick={onNavigateAdmin} className={styles.adminBtn}>
@@ -243,225 +251,210 @@ export const Landing: React.FC<LandingProps> = ({
               </button>
             )}
           </nav>
+          <button
+            className={styles.mobileMenuBtn}
+            onClick={() => setMobileMenuOpen((v) => !v)}
+            aria-label={mobileMenuOpen ? "Cerrar menú" : "Abrir menú"}
+          >
+            {mobileMenuOpen ? <FiX size={22} /> : <FiMenu size={22} />}
+          </button>
         </div>
       </header>
+
+      {/* MENÚ MÓVIL */}
+      {mobileMenuOpen && (
+        <div className={styles.mobileMenuOverlay}>
+          <nav className={styles.mobileMenuLinks}>
+            <button onClick={() => irA("inicio")} className={styles.mobileMenuLink}>
+              Inicio
+            </button>
+            <button onClick={() => irA("movinex")} className={styles.mobileMenuLink}>
+              Quienes Somos
+            </button>
+            <button
+              onClick={() => irA("tienda")}
+              className={styles.mobileMenuCta}
+            >
+              Cotiza aquí
+            </button>
+          </nav>
+          <div className={styles.mobileMenuSocial}>
+            <span>Visítanos en nuestras redes</span>
+            <div className={styles.mobileMenuSocialIcons}>
+              <button
+                onClick={() => irA("cookies")}
+                className={styles.socialIconBtn}
+                aria-label="Política de cookies"
+              >
+                <PiCookieBold size={20} />
+              </button>
+              <a
+                href="https://www.facebook.com/profile.php?id=61590577951610"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Movinex en Facebook"
+                className={styles.socialIconBtn}
+              >
+                <FaFacebook size={18} />
+              </a>
+              <a
+                href="https://www.instagram.com/movinex.mx/"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Movinex en Instagram"
+                className={styles.socialIconBtn}
+              >
+                <FaInstagram size={20} />
+              </a>
+              <a
+                href="https://wa.me/525555028744?text=Hola%20Movinex,%20quiero%20comprar%20un%20celular"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Movinex en WhatsApp"
+                className={styles.socialIconBtn}
+              >
+                <FaWhatsapp size={20} />
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ===================== INICIO ===================== */}
       {page === "inicio" && (
         <>
-          {/* HERO CAROUSEL */}
-          <section className={styles.heroCarousel}>
-            <div className={styles.slidesContainer}>
-              {slides.map((slide, index) => (
-                <div
-                  key={index}
-                  className={`${styles.slide} ${currentSlide === index ? styles.slideActive : ""}`}
-                >
-                  <img
-                    src={slide.image}
-                    alt={slide.title}
-                    className={styles.slideBgImage}
-                  />
-                  <div className={styles.slideContent}>
-                    <h1>{slide.title}</h1>
-                    <p>{slide.subtitle}</p>
-                    <button
-                      onClick={() => irA("tienda")}
-                      className={styles.ctaButtonWixSlide}
+          {/* HERO */}
+          <section className={styles.hero}>
+            <div className={styles.heroLeft}>
+              <div className={styles.heroTextBlock}>
+                <h1 className={styles.heroTitle}>
+                  El celular que necesitas, a tu ritmo
+                </h1>
+                <p className={styles.heroSubtitle}>
+                  Sin trámites burocráticos ni tarjeta de crédito. Tú eliges el
+                  equipo, nosotros lo enviamos a tu puerta.
+                </p>
+              </div>
+              <button
+                onClick={() => irA("tienda")}
+                className={styles.ctaPrimary}
+              >
+                Elige tu celular
+              </button>
+            </div>
+            <div className={styles.heroVideoWrap}>
+              <video
+                className={styles.heroVideoTag}
+                src={heroVideo}
+                autoPlay
+                loop
+                muted
+                playsInline
+              />
+            </div>
+          </section>
+
+          {/* MARCAS VENDIDAS */}
+          <section className={styles.marcasVendidas}>
+            <div className={styles.marcasHeading}>
+              <h2>Las marcas que ya conoces</h2>
+              <p>
+                Equipos originales de las marcas que confías, listos para
+                trabajar y conectarte.
+              </p>
+            </div>
+            <div className={styles.marquee}>
+              <div className={styles.marqueeTrack}>
+                {[marca1, marca2, marca3, marca4, marca5, marca1, marca2, marca3, marca4, marca5].map(
+                  (logo, idx) => (
+                    <div className={styles.marqueeItem} key={idx}>
+                      <img src={logo} alt="" />
+                    </div>
+                  ),
+                )}
+              </div>
+            </div>
+          </section>
+
+          {/* CÓMO FUNCIONA */}
+          <section className={styles.comoFunciona}>
+            <h2 className={styles.comoFuncionaTitle}>
+              Sin esperas,
+              <br />
+              sin trámites, sin filas.
+            </h2>
+            <div className={styles.comoFuncionaGrid}>
+              <div className={styles.pasosColumn}>
+                <div className={styles.pasosList}>
+                  {pasos.map((paso, idx) => (
+                    <div
+                      key={idx}
+                      className={`${styles.paso} ${pasoActivo === idx ? styles.pasoActivo : ""}`}
+                      onClick={() => setPasoActivo(idx)}
                     >
-                      Cotizar
-                    </button>
-                  </div>
+                      <p className={styles.pasoTitulo}>{paso.titulo}</p>
+                      {pasoActivo === idx && (
+                        <>
+                          <p className={styles.pasoDescripcion}>
+                            {paso.descripcion}
+                          </p>
+                          <div className={styles.pasoBarra}>
+                            <div key={idx} className={styles.pasoBarraFill} />
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-            <div className={styles.indicators}>
-              {slides.map((_, index) => (
-                <span
-                  key={index}
-                  className={`${styles.indicator} ${currentSlide === index ? styles.indicatorActive : ""}`}
-                  onClick={() => setCurrentSlide(index)}
-                />
-              ))}
-            </div>
-          </section>
-
-          {/* TARJETAS LADO A LADO */}
-          <section className={styles.foldDoubleCards}>
-            <div className={styles.doubleCardsGrid}>
-              <div
-                className={styles.sideCard}
-                style={{
-                  backgroundImage: `linear-gradient(to right, rgba(11, 27, 60, 0.92) 0%, rgba(11, 27, 60, 0.5) 60%, rgba(11,27,60,0.2) 100%), url(${imgCardIne})`,
-                }}
-              >
-                <div className={styles.sideCardContent}>
-                  <span className={styles.eyebrow}>Solo con tu INE</span>
-                  <h2>Sin buró, sin tarjeta</h2>
-                  <p>
-                    Te aprobamos con tu pura identificación. Estrena con 15% de
-                    enganche.
-                  </p>
-                  <button
-                    onClick={() => irA("tienda")}
-                    className={styles.ctaButtonSide}
-                  >
-                    Cotizar
-                  </button>
-                </div>
-              </div>
-              <div
-                className={styles.sideCard}
-                style={{
-                  backgroundImage: `linear-gradient(to right, rgba(11, 27, 60, 0.92) 0%, rgba(11, 27, 60, 0.5) 60%, rgba(11,27,60,0.2) 100%), url(${imgCardRitmo})`,
-                }}
-              >
-                <div className={styles.sideCardContent}>
-                  <span className={styles.eyebrow}>A tu ritmo</span>
-                  <h2>Paga por semana</h2>
-                  <p>Elige pagar en 26 o 52 semanas.</p>
-                  <button
-                    onClick={() => irA("tienda")}
-                    className={styles.ctaButtonSide}
-                  >
-                    Cotizar
-                  </button>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* BADGES DE SERVICIO */}
-          <section className={styles.foldBadgesSection}>
-            <div className={styles.badgesHorizontalRow}>
-              <div className={styles.badgeCol}>
-                <div className={styles.badgeIconBox}>
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.5"
-                    width="28"
-                    height="28"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <polyline points="21 8 21 21 3 21 3 8"></polyline>
-                    <rect x="1" y="3" width="22" height="5" rx="1"></rect>
-                    <polyline points="10 12 12 14 16 10"></polyline>
-                  </svg>
-                </div>
-                <div className={styles.badgeTextContent}>
-                  <h4>Envío a todo México</h4>
-                  <p>Te lo mandamos a domicilio, de 2 a 5 días hábiles.</p>
-                </div>
-              </div>
-              <div
-                className={styles.badgeCol}
-                style={{ justifyContent: "flex-end" }}
-              >
-                <div
-                  className={styles.badgeTextContent}
-                  style={{ textAlign: "right" }}
+                <button
+                  onClick={() => irA("tienda")}
+                  className={styles.ctaPrimary}
                 >
-                  <h4>Págalo a tu ritmo</h4>
-                  <p>Pagos chiquitos cada semana.</p>
-                </div>
-                <div
-                  className={styles.badgeIconBox}
-                  style={{ marginLeft: "16px" }}
-                >
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.5"
-                    width="28"
-                    height="28"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
-                    <line x1="7" y1="7" x2="7.01" y2="7"></line>
-                  </svg>
-                </div>
+                  Solicita tú cupo
+                </button>
+              </div>
+              <div className={styles.comoFuncionaImgWrap}>
+                <img src={imgComoFunciona} alt="Cómo funciona Movinex" />
               </div>
             </div>
           </section>
 
-          {/* ENGANCHE MÍNIMO + MARCAS */}
-          <section className={styles.foldEngancheMedida}>
-            <div className={styles.medidaGrid}>
-              <div className={styles.medidaLeft}>
-                <div className={styles.stackedPhonesContainer}>
+          {/* POR QUÉ MOVINEX */}
+          <section className={styles.porQueMovinex}>
+            <h2 className={styles.porQueTitle}>Aprobación en minutos</h2>
+            <div className={styles.porQueGrid}>
+              <div className={styles.porQueCard}>
+                <div className={styles.porQueImgWrap}>
+                  <img src={imgPorQue1} alt="Con nosotros si calificas" />
+                </div>
+                <h3>Con nosotros si calificas</h3>
+                <p>
+                  Olvídate del papeleo, aquí es sin historial bancario, sin
+                  tarjetas, sin aval.
+                </p>
+              </div>
+              <div className={styles.porQueCard}>
+                <div className={styles.porQueImgWrap}>
+                  <img src={imgPorQue2} alt="Números claros desde el día uno" />
+                </div>
+                <h3>Números claros desde el día uno</h3>
+                <p>
+                  Lo que ves es lo que pagas. Sin cobros extra y si te
+                  atrasas, no te cobramos de más.
+                </p>
+              </div>
+              <div className={styles.porQueCard}>
+                <div className={styles.porQueImgWrap}>
                   <img
-                    src={imgFoldEnganche}
-                    alt="Los mejores celulares"
-                    className={styles.stackedImg}
+                    src={imgPorQue3}
+                    alt="Te lo enviamos directo a tu puerta"
                   />
-                  <div className={styles.engancheBadgeCircle}>
-                    <span>Enganche</span>
-                    <strong>mínimo</strong>
-                  </div>
                 </div>
-              </div>
-              <div className={styles.medidaRight}>
-                <h2>Los mejores celulares con financiamiento a tu medida</h2>
+                <h3>Te lo enviamos directo a tu puerta</h3>
                 <p>
-                  Marcas de calidad que cambiaran tu vida, sin complicaciones y
-                  con pagos accesibles.
+                  Nada de filas ni de perder el tiempo en tiendas físicas. Tú
+                  lo pides, nosotros lo enviamos.
                 </p>
-                <small className={styles.medidaTcs}>
-                  Aplican los términos y condiciones
-                </small>
-              </div>
-            </div>
-            <div className={styles.marcasGridSection}>
-              <h3 className={styles.marcasSectionTitle}>Marcas</h3>
-              <div className={styles.marcasGrid}>
-                <div className={styles.marcaItem}>
-                  <img src={marca1} alt="Samsung" />
-                </div>
-                <div className={styles.marcaItem}>
-                  <img src={marca2} alt="Xiaomi" />
-                </div>
-                <div className={styles.marcaItem}>
-                  <img src={marca3} alt="Honor" />
-                </div>
-                <div className={styles.marcaItem}>
-                  <img src={marca4} alt="Motorola" />
-                </div>
-                <div className={styles.marcaItem}>
-                  <img src={marca5} alt="Realme" />
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* ¿TIENES DUDAS? */}
-          <section className={styles.foldDudasWix}>
-            <div className={styles.dudasWixGrid}>
-              <div className={styles.dudasBlueCard}>
-                <h2>¿Tienes dudas?</h2>
-                <p>
-                  Escríbenos por WhatsApp y con gusto te explicamos cómo
-                  funciona, los plazos y cómo estrenar de inmediato.
-                </p>
-                <a
-                  href="https://wa.me/525555028744?text=Hola%20Movinex,%20quiero%20comprar%20un%20celular"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={styles.whatsappWixBtn}
-                >
-                  Whatsapp
-                </a>
-              </div>
-              <div className={styles.dudasImgCol}>
-                <img
-                  src={imgFoldDudas}
-                  alt="Tienes dudas"
-                  className={styles.handImg}
-                />
               </div>
             </div>
           </section>
@@ -686,7 +679,18 @@ export const Landing: React.FC<LandingProps> = ({
       <footer className={styles.footer}>
         <div className={styles.footerContent}>
           <div className={styles.footerColumn}>
+            <div className={styles.footerLogoRow}>
+              <img src={logoMoviMono} alt="" className={styles.footerLogoMovi} />
+              <img src={logoNexMono} alt="" className={styles.footerLogoNex} />
+            </div>
             <div className={styles.socialsWix}>
+              <button
+                onClick={() => irA("cookies")}
+                className={styles.socialIconLink}
+                aria-label="Política de cookies"
+              >
+                <PiCookieBold size={18} />
+              </button>
               <a
                 href="https://www.facebook.com/profile.php?id=61590577951610"
                 target="_blank"
@@ -694,7 +698,7 @@ export const Landing: React.FC<LandingProps> = ({
                 aria-label="Movinex en Facebook"
                 className={`${styles.socialIconLink} ${styles.socialFacebook}`}
               >
-                <FaFacebook size={22} />
+                <FaFacebook size={18} />
               </a>
               <a
                 href="https://www.instagram.com/movinex.mx/"
@@ -703,35 +707,38 @@ export const Landing: React.FC<LandingProps> = ({
                 aria-label="Movinex en Instagram"
                 className={`${styles.socialIconLink} ${styles.socialInstagram}`}
               >
-                <FaInstagram size={24} />
+                <FaInstagram size={20} />
+              </a>
+              <a
+                href="https://wa.me/525555028744?text=Hola%20Movinex,%20quiero%20comprar%20un%20celular"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Movinex en WhatsApp"
+                className={styles.socialIconLink}
+              >
+                <FaWhatsapp size={18} />
               </a>
             </div>
           </div>
           <div className={styles.footerColumn}>
-            <h4>Tienda</h4>
+            <h4>Para tí</h4>
             <div className={styles.footerLinks}>
               <button
-                onClick={() => irA("inicio")}
+                onClick={() => irA("tienda")}
                 className={styles.footerBtnLink}
               >
-                Inicio
+                Cotiza Aquí
               </button>
               <button
                 onClick={() => irA("movinex")}
                 className={styles.footerBtnLink}
               >
-                Movinex
-              </button>
-              <button
-                onClick={() => irA("tienda")}
-                className={styles.footerBtnLink}
-              >
-                Tienda
+                Quienes somos
               </button>
             </div>
           </div>
           <div className={styles.footerColumn}>
-            <h4>Atención al cliente</h4>
+            <h4>Atención al Cliente</h4>
             <div className={styles.footerLinks}>
               <a
                 href="https://wa.me/525555028744?text=Hola%20Movinex"
@@ -743,7 +750,7 @@ export const Landing: React.FC<LandingProps> = ({
             </div>
           </div>
           <div className={styles.footerColumn}>
-            <h4>Política</h4>
+            <h4>Para tí</h4>
             <div className={styles.footerLinks}>
               <button
                 onClick={() => irA("envios")}
@@ -761,26 +768,37 @@ export const Landing: React.FC<LandingProps> = ({
                 onClick={() => irA("privacidad")}
                 className={styles.footerBtnLink}
               >
-                Aviso de Privacidad
-              </button>
-              <button
-                onClick={() => irA("cookies")}
-                className={styles.footerBtnLink}
-              >
-                Política de Cookies
+                Aviso de privacidad
               </button>
             </div>
           </div>
+        </div>
+        <div className={styles.footerBottomRow}>
+          <p>© 2026 Movinex. Todos los derechos reservados.</p>
         </div>
         <div className={styles.footerPaymentSection}>
           <h4>Aceptamos los siguientes métodos de pago</h4>
           <div className={styles.metodosPagoWix}>
             <div className={styles.paymentLogoWix}>
-              <svg viewBox="0 0 24 15" width="40" height="25">
-                <path
-                  d="M10.155 1.026L7.744 12.064h2.247l2.411-11.038zM18.665 1.026l-1.748 7.828-.75-3.957c-.443-1.503-1.802-3.136-3.376-3.871h.063l3.076 11.038h2.381l3.541-11.038zM2.87 1.026C1.229 2.052.483 3.328.483 4.887c0 2.213 2.508 2.656 2.508 3.738 0 .426-.452.802-1.424.802-.924 0-1.722-.38-2.312-.662l-.427 1.968c.613.279 1.636.533 2.7.533 2.378 0 3.916-1.127 3.916-2.873 0-2.353-2.516-2.73-2.516-3.882 0-.352.368-.69 1.258-.69.761 0 1.488.243 1.936.438l.424-1.954C6.182 1.979 5.097 1.706 2.87 1.026M13.626 1.026c-.52 0-.964.298-1.168.784L8.98 12.064h2.359l.47-1.295h2.884l.272 1.295h2.079zM12.441 8.94l1.171-3.218.675 3.218z"
-                  fill="#1A1F71"
-                />
+              <svg
+                viewBox="0 0 24 15"
+                width="40"
+                height="25"
+                style={{ borderRadius: "2px" }}
+              >
+                <rect width="24" height="15" fill="#1A1F71" />
+                <text
+                  x="50%"
+                  y="60%"
+                  fill="#FFFFFF"
+                  fontSize="6.5"
+                  fontWeight="bold"
+                  fontStyle="italic"
+                  textAnchor="middle"
+                  fontFamily="sans-serif"
+                >
+                  VISA
+                </text>
               </svg>
             </div>
             <div className={styles.paymentLogoWix}>
