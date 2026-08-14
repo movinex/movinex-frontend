@@ -9,6 +9,7 @@ export interface Phone {
   totalPagar26: number;
   totalPagar52: number;
   ahorro26?: number;
+  precioDescuento?: number;
   imagen: string;
   envioGratis?: boolean;
   costoEnvio?: number;

@@ -6,16 +6,22 @@ import type { Phone, Solicitud } from './types';
 import { FiClipboard, FiSmartphone, FiUpload } from 'react-icons/fi';
 
 // Fórmula oficial de Movinex (Cotizador_Movinex_Celulares.xlsx, parámetros fijos de
-// negocio: 15% enganche, 228% anual, cargo de Seguridad y Bloqueo $17 + IVA
-// semanal, amortización francesa). Reemplaza la carga manual de enganche/pago
-// semanal en el catálogo — esos tres números salían antes copiados a mano del Excel.
-function calcularPlan(precioBase: number): { enganche: number; montoSemanal26: number; montoSemanal52: number } {
+// negocio: 228% anual, cargo de Seguridad y Bloqueo $17 + IVA semanal, amortización
+// francesa). El 15% de enganche es solo la SUGERENCIA por default al cargar el precio
+// base — el admin puede pisarlo con un enganche mínimo distinto por celular (ver
+// handleEdit/el input de enganche), y los pagos semanales siempre se recalculan según
+// el enganche que esté puesto en ese momento, sea el sugerido o uno custom.
+function calcularEngancheSugerido(precioBase: number): number {
+  if (!precioBase || precioBase <= 0) return 0;
+  return Math.round(precioBase * 0.15 * 100) / 100;
+}
+
+function calcularSemanales(precioBase: number, enganche: number): { montoSemanal26: number; montoSemanal52: number } {
   if (!precioBase || precioBase <= 0) {
-    return { enganche: 0, montoSemanal26: 0, montoSemanal52: 0 };
+    return { montoSemanal26: 0, montoSemanal52: 0 };
   }
 
-  const enganche = Math.round(precioBase * 0.15 * 100) / 100;
-  const financiado = precioBase - enganche;
+  const financiado = Math.max(precioBase - (enganche || 0), 0);
   const tasaSemanalConIva = (2.28 / 52) * 1.16;
   const cargoServicioConIva = 17 * 1.16; // $17 + 16% IVA = $19.72, fijo
 
@@ -25,7 +31,6 @@ function calcularPlan(precioBase: number): { enganche: number; montoSemanal26: n
   };
 
   return {
-    enganche,
     montoSemanal26: Math.round(pagoBase(26) + cargoServicioConIva),
     montoSemanal52: Math.round(pagoBase(52) + cargoServicioConIva)
   };
@@ -88,6 +93,9 @@ export const SadminPortal: React.FC<SadminProps> = ({
   const [enganche, setEnganche] = useState(0);
   const [montoSemanal26, setMontoSemanal26] = useState(0);
   const [montoSemanal52, setMontoSemanal52] = useState(0);
+  // Opcional — string vacío significa "sin descuento". Reemplaza el precio de oferta
+  // que antes estaba harcodeado en Landing.tsx solo para el Samsung A07.
+  const [precioDescuento, setPrecioDescuento] = useState('');
   const [imagenUrl, setImagenUrl] = useState('');
   const [envioGratis, setEnvioGratis] = useState(true);
   const [costoEnvio, setCostoEnvio] = useState(0);
@@ -162,6 +170,7 @@ export const SadminPortal: React.FC<SadminProps> = ({
     setEnganche(0);
     setMontoSemanal26(0);
     setMontoSemanal52(0);
+    setPrecioDescuento('');
     setImagenUrl('');
     setEnvioGratis(true);
     setCostoEnvio(0);
@@ -189,12 +198,12 @@ export const SadminPortal: React.FC<SadminProps> = ({
     setModelo(phone.modelo);
     setMarca(phone.marca);
     setPrecioBase(phone.precioBase);
-    // Recalculado con la fórmula oficial en vez de cargar lo guardado — así, si el
-    // celular se cargó con la tasa/cargo viejos, se corrige apenas se abre para editar.
-    const plan = calcularPlan(phone.precioBase);
-    setEnganche(plan.enganche);
-    setMontoSemanal26(plan.montoSemanal26);
-    setMontoSemanal52(plan.montoSemanal52);
+    // Se carga lo guardado, no se recalcula — el enganche puede ser un mínimo custom
+    // distinto al 15% sugerido (ver calcularEngancheSugerido/calcularSemanales).
+    setEnganche(phone.enganche);
+    setMontoSemanal26(phone.montoSemanal26);
+    setMontoSemanal52(phone.montoSemanal52);
+    setPrecioDescuento(phone.precioDescuento ? String(phone.precioDescuento) : '');
     setImagenUrl(phone.imagen);
     setEnvioGratis(phone.envioGratis !== false);
     setCostoEnvio(phone.costoEnvio || 0);
@@ -225,6 +234,7 @@ export const SadminPortal: React.FC<SadminProps> = ({
       enganche,
       monto_semanal_26: montoSemanal26,
       monto_semanal_52: montoSemanal52,
+      precio_descuento: precioDescuento === '' ? null : Number(precioDescuento),
       imagen: imagenUrl,
       envio_gratis: envioGratis,
       costo_envio: envioGratis ? 0 : costoEnvio,
@@ -399,10 +409,11 @@ export const SadminPortal: React.FC<SadminProps> = ({
                       onChange={(e) => {
                         const nuevoPrecio = Number(e.target.value);
                         setPrecioBase(nuevoPrecio);
-                        const plan = calcularPlan(nuevoPrecio);
-                        setEnganche(plan.enganche);
-                        setMontoSemanal26(plan.montoSemanal26);
-                        setMontoSemanal52(plan.montoSemanal52);
+                        const engancheSugerido = calcularEngancheSugerido(nuevoPrecio);
+                        setEnganche(engancheSugerido);
+                        const semanales = calcularSemanales(nuevoPrecio, engancheSugerido);
+                        setMontoSemanal26(semanales.montoSemanal26);
+                        setMontoSemanal52(semanales.montoSemanal52);
                       }}
                       required
                     />
@@ -413,8 +424,26 @@ export const SadminPortal: React.FC<SadminProps> = ({
                     <input
                       type="number"
                       value={enganche}
-                      disabled
-                      title="Calculado automáticamente: 15% del precio base."
+                      onChange={(e) => {
+                        const nuevoEnganche = Number(e.target.value);
+                        setEnganche(nuevoEnganche);
+                        const semanales = calcularSemanales(precioBase, nuevoEnganche);
+                        setMontoSemanal26(semanales.montoSemanal26);
+                        setMontoSemanal52(semanales.montoSemanal52);
+                      }}
+                      title="Sugerido: 15% del precio base. Se puede bajar o subir como enganche mínimo de este celular — los pagos semanales se recalculan solos."
+                      required
+                    />
+                  </div>
+
+                  <div className={styles.formGroup}>
+                    <label>Precio con Descuento (opcional)</label>
+                    <input
+                      type="number"
+                      placeholder="Dejar vacío si no hay oferta"
+                      value={precioDescuento}
+                      onChange={(e) => setPrecioDescuento(e.target.value)}
+                      title="Si se llena, la tienda muestra el precio base tachado y este como precio de oferta."
                     />
                   </div>
 

@@ -154,6 +154,7 @@ function App() {
           montoSemanal52: Number(p.monto_semanal_52),
           totalPagar26: Number(p.monto_semanal_26) * 26 + Number(p.enganche),
           totalPagar52: Number(p.monto_semanal_52) * 52 + Number(p.enganche),
+          precioDescuento: p.precio_descuento != null ? Number(p.precio_descuento) : undefined,
           imagen: p.imagen_url || p.imagen || '',
           envioGratis: p.envio_gratis !== false,
           costoEnvio: Number(p.costo_envio || 0),

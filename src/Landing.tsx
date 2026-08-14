@@ -134,6 +134,7 @@ export const Landing: React.FC<LandingProps> = ({
             totalPagar26: Number(p.monto_semanal_26) * 26 + Number(p.enganche),
             totalPagar52: Number(p.monto_semanal_52) * 52 + Number(p.enganche),
             ahorro26: 0,
+            precioDescuento: p.precio_descuento != null ? Number(p.precio_descuento) : undefined,
             imagen: p.imagen_url || p.imagen || '',
             envioGratis: p.envio_gratis !== false,
             costoEnvio: Number(p.costo_envio || 0),
@@ -614,10 +615,14 @@ export const Landing: React.FC<LandingProps> = ({
                   {selectedQuickView.modelo}
                 </h2>
                 <div className={styles.priceContainer}>
-                  {selectedQuickView.id === "samsung-a07" ? (
+                  {selectedQuickView.precioDescuento ? (
                     <>
-                      <span className={styles.originalPrice}>$2,999.00</span>
-                      <span className={styles.offerPrice}>$2,499.00</span>
+                      <span className={styles.originalPrice}>
+                        ${selectedQuickView.precioBase.toLocaleString()}
+                      </span>
+                      <span className={styles.offerPrice}>
+                        ${selectedQuickView.precioDescuento.toLocaleString()}
+                      </span>
                       <span className={styles.discountBadge}>
                         Oferta Especial
                       </span>
