@@ -601,12 +601,12 @@ export const Documentos: React.FC<DocumentosProps> = ({
                   type="tel"
                   placeholder="123 456 7891"
                   value={celular}
-                  onChange={(e) => setCelular(e.target.value.replace(/\D/g, ""))}
-                  maxLength={15}
+                  onChange={(e) => setCelular(e.target.value.replace(/\D/g, "").slice(0, 10))}
+                  maxLength={10}
                   className={celular.length > 0 && celular.length < 10 ? styles.inputError : ""}
                   required
                 />
-                <div className={styles.hint}>Con este número haremos seguimiento a tu crédito. Si es de fuera de México, incluí el código de país (ej. 54 para Argentina).</div>
+                <div className={styles.hint}>Con este numero haremos seguimiento a tu crédito</div>
                 {celular.length > 0 && celular.length < 10 && (
                   <span className={styles.errorMsg}>El celular debe contener al menos 10 dígitos</span>
                 )}
