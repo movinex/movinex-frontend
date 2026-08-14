@@ -153,6 +153,7 @@ export const Admin: React.FC<AdminProps> = ({ solicitudes, onUpdateStatus, onSav
       case 'Pendiente de envío': return styles.statusShipping;
       case 'Preparando paquete': return styles.statusPacking;
       case 'Enviado': return styles.statusShipped;
+      case 'Entregado': return styles.statusDelivered;
       default: return styles.statusPending;
     }
   };
@@ -304,7 +305,7 @@ export const Admin: React.FC<AdminProps> = ({ solicitudes, onUpdateStatus, onSav
               </button>
             </div>
             <div className={styles.filterBar}>
-              {(['Todos', 'Iniciada', 'Pendiente', 'Aprobado', 'Pendiente de envío', 'Preparando paquete', 'Enviado', 'Rechazado'] as const).map(est => (
+              {(['Todos', 'Iniciada', 'Pendiente', 'Aprobado', 'Pendiente de envío', 'Preparando paquete', 'Enviado', 'Entregado', 'Rechazado'] as const).map(est => (
                 <button
                   key={est}
                   className={`${styles.filterBtn} ${filtroEstatus === est ? styles.filterBtnActive : ''}`}

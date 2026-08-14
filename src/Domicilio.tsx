@@ -1,18 +1,37 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styles from "./Documentos.module.css";
 import logoBlanco from "./assets/movinex_blanco.webp";
+import { FiCheck } from "react-icons/fi";
 
 interface DomicilioProps {
   solicitudId: string;
   modelo: string;
+  // Foto del catálogo (buscada por modelo en App.tsx) — puede no encontrarse si el
+  // modelo cambió de nombre en el catálogo desde que se creó la solicitud.
+  imagen?: string;
   onFinalizado: () => void;
 }
 
 export const Domicilio: React.FC<DomicilioProps> = ({
   solicitudId,
   modelo,
+  imagen,
   onFinalizado,
 }) => {
+  // El pago semanal no viaja en la URL (Stripe solo redirige con solicitud+modelo) —
+  // se trae del mismo endpoint de resumen que ya usa Documentos.tsx al reanudar.
+  const [pagoSemanal, setPagoSemanal] = useState<number | null>(null);
+
+  useEffect(() => {
+    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'https://movinex-backend-production.up.railway.app';
+    fetch(`${backendUrl}/api/solicitudes/${solicitudId}/resumen`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((resumen) => {
+        if (resumen?.pagoSemanal) setPagoSemanal(resumen.pagoSemanal);
+      })
+      .catch(() => {});
+  }, [solicitudId]);
+
   const [calle, setCalle] = useState("");
   const [numeroExterior, setNumeroExterior] = useState("");
   const [numeroInterior, setNumeroInterior] = useState("");
@@ -76,18 +95,50 @@ export const Domicilio: React.FC<DomicilioProps> = ({
   return (
     <div className={styles.wrap}>
       <div className={styles.card}>
-        <div className={styles.hero}>
-          <img src={logoBlanco} alt="Movinex Logo" className={styles.logo} />
-          <div className={styles.eyebrow}>Paso 2 de 3 · Domicilio</div>
-          <div className={styles.titulo}>¿A dónde enviamos tu {modelo}?</div>
-          <div className={styles.sub}>
-            Tu pago quedó confirmado. Necesitamos tu dirección exacta para
-            programar el envío.
+        <div className={styles.header}>
+          <div className={styles.detallesTelefono}>
+            <div className={styles.telefonoCol}>
+              <img src={logoBlanco} alt="Movinex" className={styles.logo} />
+              <div>
+                <div className={styles.modelo}>{modelo}</div>
+                {pagoSemanal && <div className={styles.planLinea}>${pagoSemanal} semanal</div>}
+              </div>
+            </div>
+            {imagen && (
+              <div className={styles.imagenTelefonoWrap}>
+                <img src={imagen} alt={modelo} />
+              </div>
+            )}
+          </div>
+          <div className={styles.progreso}>
+            <div className={styles.pasoIndicador}>
+              <span className={`${styles.pasoNum} ${styles.pasoNumDone}`}>
+                <FiCheck />
+              </span>
+              <span>Cotizar celular</span>
+            </div>
+            <div className={styles.pasoIndicador}>
+              <span className={`${styles.pasoNum} ${styles.pasoNumDone}`}>
+                <FiCheck />
+              </span>
+              <span>Identidad</span>
+            </div>
+            <div className={`${styles.pasoIndicador} ${styles.pasoActivo}`}>
+              <span className={styles.pasoNum}>3</span>
+              <span>Envío</span>
+            </div>
           </div>
         </div>
 
         <div className={styles.body}>
-          <form onSubmit={handleEnviar}>
+          <form className={styles.paso} onSubmit={handleEnviar}>
+            <div className={styles.tituloWrap}>
+              <p className={styles.titulo}>Agrega tus datos de envío</p>
+              <p className={styles.subtitulo}>
+                Tu pago quedó confirmado. Completa la información para programar el envío de tu celular.
+              </p>
+            </div>
+
             <div className={styles.campo}>
               <label htmlFor="calle">Calle</label>
               <input
@@ -100,7 +151,7 @@ export const Domicilio: React.FC<DomicilioProps> = ({
               />
             </div>
 
-            <div style={{ display: "flex", gap: "12px" }}>
+            <div style={{ display: "flex", gap: "16px" }}>
               <div className={styles.campo} style={{ flex: 1 }}>
                 <label htmlFor="numeroExterior">No. exterior</label>
                 <input
@@ -113,7 +164,7 @@ export const Domicilio: React.FC<DomicilioProps> = ({
                 />
               </div>
               <div className={styles.campo} style={{ flex: 1 }}>
-                <label htmlFor="numeroInterior">No. interior (Opcional)</label>
+                <label htmlFor="numeroInterior">No. interior (opcional)</label>
                 <input
                   id="numeroInterior"
                   type="text"
@@ -137,7 +188,7 @@ export const Domicilio: React.FC<DomicilioProps> = ({
                 required
               />
               {codigoPostal.length > 0 && codigoPostal.length < 5 && (
-                <span className={styles.errorMsg}>El Código Postal debe contener exactamente 5 dígitos</span>
+                <span className={styles.errorMsg}>El código postal debe contener exactamente 5 dígitos</span>
               )}
             </div>
 
@@ -183,13 +234,15 @@ export const Domicilio: React.FC<DomicilioProps> = ({
               </div>
             )}
 
-            <button
-              type="submit"
-              className={styles.cta}
-              disabled={!isFormValid || status === "enviando"}
-            >
-              {status === "enviando" ? "Guardando..." : "Confirmar domicilio"}
-            </button>
+            <div className={styles.botonesFinal}>
+              <button
+                type="submit"
+                className={styles.cta}
+                disabled={!isFormValid || status === "enviando"}
+              >
+                {status === "enviando" ? "Guardando..." : "Confirmar domicilio"}
+              </button>
+            </div>
           </form>
         </div>
       </div>

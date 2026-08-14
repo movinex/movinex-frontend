@@ -3,6 +3,7 @@ import { Link } from 'react-router';
 import styles from './Cotizador.module.css';
 import type { Phone } from './types';
 import logoBlanco from './assets/movinex_blanco.webp';
+import { FiCheck, FiArrowRight } from 'react-icons/fi';
 
 interface PlazoOption {
   semanas: number;
@@ -21,7 +22,6 @@ export const Cotizador: React.FC<CotizadorProps> = ({ phone, onSiguiente, onVolv
   const modelo = phone.modelo;
   const precioBase = phone.precioBase;
   const enganche = phone.enganche;
-  const precioFinanciado = precioBase - enganche;
 
   // Opciones de plazos basadas en el teléfono seleccionado
   const plazos: PlazoOption[] = [
@@ -44,17 +44,35 @@ export const Cotizador: React.FC<CotizadorProps> = ({ phone, onSiguiente, onVolv
   return (
     <div className={styles.wrap}>
       <div className={styles.card}>
-        <div className={styles.hero}>
-          <img src={logoBlanco} alt="Movinex Logo" className={styles.logo} />
-          <div className={styles.eyebrow}>Tu próximo celular</div>
-          <div className={styles.modelo}>{modelo}</div>
-          <div className={styles.precioBase}>
-            Precio original <b>${precioBase.toLocaleString()}</b>
+        <div className={styles.header}>
+          <div className={styles.detallesTelefono}>
+            <div className={styles.telefonoCol}>
+              <img src={logoBlanco} alt="Movinex" className={styles.logo} />
+              <div className={styles.modelo}>{modelo}</div>
+            </div>
+            <div className={styles.imagenTelefonoWrap}>
+              <img src={phone.imagen} alt={modelo} />
+            </div>
+          </div>
+          <div className={styles.progreso}>
+            <div className={`${styles.pasoIndicador} ${styles.pasoActivo}`}>
+              <span className={styles.pasoNum}>1</span>
+              <span>Cotizar celular</span>
+            </div>
+            <div className={styles.pasoIndicador}>
+              <span className={styles.pasoNum}>2</span>
+              <span>Identidad</span>
+            </div>
+            <div className={styles.pasoIndicador}>
+              <span className={styles.pasoNum}>3</span>
+              <span>Envío</span>
+            </div>
           </div>
         </div>
 
         <div className={styles.body}>
-          <div className={styles.lbl}>Elige tu plazo preferido:</div>
+          <div className={styles.titulo}>Elige tu plazo preferido</div>
+
           <div className={styles.plazos}>
             {plazos.map((plazo) => (
               <div
@@ -62,69 +80,42 @@ export const Cotizador: React.FC<CotizadorProps> = ({ phone, onSiguiente, onVolv
                 className={`${styles.plazo} ${plazoSeleccionado === plazo.semanas ? styles.activo : ''}`}
                 onClick={() => setPlazoSeleccionado(plazo.semanas)}
               >
-                <div className={styles.sem}>{plazo.semanas} Semanas</div>
                 <div className={styles.cuota}>
                   <small>$</small>{plazo.montoSemanal}
                 </div>
+                <div className={styles.sem}>{plazo.semanas} Semanas</div>
+                {plazoSeleccionado === plazo.semanas && (
+                  <span className={styles.checkIcon}>
+                    <FiCheck />
+                  </span>
+                )}
               </div>
             ))}
           </div>
 
-          <div className={styles.resumen}>
+          <div className={styles.detalles}>
             <div className={styles.fila}>
-              <div className={styles.k}>Pago inicial (Enganche)</div>
-              <div className={styles.v}>
-                ${enganche.toLocaleString()}
-                <span className={styles.engancheTag}>Requerido</span>
-              </div>
+              <span className={styles.k}>Precio original</span>
+              <span className={styles.v}>${precioBase.toLocaleString()}</span>
             </div>
+            <div className={styles.divider} />
             <div className={styles.fila}>
-              <div className={styles.k}>Financiado por {opcionActiva.semanas} semanas</div>
-              <div className={styles.v}>${precioFinanciado.toLocaleString()}</div>
-            </div>
-            <div className={styles.fila}>
-              <div className={styles.k}>Pago semanal</div>
-              <div className={styles.v}>${opcionActiva.montoSemanal}</div>
-            </div>
-            <div className={`${styles.fila} ${styles.total}`}>
-              <div className={styles.k}>Total a pagar</div>
-              <div className={styles.v}>${opcionActiva.totalPagar.toLocaleString()}</div>
+              <span className={styles.k}>Pago inicial (Requerido)</span>
+              <span className={styles.v}>${enganche.toLocaleString()}</span>
             </div>
           </div>
 
-          {!!opcionActiva.ahorro && (
-            <div className={styles.leyenda}>
-              <div className={styles.grande}>
-                ¡Ahorras <span>${opcionActiva.ahorro}</span> al liquidar a {opcionActiva.semanas} semanas!
-              </div>
-              <div className={styles.cat}>
-                Costo Anual Total (CAT) promedio 45% sin IVA. Sujeto a aprobación de crédito.
-              </div>
-            </div>
-          )}
+          <div className={styles.botones}>
+            <button className={styles.cta} onClick={handleSiguiente}>
+              Solicitar Crédito Ahora <FiArrowRight />
+            </button>
+            <button className={styles.volver} onClick={onVolver}>
+              Volver a la tienda
+            </button>
+          </div>
 
-          <button className={styles.cta} onClick={handleSiguiente}>
-            Solicitar crédito ahora
-          </button>
-
-          <button className={styles.cta} style={{ background: '#E4E8F1', color: '#5A6688', marginTop: '10px', boxShadow: 'none' }} onClick={onVolver}>
-            Volver a la tienda
-          </button>
-
-          <div className={styles.nota}>
+          <div className={styles.legal}>
             Al dar clic aceptas nuestros <Link to="/terminos"><b>Términos y condiciones</b></Link>.
-          </div>
-
-          <div className={styles.pasos}>
-            <div className={styles.paso}>
-              <div className={styles.n}>1</div> Cotizar celular <span className={styles.arrow}>→</span>
-            </div>
-            <div className={styles.paso} style={{ opacity: 0.5 }}>
-              <div className={styles.n}>2</div> Identidad <span className={styles.arrow}>→</span>
-            </div>
-            <div className={styles.paso} style={{ opacity: 0.5 }}>
-              <div className={styles.n}>3</div> Contrato
-            </div>
           </div>
         </div>
       </div>

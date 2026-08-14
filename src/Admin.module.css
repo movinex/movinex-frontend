@@ -299,6 +299,11 @@
   color: #15803D;
 }
 
+.statusDelivered {
+  background: #CCFBF1;
+  color: #0F766E;
+}
+
 .itemAlertDot {
   display: inline-block;
   width: 8px;

@@ -8,6 +8,9 @@ import { Admin } from './Admin';
 import { SadminPortal, SadminLogin } from './Sadmin';
 import type { Phone, Solicitud } from './types';
 import landingStyles from './Landing.module.css';
+import finalizadoStyles from './Documentos.module.css';
+import logoBlancoFinalizado from './assets/movinex_blanco.webp';
+import { FiCheckCircle } from 'react-icons/fi';
 
 // Mismo loader de página completa que la carga inicial de la app (Landing.tsx) — sin
 // texto, solo el spinner, para que todos los estados de carga se vean iguales.
@@ -330,6 +333,7 @@ function App() {
           <DomicilioRoute
             setSolicitudPagadaId={setSolicitudPagadaId}
             setModeloPagado={setModeloPagado}
+            phones={phones}
           />
         }
       />
@@ -341,6 +345,7 @@ function App() {
             solicitudPagadaId={solicitudPagadaId}
             modeloPagado={modeloPagado}
             selectedPhone={selectedPhone}
+            phones={phones}
             onVolverInicio={() => {
               setSelectedPhone(null);
               setPlanSelected(null);
@@ -501,7 +506,8 @@ function DocumentosRoute({
         ...planSelected,
         modelo: selectedPhone.modelo,
         envioGratis: selectedPhone.envioGratis,
-        costoEnvio: selectedPhone.costoEnvio
+        costoEnvio: selectedPhone.costoEnvio,
+        imagen: selectedPhone.imagen
       }}
       onVolver={() => navigate(`/cotizar/${selectedPhone.id}`)}
     />
@@ -510,10 +516,12 @@ function DocumentosRoute({
 
 function DomicilioRoute({
   setSolicitudPagadaId,
-  setModeloPagado
+  setModeloPagado,
+  phones
 }: {
   setSolicitudPagadaId: (id: string) => void;
   setModeloPagado: (modelo: string) => void;
+  phones: Phone[];
 }) {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -533,6 +541,7 @@ function DomicilioRoute({
     <Domicilio
       solicitudId={solicitud}
       modelo={modelo}
+      imagen={phones.find(p => p.modelo === modelo)?.imagen}
       onFinalizado={() => navigate('/finalizado')}
     />
   );
@@ -542,49 +551,55 @@ function FinalizadoRoute({
   solicitudPagadaId,
   modeloPagado,
   selectedPhone,
+  phones,
   onVolverInicio
 }: {
   solicitudPagadaId: string | null;
   modeloPagado: string | null;
   selectedPhone: Phone | null;
+  phones: Phone[];
   onVolverInicio: () => void;
 }) {
   if (!solicitudPagadaId) {
     return <Navigate to="/" replace />;
   }
 
+  const modelo = modeloPagado || selectedPhone?.modelo;
+  // Tras el pago, Stripe redirige de vuelta con un full page load — el estado de React
+  // (selectedPhone) se pierde. Se busca la foto en el catálogo ya cargado por modelo,
+  // igual que hace el resto del flujo con selectedPhone.
+  const imagen = selectedPhone?.imagen || phones.find(p => p.modelo === modelo)?.imagen;
+
   return (
-    <div style={{
-      maxWidth: '480px',
-      margin: '80px auto',
-      padding: '40px 20px',
-      textAlign: 'center',
-      background: '#ffffff',
-      borderRadius: '24px',
-      boxShadow: '0 14px 44px rgba(11,27,60,.10)',
-      border: '1px solid #E4E8F1',
-      fontFamily: "'Inter', sans-serif"
-    }}>
-      <h2 style={{ fontSize: '28px', color: '#0B1B3C', fontWeight: 800 }}>¡Gracias por elegir Movinex!</h2>
-      <p style={{ margin: '20px 0', color: '#5A6688', fontSize: '15px', lineHeight: 1.5 }}>
-        Tu solicitud ha sido ingresada al sistema y aprobada con éxito. En menos de 24 horas te contactaremos para coordinar el envío de tu nuevo celular {modeloPagado || selectedPhone?.modelo}.
-      </p>
-      <button
-        onClick={onVolverInicio}
-        style={{
-          background: 'linear-gradient(135deg,#2B6BE4,#0E7490)',
-          color: '#ffffff',
-          border: 'none',
-          padding: '16px 32px',
-          borderRadius: '16px',
-          fontWeight: 'bold',
-          cursor: 'pointer',
-          boxShadow: '0 8px 16px rgba(43, 107, 228, 0.2)',
-          fontSize: '15px'
-        }}
-      >
-        Volver al inicio
-      </button>
+    <div className={finalizadoStyles.wrap}>
+      <div className={finalizadoStyles.card}>
+        <div className={finalizadoStyles.detallesTelefono}>
+          <div className={finalizadoStyles.telefonoCol}>
+            <img src={logoBlancoFinalizado} alt="Movinex" className={finalizadoStyles.logo} />
+            <div className={finalizadoStyles.modelo}>{modelo}</div>
+          </div>
+          {imagen && (
+            <div className={finalizadoStyles.imagenTelefonoWrap}>
+              <img src={imagen} alt={modelo} />
+            </div>
+          )}
+        </div>
+        <div className={finalizadoStyles.body}>
+          <div className={finalizadoStyles.estado}>
+            <FiCheckCircle className={finalizadoStyles.infoIcon} />
+            <div className={finalizadoStyles.et}>Todo listo</div>
+            <div className={finalizadoStyles.ed}>
+              {`Tu ${modelo} será enviado a la dirección que indicaste, entre 3 a 5 días hábiles.`}
+            </div>
+            <div className={finalizadoStyles.cerrarWrap}>
+              <p className={finalizadoStyles.cerrarHint}>Puedes cerrar esta ventana ó</p>
+              <button type="button" className={finalizadoStyles.linkVolver} onClick={onVolverInicio}>
+                Volver a la tienda →
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
