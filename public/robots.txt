@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+
+# Paneles internos y rutas del flujo privado de cada cliente: no deben indexarse.
+# /documentos y /domicilio llevan el id de la solicitud en la URL y muestran datos
+# personales, así que no tienen nada que hacer en un buscador.
+Disallow: /sadmin
+Disallow: /dashboard
+Disallow: /documentos
+Disallow: /domicilio
+Disallow: /finalizado
+
+Sitemap: https://www.movinex.mx/sitemap.xml

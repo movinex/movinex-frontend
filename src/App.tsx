@@ -6,6 +6,7 @@ import { Documentos } from './Documentos';
 import { Domicilio } from './Domicilio';
 import { Admin } from './Admin';
 import { SadminPortal, SadminLogin } from './Sadmin';
+import { BotonWhatsapp } from './BotonWhatsapp';
 import type { Phone, Solicitud } from './types';
 import landingStyles from './Landing.module.css';
 import finalizadoStyles from './Documentos.module.css';
@@ -263,6 +264,8 @@ function App() {
   };
 
   return (
+    <>
+    <BotonWhatsapp />
     <Routes>
       <Route
         path="/sadmin"
@@ -386,6 +389,7 @@ function App() {
         }
       />
     </Routes>
+    </>
   );
 }
 
