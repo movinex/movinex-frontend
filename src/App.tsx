@@ -492,7 +492,8 @@ function DocumentosRoute({
           ineReverso: resumen.tieneIneReverso,
           selfie: resumen.tieneSelfie
         }}
-        initialVerificacionFallida={resumen.ocrOk === false || resumen.biometricoOk === false}
+        initialIneFrenteFallida={resumen.ocrOk === false}
+        initialSelfieFallida={resumen.biometricoOk === false}
         initialStatus={resumen.estatus === 'Iniciada' ? 'form' : 'exito'}
         initialEsAprobadoDirecto={resumen.estatus === 'Aprobado'}
         onVolver={() => navigate('/tienda')}

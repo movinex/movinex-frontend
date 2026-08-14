@@ -27,10 +27,12 @@ interface DocumentosProps {
   initialEmail?: string;
   initialOtpVerificado?: boolean;
   initialDocsGuardados?: { ineFrente: boolean; ineReverso: boolean; selfie: boolean };
-  // true si la verificación automática (OCR del INE y/o comparación biométrica) ya
-  // corrió y no pasó — el frente del INE y la selfie no deben mostrarse como "cargada
-  // correctamente" en ese caso, porque son justo la causa de que quedó en revisión.
-  initialVerificacionFallida?: boolean;
+  // true si la verificación automática ya corrió y no pasó — separado en dos flags
+  // porque el backend los computa de forma independiente (ocrOk = lectura del INE,
+  // biometricoOk = comparación selfie contra INE): si solo una de las dos fotos es la
+  // causa de la revisión manual, la otra no debe mostrarse como fallida también.
+  initialIneFrenteFallida?: boolean;
+  initialSelfieFallida?: boolean;
   // Si la solicitud ya se finalizó (estatus distinto de "Iniciada"), hay que ir directo
   // a la pantalla de pago/revisión en vez de mostrar el formulario de nuevo — ya no
   // hay nada que completar, solo pagar (o esperar la revisión manual).
@@ -94,7 +96,8 @@ export const Documentos: React.FC<DocumentosProps> = ({
   initialEmail,
   initialOtpVerificado,
   initialDocsGuardados,
-  initialVerificacionFallida,
+  initialIneFrenteFallida,
+  initialSelfieFallida,
   initialStatus,
   initialEsAprobadoDirecto,
 }) => {
@@ -115,7 +118,12 @@ export const Documentos: React.FC<DocumentosProps> = ({
   // El frente del INE y la selfie no se pueden mostrar como "cargada correctamente"
   // (verde) cuando la verificación automática ya corrió y no pasó — confunde, porque
   // esas dos fotos son justo la causa de que la solicitud haya quedado en revisión.
-  const [verificacionFallida, setVerificacionFallida] = useState(initialVerificacionFallida || false);
+  // Separados porque el backend los computa de forma independiente: si solo una de
+  // las dos fotos falló, la otra no debe quedar marcada como fallida también (bug
+  // reportado 2026-08-14 — con un solo flag compartido, resubir la foto que sí estaba
+  // mal nunca "limpiaba" del todo la pantalla porque la otra seguía en rojo).
+  const [ineFrenteFallida, setIneFrenteFallida] = useState(initialIneFrenteFallida || false);
+  const [selfieFallida, setSelfieFallida] = useState(initialSelfieFallida || false);
 
   const [status, setStatus] = useState<
     "form" | "subiendo" | "exito" | "error"
@@ -315,7 +323,8 @@ export const Documentos: React.FC<DocumentosProps> = ({
               .then((r) => (r.ok ? r.json() : null))
               .then((resumen) => {
                 if (resumen) {
-                  setVerificacionFallida(resumen.ocrOk === false || resumen.biometricoOk === false);
+                  setIneFrenteFallida(resumen.ocrOk === false);
+                  setSelfieFallida(resumen.biometricoOk === false);
                 }
               })
               .catch(() => {});
@@ -706,7 +715,7 @@ export const Documentos: React.FC<DocumentosProps> = ({
               {/* Frente */}
               {(() => {
                 const cargada = !!(ineFrente || ineFrenteGuardado);
-                const necesitaRevision = cargada && verificacionFallida;
+                const necesitaRevision = cargada && ineFrenteFallida;
                 const verificado = cargada && !necesitaRevision;
                 return (
                   <div className={styles.docCampo}>
@@ -763,7 +772,7 @@ export const Documentos: React.FC<DocumentosProps> = ({
               {/* Selfie */}
               {(() => {
                 const cargada = !!(selfie || selfieGuardado);
-                const necesitaRevision = cargada && verificacionFallida;
+                const necesitaRevision = cargada && selfieFallida;
                 const verificado = cargada && !necesitaRevision;
                 return (
                   <div className={styles.docCampo}>
