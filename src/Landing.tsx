@@ -34,10 +34,8 @@ import marca5 from "./assets/marca5.webp";
 
 // Payment methods
 import logoColor from "./assets/movinex_color.webp";
-import sevenLogo from "./assets/7-eleven_logo.svg.webp";
 import speiLogo from "./assets/spei.webp";
-import mpLogo from "./assets/images mercado.webp";
-import ahorroLogo from "./assets/66e332240412cb710d3532c4_Farmacias del Ahorro.webp";
+import oxxoLogo from "./assets/Oxxo_Logo.svg.webp";
 
 interface LandingProps {
   onSelectPhone: (phone: Phone) => void;
@@ -838,13 +836,7 @@ export const Landing: React.FC<LandingProps> = ({
               </svg>
             </div>
             <img src={speiLogo} alt="SPEI" />
-            <img
-              src={ahorroLogo}
-              alt="Farmacias del Ahorro"
-              className={styles.ahorroLogoImg}
-            />
-            <img src={sevenLogo} alt="7 Eleven" />
-            <img src={mpLogo} alt="Mercado Pago" />
+            <img src={oxxoLogo} alt="OXXO" />
           </div>
         </div>
       </footer>
