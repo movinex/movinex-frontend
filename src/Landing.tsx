@@ -10,6 +10,42 @@ import { PiCookieBold } from "react-icons/pi";
 const LANDING_SUBPAGES = ["movinex", "tienda", "privacidad", "terminos", "cookies", "envios"] as const;
 type LandingPage = "inicio" | (typeof LANDING_SUBPAGES)[number];
 
+// Título y descripción únicos por página: evita que Google indexe todas las
+// rutas con el mismo <title>/<meta description> (los estáticos de index.html).
+const PAGE_META: Record<LandingPage, { title: string; description: string }> = {
+  inicio: {
+    title: "Movinex | Celulares a pagos semanales sin buró ni tarjeta de crédito",
+    description:
+      "Estrena celular en México pagando semanalmente, sin checar buró de crédito, sin tarjeta y sin aval. Solo tu INE y WhatsApp: aprobación en minutos y envío a domicilio a todo el país.",
+  },
+  tienda: {
+    title: "Catálogo de Celulares a Crédito Semanal | Movinex",
+    description:
+      "Elige tu celular nuevo y llévatelo hoy con solo el 15% de enganche. iPhone, Samsung y más a pagos semanales, sin buró de crédito ni tarjeta.",
+  },
+  movinex: {
+    title: "Quiénes Somos | Movinex",
+    description:
+      "Conoce Movinex, la plataforma mexicana que te permite estrenar celular pagando semanalmente, sin buró de crédito, sin tarjeta y sin aval.",
+  },
+  terminos: {
+    title: "Términos y Condiciones | Movinex",
+    description: "Consulta los términos y condiciones de venta a crédito de Movinex.",
+  },
+  privacidad: {
+    title: "Aviso de Privacidad | Movinex",
+    description: "Aviso de privacidad integral de NVX Technologies (Movinex) sobre el tratamiento de tus datos personales.",
+  },
+  cookies: {
+    title: "Política de Cookies | Movinex",
+    description: "Cómo Movinex utiliza cookies y tecnologías similares, y cómo configurar tus preferencias.",
+  },
+  envios: {
+    title: "Política de Envíos, Garantías y Devoluciones | Movinex",
+    description: "Condiciones de envío, entrega, garantía, reposición y devoluciones de los equipos de Movinex.",
+  },
+};
+
 // Hero (video en loop, entregado por la diseñadora)
 import heroVideo from "./assets/hero-video.mp4";
 
@@ -207,8 +243,14 @@ export const Landing: React.FC<LandingProps> = ({
     });
   }, []);
 
+  const canonicalPath = page === "inicio" ? "" : page;
+
   return (
     <div className={styles.container}>
+      <title>{PAGE_META[page].title}</title>
+      <meta name="description" content={PAGE_META[page].description} />
+      <link rel="canonical" href={`https://www.movinex.mx/${canonicalPath}`} />
+
       {/* Full Page Loader Overlay */}
       {!criticalImagesLoaded && (
         <div className={styles.pageLoaderOverlay}>
@@ -465,7 +507,7 @@ export const Landing: React.FC<LandingProps> = ({
         <section className={styles.aboutSection}>
           <div className={styles.aboutContent}>
             <span className={styles.eyebrow}>SOBRE NOSOTROS</span>
-            <h2>Acerca de Movinex</h2>
+            <h1>Acerca de Movinex</h1>
             <p>
               En Movinex creemos que tener un buen celular no debería depender
               de tener tarjeta de crédito.
@@ -497,7 +539,7 @@ export const Landing: React.FC<LandingProps> = ({
         <section className={styles.tienda} style={{ marginTop: "40px" }}>
           <div className={styles.shopHeader}>
             <span className={styles.eyebrow}>CATÁLOGO COMPLETO</span>
-            <h2 className={styles.sectionTitle}>Nuestra Tienda</h2>
+            <h1 className={styles.sectionTitle}>Nuestra Tienda</h1>
             <p className={styles.sectionSubtitle}>
               Los mejores celulares con financiamiento a tu medida. Estrena hoy
               mismo con 15% de enganche.

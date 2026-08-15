@@ -7,7 +7,7 @@ export const LegalContent: React.FC<{ page: "privacidad" | "terminos" | "cookies
       <section className={styles.aboutSection}>
         <div className={styles.aboutContent}>
           <span className={styles.eyebrow}>LEGAL</span>
-          <h2>Aviso de Privacidad Integral</h2>
+          <h1>Aviso de Privacidad Integral</h1>
           <p>NVX TECHNOLOGIES, S. DE R.L. DE C.V. — MOVINEX  ·  Vigente a partir del 6 de agosto de 2026</p>
           
           <h3>1. Identidad y domicilio del Responsable</h3>
@@ -151,7 +151,7 @@ export const LegalContent: React.FC<{ page: "privacidad" | "terminos" | "cookies
           <p>Tome en cuenta que la revocación del consentimiento respecto de las finalidades necesarias señaladas en el numeral 3.1 puede implicar la imposibilidad de continuar prestándole el servicio y, en su caso, dar lugar a la terminación anticipada del contrato con las consecuencias ahí pactadas. La revocación respecto de las finalidades voluntarias del numeral 3.2 no tiene efecto alguno sobre su financiamiento.</p>
 
           <h3>8. Uso de cookies y tecnologías de rastreo</h3>
-          <p>Nuestro sitio web utiliza cookies, píxeles y tecnologías similares, tanto propias como de terceros, para el funcionamiento del sitio, el análisis de tráfico y la publicidad personalizada. Puede consultar el detalle y configurar sus preferencias en nuestra Política de Cookies, disponible en https://movinex.mx/politica-de-cookies, así como a través del panel de configuración que se muestra al ingresar al sitio.</p>
+          <p>Nuestro sitio web utiliza cookies, píxeles y tecnologías similares, tanto propias como de terceros, para el funcionamiento del sitio, el análisis de tráfico y la publicidad personalizada. Puede consultar el detalle y configurar sus preferencias en nuestra Política de Cookies, disponible en https://www.movinex.mx/cookies, así como a través del panel de configuración que se muestra al ingresar al sitio.</p>
 
           <h3>9. Medidas de seguridad</h3>
           <p>Movinex ha implementado medidas de seguridad administrativas, técnicas y físicas razonables para proteger sus datos personales contra daño, pérdida, alteración, destrucción, uso, acceso o tratamiento no autorizado. Entre ellas: cifrado en tránsito y en reposo, control de accesos por perfiles, tokenización de datos de tarjetas por parte de nuestros procesadores de pago, registro de accesos y acuerdos de confidencialidad con nuestro personal y proveedores.</p>
@@ -161,7 +161,7 @@ export const LegalContent: React.FC<{ page: "privacidad" | "terminos" | "cookies
           <p>Conservaremos sus datos personales durante la vigencia de la relación contractual y, posteriormente, durante los plazos de conservación exigidos por la legislación fiscal, mercantil y de prevención de lavado de dinero aplicables. Conservaremos igualmente, por los mismos plazos, las constancias de aceptación y de firma electrónica de los documentos que usted acepte, así como las constancias de conservación de mensajes de datos emitidas conforme a la NOM-151-SCFI-2016. Concluidos dichos plazos, sus datos serán bloqueados y posteriormente suprimidos de forma segura. Los datos biométricos se conservan únicamente por el plazo necesario para acreditar la debida verificación de identidad y la validez del consentimiento otorgado.</p>
 
           <h3>11. Cambios al Aviso de Privacidad</h3>
-          <p>Este Aviso puede sufrir modificaciones derivadas de cambios legislativos, de nuestras prácticas de privacidad o de nuestro modelo de negocio. Cualquier modificación será publicada en https://movinex.mx/aviso-de-privacidad, indicando la fecha de la última actualización. Le recomendamos consultar dicha página periódicamente. Cuando los cambios sean sustanciales, se lo notificaremos adicionalmente al correo electrónico o número de WhatsApp que tengamos registrado.</p>
+          <p>Este Aviso puede sufrir modificaciones derivadas de cambios legislativos, de nuestras prácticas de privacidad o de nuestro modelo de negocio. Cualquier modificación será publicada en https://www.movinex.mx/privacidad, indicando la fecha de la última actualización. Le recomendamos consultar dicha página periódicamente. Cuando los cambios sean sustanciales, se lo notificaremos adicionalmente al correo electrónico o número de WhatsApp que tengamos registrado.</p>
 
           <h3>12. Autoridad en materia de protección de datos</h3>
           <p>Si considera que su derecho a la protección de datos personales ha sido vulnerado, o presume la existencia de alguna violación a las disposiciones de la LFPDPPP, puede acudir ante la Secretaría Anticorrupción y Buen Gobierno, autoridad competente en la materia respecto del sector privado.</p>
@@ -195,7 +195,7 @@ export const LegalContent: React.FC<{ page: "privacidad" | "terminos" | "cookies
       <section className={styles.aboutSection}>
         <div className={styles.aboutContent}>
           <span className={styles.eyebrow}>LEGAL</span>
-          <h2>Términos y Condiciones</h2>
+          <h1>Términos y Condiciones</h1>
           <p>NVX TECHNOLOGIES, S. DE R.L. DE C.V. — MOVINEX  ·  movinex.mx  ·  Vigente a partir del 6 de agosto de 2026</p>
           
           <p>Este documento contiene los Términos y Condiciones aplicables a los servicios de Movinex y se integra por cuatro secciones. La Sección C se emite conforme al artículo 66 de la Ley Federal de Protección al Consumidor.</p>
@@ -441,7 +441,7 @@ export const LegalContent: React.FC<{ page: "privacidad" | "terminos" | "cookies
           <p>Si usted enfrenta una dificultad temporal de pago, comuníquese antes del vencimiento a info@movinex.mx o al 55 5502 8744; evaluaremos alternativas de reestructura.</p>
 
           <h4>C.9 Entrega, garantía y devoluciones</h4>
-          <p>Las condiciones de envío, entrega, garantía, reposición y devoluciones se detallan en la Política de Envíos, Garantías y Devoluciones, disponible en https://movinex.mx/envios-y-garantias, la cual forma parte integrante de estos Términos. Sus disposiciones principales son:</p>
+          <p>Las condiciones de envío, entrega, garantía, reposición y devoluciones se detallan en la Política de Envíos, Garantías y Devoluciones, disponible en https://www.movinex.mx/envios, la cual forma parte integrante de estos Términos. Sus disposiciones principales son:</p>
 
           <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "16px", marginBottom: "24px" }}>
             <thead>
@@ -475,17 +475,17 @@ export const LegalContent: React.FC<{ page: "privacidad" | "terminos" | "cookies
           <h3>SECCIÓN D. Disposiciones comunes</h3>
           
           <h4>D.1 Protección de datos personales</h4>
-          <p>El tratamiento de sus datos personales se rige por el Aviso de Privacidad de Movinex, disponible en https://movinex.mx/aviso-de-privacidad, el cual forma parte integrante de estos Términos.</p>
+          <p>El tratamiento de sus datos personales se rige por el Aviso de Privacidad de Movinex, disponible en https://www.movinex.mx/privacidad, el cual forma parte integrante de estos Términos.</p>
           
           <h4>D.2 Cookies</h4>
-          <p>El sitio utiliza cookies y tecnologías similares conforme a la Política de Cookies disponible en https://movinex.mx/politica-de-cookies. Usted puede configurar sus preferencias desde el panel que se muestra al ingresar al sitio.</p>
+          <p>El sitio utiliza cookies y tecnologías similares conforme a la Política de Cookies disponible en https://www.movinex.mx/cookies. Usted puede configurar sus preferencias desde el panel que se muestra al ingresar al sitio.</p>
           
           <h4>D.3 Comunicaciones</h4>
           <p>Usted acepta que Movinex se comunique con usted por correo electrónico, WhatsApp, mensajes de texto y llamadas telefónicas para asuntos relacionados con su solicitud, su contrato, sus pagos y el estado de su equipo. Estas comunicaciones son operativas y necesarias, y no constituyen publicidad.</p>
           <p>Las comunicaciones publicitarias requieren su consentimiento previo y pueden cancelarse en cualquier momento conforme al Aviso de Privacidad.</p>
           
           <h4>D.4 Modificaciones</h4>
-          <p>Movinex puede modificar estos Términos en cualquier momento. La versión vigente será siempre la publicada en https://movinex.mx/terminos-y-condiciones, con indicación de su fecha de actualización. El uso del sitio con posterioridad a una modificación implica su aceptación.</p>
+          <p>Movinex puede modificar estos Términos en cualquier momento. La versión vigente será siempre la publicada en https://www.movinex.mx/terminos, con indicación de su fecha de actualización. El uso del sitio con posterioridad a una modificación implica su aceptación.</p>
           <p>Las modificaciones no afectan las operaciones de financiamiento ya celebradas, las cuales se rigen íntegramente por las condiciones vigentes al momento de su contratación y por su Carátula de Condiciones.</p>
           
           <h4>D.5 Nulidad parcial</h4>
@@ -519,9 +519,9 @@ export const LegalContent: React.FC<{ page: "privacidad" | "terminos" | "cookies
               </tr>
             </thead>
             <tbody>
-              <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Aviso de Privacidad Integral</td><td style={{ padding: "12px" }}><a href="https://movinex.mx/aviso-de-privacidad" target="_blank" rel="noreferrer">https://movinex.mx/aviso-de-privacidad</a></td></tr>
-              <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Política de Cookies</td><td style={{ padding: "12px" }}><a href="https://movinex.mx/politica-de-cookies" target="_blank" rel="noreferrer">https://movinex.mx/politica-de-cookies</a></td></tr>
-              <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Política de Envíos, Garantías y Devoluciones</td><td style={{ padding: "12px" }}><a href="https://movinex.mx/envios-y-garantias" target="_blank" rel="noreferrer">https://movinex.mx/envios-y-garantias</a></td></tr>
+              <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Aviso de Privacidad Integral</td><td style={{ padding: "12px" }}><a href="https://www.movinex.mx/privacidad" target="_blank" rel="noreferrer">https://www.movinex.mx/privacidad</a></td></tr>
+              <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Política de Cookies</td><td style={{ padding: "12px" }}><a href="https://www.movinex.mx/cookies" target="_blank" rel="noreferrer">https://www.movinex.mx/cookies</a></td></tr>
+              <tr style={{ borderBottom: "1px solid #F1F5F9" }}><td style={{ padding: "12px", fontWeight: "700" }}>Política de Envíos, Garantías y Devoluciones</td><td style={{ padding: "12px" }}><a href="https://www.movinex.mx/envios" target="_blank" rel="noreferrer">https://www.movinex.mx/envios</a></td></tr>
             </tbody>
           </table>
         </div>
@@ -534,7 +534,7 @@ export const LegalContent: React.FC<{ page: "privacidad" | "terminos" | "cookies
       <section className={styles.aboutSection}>
         <div className={styles.aboutContent}>
           <span className={styles.eyebrow}>LEGAL</span>
-          <h2>Política de Cookies</h2>
+          <h1>Política de Cookies</h1>
           <p>movinex.mx  ·  NVX TECHNOLOGIES, S. DE R.L. DE C.V. — MOVINEX  ·  Vigente a partir del 6 de agosto de 2026</p>
           
           <h3>1. Quiénes somos</h3>
@@ -612,11 +612,11 @@ export const LegalContent: React.FC<{ page: "privacidad" | "terminos" | "cookies
           <p>Las cookies de sesión se eliminan al cerrar el navegador. Las cookies persistentes permanecen almacenadas por el plazo definido por cada proveedor, que no excede de 24 meses, salvo que usted las elimine antes. Su elección de preferencias se conserva por un plazo máximo de 12 meses, tras el cual se le volverá a solicitar.</p>
 
           <h3>8. Datos personales</h3>
-          <p>La información obtenida mediante cookies puede constituir dato personal. Su tratamiento, incluidas las transferencias y el almacenamiento en servidores ubicados en Virginia, Estados Unidos, se rige por el Aviso de Privacidad disponible en https://movinex.mx/aviso-de-privacidad.</p>
+          <p>La información obtenida mediante cookies puede constituir dato personal. Su tratamiento, incluidas las transferencias y el almacenamiento en servidores ubicados en Virginia, Estados Unidos, se rige por el Aviso de Privacidad disponible en https://www.movinex.mx/privacidad.</p>
           <p>Usted puede ejercer sus derechos ARCO y revocar su consentimiento escribiendo a privacidad@movinex.mx.</p>
 
           <h3>9. Cambios a esta Política</h3>
-          <p>Esta Política puede actualizarse. La versión vigente será siempre la publicada en https://movinex.mx/politica-de-cookies, con indicación de su fecha de actualización.</p>
+          <p>Esta Política puede actualizarse. La versión vigente será siempre la publicada en https://www.movinex.mx/cookies, con indicación de su fecha de actualización.</p>
 
           <h3>10. Contacto</h3>
           <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "16px", marginBottom: "24px" }}>
@@ -653,7 +653,7 @@ export const LegalContent: React.FC<{ page: "privacidad" | "terminos" | "cookies
     <section className={styles.aboutSection}>
       <div className={styles.aboutContent}>
         <span className={styles.eyebrow}>LEGAL</span>
-        <h2>Política de Envíos, Garantías y Devoluciones</h2>
+        <h1>Política de Envíos, Garantías y Devoluciones</h1>
         <p>NVX TECHNOLOGIES, S. DE R.L. DE C.V. — MOVINEX  ·  Vigente a partir del 6 de agosto de 2026</p>
         
         <h3>1. Alcance</h3>
