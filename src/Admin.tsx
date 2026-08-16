@@ -121,8 +121,17 @@ export const Admin: React.FC<AdminProps> = ({ solicitudes, onUpdateStatus, onSav
   const pendientes = solicitudes.filter(s => s.estatus === 'Pendiente').length;
   const rechazados = solicitudes.filter(s => s.estatus === 'Rechazado').length;
   
-  const totalEnganchesAprobados = solicitudes
+  // "Aprobado" es un estatus de tránsito: en cuanto el webhook de Stripe confirma el
+  // pago, pasa a "Preparando paquete" en la misma actualización (ver
+  // PersistenceService.marcarPagoConfirmado) — así que esto es "enganches todavía sin
+  // cobrar", no un acumulado. Se suma aparte lo ya cobrado (totalEnganchesCobrados)
+  // para no perder ese dato de vista.
+  const totalEnganchesPorCobrar = solicitudes
     .filter(s => s.estatus === 'Aprobado')
+    .reduce((acc, s) => acc + s.enganche, 0);
+
+  const totalEnganchesCobrados = solicitudes
+    .filter(s => s.pagoConfirmado)
     .reduce((acc, s) => acc + s.enganche, 0);
 
   // Qué le falta hacer al cliente en cada estatus, y a dónde mandarlo para retomar —
@@ -268,7 +277,7 @@ export const Admin: React.FC<AdminProps> = ({ solicitudes, onUpdateStatus, onSav
         <div className={styles.metricCard} style={{ borderLeft: '4px solid #D1FAE5' }}>
           <span className={styles.metricIcon} style={{ color: '#16A34A' }}><FiCheckCircle /></span>
           <div className={styles.metricContent}>
-            <h3>Aprobados</h3>
+            <h3>Esperando pago</h3>
             <strong style={{ color: '#16A34A' }}>{aprobados}</strong>
           </div>
         </div>
@@ -282,8 +291,15 @@ export const Admin: React.FC<AdminProps> = ({ solicitudes, onUpdateStatus, onSav
         <div className={styles.metricCard} style={{ borderLeft: '4px solid #2B6BE4' }}>
           <span className={styles.metricIcon} style={{ color: '#2B6BE4' }}><FiDollarSign /></span>
           <div className={styles.metricContent}>
-            <h3>Enganches Aprobados</h3>
-            <strong style={{ color: '#2B6BE4' }}>${totalEnganchesAprobados.toLocaleString()}</strong>
+            <h3>Enganches por cobrar</h3>
+            <strong style={{ color: '#2B6BE4' }}>${totalEnganchesPorCobrar.toLocaleString()}</strong>
+          </div>
+        </div>
+        <div className={styles.metricCard} style={{ borderLeft: '4px solid #EDE9FE' }}>
+          <span className={styles.metricIcon} style={{ color: '#7C3AED' }}><FiDollarSign /></span>
+          <div className={styles.metricContent}>
+            <h3>Enganches cobrados</h3>
+            <strong style={{ color: '#7C3AED' }}>${totalEnganchesCobrados.toLocaleString()}</strong>
           </div>
         </div>
       </div>
