@@ -75,6 +75,18 @@
   transform: translateY(-1px);
 }
 
+/* El CTA del nav ahora es un <Link> (<a>), y la regla genérica `.nav a` de arriba
+   le gana en especificidad al color blanco de .ctaCotizar — sin esto el texto
+   quedaría gris oscuro sobre el fondo azul marino, casi ilegible. */
+.nav a.ctaCotizar {
+  color: #ffffff;
+  text-decoration: none;
+}
+
+.nav a.ctaCotizar:hover {
+  color: #ffffff;
+}
+
 .mobileMenuBtn {
   display: none;
   background-color: #040d1d;
@@ -208,6 +220,11 @@
 }
 
 .ctaPrimary {
+  /* Ver nota en .cotizarBtn: ahora es un <Link> (<a>), así que se replica
+     a mano lo que el navegador le daba gratis al <button>. */
+  display: inline-block;
+  text-align: center;
+  text-decoration: none;
   background-color: #246aeb;
   color: #ffffff;
   border: 1px solid rgba(255, 255, 255, 0.6);
@@ -873,6 +890,14 @@
 }
 
 .cotizarBtn {
+  /* Es un <Link> (un <a> real, para que Google pueda rastrear las páginas de
+     producto), no un <button>: hay que replicar a mano lo que el navegador ya
+     le daba al botón — display block, texto centrado, sin subrayado y
+     box-sizing para que width:100% conviva con el padding. */
+  display: block;
+  box-sizing: border-box;
+  text-align: center;
+  text-decoration: none;
   width: 100%;
   background-color: #0F172A;
   color: #ffffff;

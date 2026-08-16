@@ -23,6 +23,29 @@ export const Cotizador: React.FC<CotizadorProps> = ({ phone, onSiguiente, onVolv
   const precioBase = phone.precioBase;
   const enganche = phone.enganche;
 
+  // El catálogo guarda la marca aparte del modelo ("Motorola" + "G15") y algunos
+  // registros vienen con espacios de sobra. El nombre completo es la señal principal
+  // para búsquedas tipo "movinex g15": antes no aparecía en ningún lado de la página.
+  const marca = (phone.marca || '').trim();
+  const nombreCompleto = [marca, modelo].filter(Boolean).join(' ');
+
+  // Misma ficha técnica que el modal de Vista Rápida de la tienda. Acá es contenido
+  // indexable de la página del producto, no algo escondido detrás de un click.
+  const specs: [string, string][] = ([
+    ['Pantalla', phone.specsPantalla],
+    ['Procesador', phone.specsProcesador],
+    ['RAM / Almacenamiento', phone.specsRamAlmacenamiento],
+    ['MicroSD', phone.specsMicrosd],
+    ['Cámara Trasera', phone.specsCamaraTrasera],
+    ['Cámara Frontal', phone.specsCamaraFrontal],
+    ['Batería', phone.specsBateria],
+    ['Sistema', phone.specsSistema],
+    ['Seguridad', phone.specsSeguridad],
+    ['Resistencia', phone.specsResistencia],
+    ['Conectividad', phone.specsConectividad],
+    ['Dimensiones / Peso', phone.specsDimensionesPeso]
+  ] as [string, string | undefined][]).filter((entrada): entrada is [string, string] => Boolean(entrada[1]));
+
   // Opciones de plazos basadas en el teléfono seleccionado
   const plazos: PlazoOption[] = [
     { semanas: 52, montoSemanal: phone.montoSemanal52, totalPagar: phone.totalPagar52 },
@@ -43,21 +66,44 @@ export const Cotizador: React.FC<CotizadorProps> = ({ phone, onSiguiente, onVolv
 
   return (
     <div className={styles.wrap}>
-      <title>{`${modelo} a pagos semanales sin buró ni tarjeta | Movinex`}</title>
+      <title>{`${nombreCompleto} a pagos semanales sin buró ni tarjeta | Movinex`}</title>
       <meta
         name="description"
-        content={`Estrena el ${modelo} con $${enganche.toLocaleString()} de enganche y pagos semanales, sin buró de crédito, sin tarjeta y sin aval. Envío a todo México.`}
+        content={`Estrena el ${nombreCompleto} con $${enganche.toLocaleString()} de enganche y pagos semanales desde $${opcionActiva.montoSemanal}, sin buró de crédito, sin tarjeta y sin aval. Envío a todo México.`}
       />
       <link rel="canonical" href={`https://www.movinex.mx/cotizar/${phone.id}`} />
+      {/* Datos estructurados del producto: permiten que Google muestre precio y
+          disponibilidad en el resultado, no solo el texto. */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'Product',
+            name: nombreCompleto,
+            image: phone.imagen,
+            description: `${nombreCompleto} a pagos semanales en Movinex, sin buró de crédito, sin tarjeta y sin aval.`,
+            ...(marca ? { brand: { '@type': 'Brand', name: marca } } : {}),
+            offers: {
+              '@type': 'Offer',
+              url: `https://www.movinex.mx/cotizar/${phone.id}`,
+              priceCurrency: 'MXN',
+              price: precioBase,
+              availability: 'https://schema.org/InStock',
+              seller: { '@type': 'Organization', name: 'Movinex' }
+            }
+          })
+        }}
+      />
       <div className={styles.card}>
         <div className={styles.header}>
           <div className={styles.detallesTelefono}>
             <div className={styles.telefonoCol}>
               <img src={logoBlanco} alt="Movinex" className={styles.logo} />
-              <div className={styles.modelo}>{modelo}</div>
+              <h1 className={styles.modelo}>{nombreCompleto}</h1>
             </div>
             <div className={styles.imagenTelefonoWrap}>
-              <img src={phone.imagen} alt={modelo} />
+              <img src={phone.imagen} alt={`${nombreCompleto} a pagos semanales en Movinex`} />
             </div>
           </div>
           <div className={styles.progreso}>
@@ -110,6 +156,27 @@ export const Cotizador: React.FC<CotizadorProps> = ({ phone, onSiguiente, onVolv
               <span className={styles.v}>${enganche.toLocaleString()}</span>
             </div>
           </div>
+
+          <p className={styles.resumenTexto}>
+            Llévate el {nombreCompleto} pagando ${enganche.toLocaleString()} de enganche y{' '}
+            {opcionActiva.semanas} pagos semanales de ${opcionActiva.montoSemanal} en Movinex:
+            sin checar buró de crédito, sin tarjeta y sin aval. Solo necesitas tu INE y tu
+            WhatsApp, la aprobación es en minutos y te lo enviamos a tu domicilio en todo México.
+          </p>
+
+          {specs.length > 0 && (
+            <div className={styles.specs}>
+              <h2 className={styles.specsTitulo}>Ficha técnica del {nombreCompleto}</h2>
+              <div className={styles.specsTabla}>
+                {specs.map(([etiqueta, valor]) => (
+                  <div key={etiqueta} className={styles.specFila}>
+                    <span className={styles.specEtiqueta}>{etiqueta}</span>
+                    <span className={styles.specValor}>{valor}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className={styles.botones}>
             <button className={styles.cta} onClick={handleSiguiente}>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router";
+import { Link, useParams, useNavigate } from "react-router";
 import styles from "./Landing.module.css";
 import type { Phone } from "./types";
 import { LegalContent } from "./LegalContent";
@@ -271,21 +271,21 @@ export const Landing: React.FC<LandingProps> = ({
             style={{ cursor: "pointer" }}
           />
           <nav className={styles.nav}>
-            <button
-              onClick={() => irA("inicio")}
+            <Link
+              to="/"
               className={`${styles.navLink} ${page === "inicio" ? styles.navLinkActive : ""}`}
             >
               Inicio
-            </button>
-            <button
-              onClick={() => irA("movinex")}
+            </Link>
+            <Link
+              to="/movinex"
               className={`${styles.navLink} ${page === "movinex" ? styles.navLinkActive : ""}`}
             >
               Quienes Somos
-            </button>
-            <button onClick={() => irA("tienda")} className={styles.ctaCotizar}>
+            </Link>
+            <Link to="/tienda" className={styles.ctaCotizar}>
               Cotiza aquí
-            </button>
+            </Link>
             {showAdminButton && (
               <button onClick={onNavigateAdmin} className={styles.adminBtn}>
                 Backoffice
@@ -376,12 +376,9 @@ export const Landing: React.FC<LandingProps> = ({
                   equipo, nosotros lo enviamos a tu puerta.
                 </p>
               </div>
-              <button
-                onClick={() => irA("tienda")}
-                className={styles.ctaPrimary}
-              >
+              <Link to="/tienda" className={styles.ctaPrimary}>
                 Elige tu celular
-              </button>
+              </Link>
             </div>
             <div className={styles.heroVideoWrap}>
               <video
@@ -447,12 +444,9 @@ export const Landing: React.FC<LandingProps> = ({
                     </div>
                   ))}
                 </div>
-                <button
-                  onClick={() => irA("tienda")}
-                  className={styles.ctaPrimary}
-                >
+                <Link to="/tienda" className={styles.ctaPrimary}>
                   Solicita tú cupo
-                </button>
+                </Link>
               </div>
               <div className={styles.comoFuncionaImgWrap}>
                 <img src={imgComoFunciona} alt="Cómo funciona Movinex" />
@@ -586,15 +580,18 @@ export const Landing: React.FC<LandingProps> = ({
                           <strong>${phone.enganche}</strong>
                         </div>
                       </div>
-                      <button
+                      {/* <Link> y no <button>: renderiza un <a href> real, que es la
+                          única forma de que Google descubra las páginas de cada
+                          celular (antes eran huérfanas). La navegación sigue siendo
+                          del lado del cliente, y /cotizar/:id ya sabe reconstruir el
+                          teléfono desde la URL, así que no hace falta onSelectPhone. */}
+                      <Link
+                        to={`/cotizar/${phone.id}`}
                         className={styles.cotizarBtn}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onSelectPhone(phone);
-                        }}
+                        onClick={(e) => e.stopPropagation()}
                       >
                         Cotizar Ahora
-                      </button>
+                      </Link>
                     </div>
                   </div>
                 ))}
@@ -768,18 +765,12 @@ export const Landing: React.FC<LandingProps> = ({
           <div className={styles.footerColumn}>
             <h4>Para tí</h4>
             <div className={styles.footerLinks}>
-              <button
-                onClick={() => irA("tienda")}
-                className={styles.footerBtnLink}
-              >
+              <Link to="/tienda" className={styles.footerBtnLink}>
                 Cotiza Aquí
-              </button>
-              <button
-                onClick={() => irA("movinex")}
-                className={styles.footerBtnLink}
-              >
+              </Link>
+              <Link to="/movinex" className={styles.footerBtnLink}>
                 Quienes somos
-              </button>
+              </Link>
             </div>
           </div>
           <div className={styles.footerColumn}>
@@ -797,24 +788,15 @@ export const Landing: React.FC<LandingProps> = ({
           <div className={styles.footerColumn}>
             <h4>Para tí</h4>
             <div className={styles.footerLinks}>
-              <button
-                onClick={() => irA("envios")}
-                className={styles.footerBtnLink}
-              >
+              <Link to="/envios" className={styles.footerBtnLink}>
                 Envío y devoluciones
-              </button>
-              <button
-                onClick={() => irA("terminos")}
-                className={styles.footerBtnLink}
-              >
+              </Link>
+              <Link to="/terminos" className={styles.footerBtnLink}>
                 Términos y condiciones
-              </button>
-              <button
-                onClick={() => irA("privacidad")}
-                className={styles.footerBtnLink}
-              >
+              </Link>
+              <Link to="/privacidad" className={styles.footerBtnLink}>
                 Aviso de privacidad
-              </button>
+              </Link>
             </div>
           </div>
         </div>

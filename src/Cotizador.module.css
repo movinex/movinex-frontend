@@ -40,6 +40,10 @@
 }
 
 .modelo {
+  /* Es un <h1> (marca + modelo, la señal principal de SEO de esta página):
+     se anulan los márgenes y el tamaño que el navegador le pone por defecto
+     para que se vea exactamente igual que cuando era un <div>. */
+  margin: 0;
   font-size: 24px;
   font-weight: 700;
   letter-spacing: -.02em;
@@ -270,6 +274,58 @@
 }
 
 .legal b {
+  color: #0b1b3a;
+}
+
+.resumenTexto {
+  margin: 0;
+  width: 100%;
+  font-size: 13px;
+  letter-spacing: -.02em;
+  line-height: 1.6;
+  color: rgba(11, 27, 58, 0.7);
+}
+
+.specs {
+  width: 100%;
+}
+
+.specsTitulo {
+  margin: 0 0 10px;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -.02em;
+  color: #0b1b3a;
+}
+
+.specsTabla {
+  display: flex;
+  flex-direction: column;
+}
+
+.specFila {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 16px;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(11, 27, 58, 0.08);
+  font-size: 13px;
+  letter-spacing: -.02em;
+}
+
+.specFila:last-child {
+  border-bottom: none;
+}
+
+.specEtiqueta {
+  flex-shrink: 0;
+  color: rgba(11, 27, 58, 0.7);
+}
+
+.specValor {
+  text-align: right;
+  font-weight: 500;
   color: #0b1b3a;
 }
 
