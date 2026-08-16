@@ -2,8 +2,17 @@
 <html lang="es-MX">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
-    <link rel="icon" type="image/png" href="/favicon.png" />
+    <!-- Google exige que el favicon sea cuadrado y de al menos 48x48 para mostrarlo
+         en los resultados de búsqueda; si no, dibuja el globo genérico. El anterior
+         era un JPEG de 1024x1024 renombrado .png que traía la cuadrícula de
+         transparencia quemada como píxeles grises, y el .svg ni siquiera era de
+         Movinex (venía de una plantilla). Todos se regeneran desde la "M" de
+         src/assets/movinex_color.svg. -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" sizes="16x16 32x32 48x48" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192x192.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <!-- title, meta description y canonical: renderizados por página desde
@@ -51,7 +60,7 @@
         "name": "Movinex",
         "legalName": "NVX TECHNOLOGIES, S. DE R.L. DE C.V.",
         "url": "https://www.movinex.mx/",
-        "logo": "https://www.movinex.mx/favicon.png",
+        "logo": "https://www.movinex.mx/logo.png",
         "image": "https://www.movinex.mx/og-image.png",
         "description": "Financiamiento de celulares en México con pagos semanales, sin buró de crédito, sin tarjeta y sin aval.",
         "areaServed": {
