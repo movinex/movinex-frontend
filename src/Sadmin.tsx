@@ -763,10 +763,13 @@ export const SadminLogin: React.FC<SadminLoginProps> = ({ onLoginSuccess, onVolv
           <form onSubmit={handleSubmit}>
             <div className={styles.campo}>
               <label htmlFor="usuario">Usuario Administrador</label>
+              {/* Nada de un email de ejemplo real en el placeholder: antes decía
+                  literalmente el usuario admin, así que a cualquiera que abriera esta
+                  pantalla solo le faltaba adivinar la contraseña. */}
               <input
                 id="usuario"
                 type="email"
-                placeholder="admin@movinex.mx"
+                placeholder="Ingresa tu correo electrónico"
                 value={usuario}
                 onChange={(e) => setUsuario(e.target.value)}
                 required
