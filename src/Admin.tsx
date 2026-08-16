@@ -14,10 +14,16 @@ import {
   FiFileText,
   FiFolder,
   FiRefreshCw,
+  FiArrowLeft,
+  FiZoomIn,
+  FiX,
 } from 'react-icons/fi';
 import { FaWhatsapp } from 'react-icons/fa';
 
 type EstatusSolicitud = Solicitud['estatus'];
+
+// Los filtros del listado sobreviven a volver del detalle y a recargar la página.
+const FILTROS_STORAGE_KEY = 'movinex_admin_filtros';
 
 interface DireccionInput {
   calle: string;
@@ -40,9 +46,29 @@ interface AdminProps {
 }
 
 export const Admin: React.FC<AdminProps> = ({ solicitudes, onUpdateStatus, onSaveImei, onSaveDireccion, onVolver, onRefrescar, segundosParaRefresh }) => {
+  // `solicitudSeleccionada` decide qué vista se muestra: en null se ve el listado
+  // completo, y al elegir una fila se pasa a la vista de detalle (pantalla entera, ya
+  // no una columna angosta al lado de la lista).
   const [solicitudSeleccionada, setSolicitudSeleccionada] = useState<Solicitud | null>(null);
-  const [filtroEstatus, setFiltroEstatus] = useState<'Todos' | EstatusSolicitud>('Todos');
+
+  // Los filtros se guardan en localStorage para que volver del detalle (o recargar la
+  // página) no obligue a rearmarlos. Se leen una sola vez, al montar.
+  const filtrosGuardados = (() => {
+    try {
+      return JSON.parse(localStorage.getItem(FILTROS_STORAGE_KEY) || '{}');
+    } catch {
+      return {};
+    }
+  })();
+
+  const [filtroEstatus, setFiltroEstatus] = useState<'Todos' | EstatusSolicitud>(filtrosGuardados.estatus || 'Todos');
+  const [filtroDesde, setFiltroDesde] = useState<string>(filtrosGuardados.desde || '');
+  const [filtroHasta, setFiltroHasta] = useState<string>(filtrosGuardados.hasta || '');
+  const [busqueda, setBusqueda] = useState<string>(filtrosGuardados.busqueda || '');
   const [activeTab, setActiveTab] = useState<'info' | 'documentos'>('info');
+
+  // Documento abierto en grande (lightbox). null = ninguno.
+  const [imagenAmpliada, setImagenAmpliada] = useState<{ src: string; titulo: string } | null>(null);
 
   // Loading states for image preloading
   const [loadFrente, setLoadFrente] = useState(false);
@@ -71,30 +97,74 @@ export const Admin: React.FC<AdminProps> = ({ solicitudes, onUpdateStatus, onSav
   // Feedback breve del botón "Copiar link para continuar" (ver más abajo)
   const [linkCopiadoOk, setLinkCopiadoOk] = useState(false);
 
-  // Seleccionar la primera solicitud por defecto al cargar o al cambiar filtros
-  const solicitudesFiltradas = solicitudes.filter(s => 
-    filtroEstatus === 'Todos' ? true : s.estatus === filtroEstatus
-  );
+  // Las fechas del filtro vienen de un <input type="date"> como "2026-08-16" (hora
+  // local). Se compara contra el día completo: desde las 00:00 del "desde" hasta las
+  // 23:59:59 del "hasta", para que elegir el mismo día en ambos incluya ese día entero.
+  const solicitudesFiltradas = solicitudes.filter(s => {
+    if (filtroEstatus !== 'Todos' && s.estatus !== filtroEstatus) return false;
+
+    if (filtroDesde || filtroHasta) {
+      const fecha = new Date(s.fecha);
+      if (filtroDesde && fecha < new Date(`${filtroDesde}T00:00:00`)) return false;
+      if (filtroHasta && fecha > new Date(`${filtroHasta}T23:59:59.999`)) return false;
+    }
+
+    if (busqueda.trim()) {
+      const q = busqueda.trim().toLowerCase();
+      const campos = [s.cliente, s.celular, s.email, s.modelo, s.curp, s.id];
+      if (!campos.some(c => (c || '').toLowerCase().includes(q))) return false;
+    }
+
+    return true;
+  });
+
+  const hayFiltrosActivos = filtroEstatus !== 'Todos' || Boolean(filtroDesde) || Boolean(filtroHasta) || Boolean(busqueda.trim());
+
+  const limpiarFiltros = () => {
+    setFiltroEstatus('Todos');
+    setFiltroDesde('');
+    setFiltroHasta('');
+    setBusqueda('');
+  };
 
   useEffect(() => {
-    // Reset loaded states when changing selection
+    localStorage.setItem(
+      FILTROS_STORAGE_KEY,
+      JSON.stringify({ estatus: filtroEstatus, desde: filtroDesde, hasta: filtroHasta, busqueda })
+    );
+  }, [filtroEstatus, filtroDesde, filtroHasta, busqueda]);
+
+  // Escape cierra el documento ampliado, que es lo que uno espera de un visor a
+  // pantalla completa.
+  useEffect(() => {
+    if (!imagenAmpliada) return;
+    const alPresionar = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setImagenAmpliada(null);
+    };
+    window.addEventListener('keydown', alPresionar);
+    return () => window.removeEventListener('keydown', alPresionar);
+  }, [imagenAmpliada]);
+
+  // Las fotos se recargan solo cuando cambia la solicitud abierta. Si esto dependiera
+  // también de `solicitudes`, cada refresh automático haría parpadear las imágenes.
+  useEffect(() => {
     setLoadFrente(false);
     setLoadReverso(false);
     setLoadSelfie(false);
+  }, [solicitudSeleccionada?.id]);
 
-    if (solicitudesFiltradas.length > 0) {
-      // Intentar mantener seleccionada la misma si sigue en la lista filtrada
-      const aunExiste = solicitudesFiltradas.find(s => s.id === solicitudSeleccionada?.id);
-      if (aunExiste) {
-        setSolicitudSeleccionada(aunExiste);
-      } else {
-        setSolicitudSeleccionada(solicitudesFiltradas[0]);
-      }
-    } else {
-      setSolicitudSeleccionada(null);
+  // Mantiene al día la solicitud abierta cuando entra un refresh (por ejemplo si el
+  // estatus cambió). Antes acá también se seleccionaba la primera de la lista
+  // automáticamente; ya no corresponde, porque el detalle es una vista aparte y eso
+  // abriría una solicitud sola sin que nadie la haya elegido.
+  useEffect(() => {
+    if (!solicitudSeleccionada) return;
+    const actualizada = solicitudes.find(s => s.id === solicitudSeleccionada.id);
+    if (actualizada && actualizada !== solicitudSeleccionada) {
+      setSolicitudSeleccionada(actualizada);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filtroEstatus, solicitudes, solicitudSeleccionada?.id]);
+  }, [solicitudes]);
 
   // Sincronizar los formularios de IMEI/dirección cuando cambia la solicitud seleccionada
   useEffect(() => {
@@ -304,76 +374,132 @@ export const Admin: React.FC<AdminProps> = ({ solicitudes, onUpdateStatus, onSav
         </div>
       </div>
 
-      {/* CONTROL DE LISTADO Y DETALLES */}
-      <div className={styles.mainGrid}>
-        
-        {/* PANEL IZQUIERDO: LISTADO */}
+      {/* LISTADO COMPLETO — se oculta al abrir una solicitud (ver detalle abajo) */}
+      {!solicitudSeleccionada && (
         <div className={styles.panel}>
           <div className={styles.panelHeader}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
-              <div className={styles.panelTitle}>Créditos Recibidos</div>
-              <button
-                type="button"
-                onClick={onRefrescar}
-                style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#F1F5F9', border: '1.5px solid #E2E8F0', borderRadius: '10px', padding: '6px 12px', fontSize: '12px', fontWeight: 600, color: '#334155', cursor: 'pointer' }}
-              >
+            <div className={styles.listadoTitleRow}>
+              <div className={styles.panelTitle}>
+                Créditos Recibidos
+                <span className={styles.conteoResultados}>
+                  {solicitudesFiltradas.length} de {solicitudes.length}
+                </span>
+              </div>
+              <button type="button" onClick={onRefrescar} className={styles.refreshBtn}>
                 <FiRefreshCw /> Refresh ({segundosParaRefresh}s)
               </button>
             </div>
-            <div className={styles.filterBar}>
-              {(['Todos', 'Iniciada', 'Pendiente', 'Aprobado', 'Pendiente de envío', 'Preparando paquete', 'Enviado', 'Entregado', 'Rechazado'] as const).map(est => (
-                <button
-                  key={est}
-                  className={`${styles.filterBtn} ${filtroEstatus === est ? styles.filterBtnActive : ''}`}
-                  onClick={() => setFiltroEstatus(est)}
-                >
-                  {est}
+
+            <div className={styles.filtros}>
+              <div className={styles.filtroCampo}>
+                <label htmlFor="f-busqueda">Buscar</label>
+                <input
+                  id="f-busqueda"
+                  type="search"
+                  value={busqueda}
+                  onChange={e => setBusqueda(e.target.value)}
+                  placeholder="Nombre, teléfono, correo, CURP..."
+                />
+              </div>
+              <div className={styles.filtroCampo}>
+                <label htmlFor="f-estatus">Estatus</label>
+                <select id="f-estatus" value={filtroEstatus} onChange={e => setFiltroEstatus(e.target.value as any)}>
+                  {(['Todos', 'Iniciada', 'Pendiente', 'Aprobado', 'Pendiente de envío', 'Preparando paquete', 'Enviado', 'Entregado', 'Rechazado'] as const).map(est => (
+                    <option key={est} value={est}>{est}</option>
+                  ))}
+                </select>
+              </div>
+              <div className={styles.filtroCampo}>
+                <label htmlFor="f-desde">Desde</label>
+                <input id="f-desde" type="date" value={filtroDesde} max={filtroHasta || undefined} onChange={e => setFiltroDesde(e.target.value)} />
+              </div>
+              <div className={styles.filtroCampo}>
+                <label htmlFor="f-hasta">Hasta</label>
+                <input id="f-hasta" type="date" value={filtroHasta} min={filtroDesde || undefined} onChange={e => setFiltroHasta(e.target.value)} />
+              </div>
+              {hayFiltrosActivos && (
+                <button type="button" className={styles.limpiarFiltros} onClick={limpiarFiltros}>
+                  Limpiar filtros
                 </button>
-              ))}
+              )}
             </div>
           </div>
 
-          <div className={styles.list}>
-            {solicitudesFiltradas.length > 0 ? (
-              solicitudesFiltradas.map(s => (
-                <div 
-                  key={s.id} 
-                  className={`${styles.item} ${solicitudSeleccionada?.id === s.id ? styles.itemActive : ''}`}
-                  onClick={() => {
-                    setSolicitudSeleccionada(s);
-                    setActiveTab('info');
-                  }}
-                >
-                  <div className={styles.clientInfo}>
-                    <h4>
-                      {s.pagoConfirmado && !s.calle && (
-                        <span
-                          className={styles.itemAlertDot}
-                          title="Pago confirmado, falta la dirección de envío"
-                        ></span>
-                      )}
-                      {s.cliente}
-                    </h4>
-                    <p>{s.modelo} · {s.semanas} sem</p>
-                    <small className={styles.fechaText}>{formatearFecha(s.fecha)}</small>
-                  </div>
-                  <span className={`${styles.status} ${getStatusClass(s.estatus)}`}>
-                    {s.estatus}
-                  </span>
-                </div>
-              ))
-            ) : (
-              <div className={styles.emptyList}>
-                No se encontraron solicitudes con este estatus.
-              </div>
-            )}
-          </div>
+          {solicitudesFiltradas.length > 0 ? (
+            <div className={styles.tablaWrap}>
+              <table className={styles.tabla}>
+                <thead>
+                  <tr>
+                    <th>Cliente</th>
+                    <th>Contacto</th>
+                    <th>Equipo</th>
+                    <th className={styles.colNum}>Enganche</th>
+                    <th className={styles.colNum}>Semanal</th>
+                    <th>Fecha</th>
+                    <th>Estatus</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {solicitudesFiltradas.map(s => (
+                    <tr
+                      key={s.id}
+                      className={styles.fila}
+                      onClick={() => {
+                        setSolicitudSeleccionada(s);
+                        setActiveTab('info');
+                      }}
+                      title="Ver detalle completo"
+                    >
+                      <td>
+                        <div className={styles.celdaCliente}>
+                          {s.pagoConfirmado && !s.calle && (
+                            <span className={styles.itemAlertDot} title="Pago confirmado, falta la dirección de envío"></span>
+                          )}
+                          <span className={styles.nombreCliente}>{s.cliente}</span>
+                        </div>
+                        {s.curp && <span className={styles.subCelda}>{s.curp}</span>}
+                      </td>
+                      <td>
+                        <span className={styles.subCelda}>{s.celular}</span>
+                        {s.email && <span className={styles.subCelda}>{s.email}</span>}
+                      </td>
+                      <td>
+                        <span className={styles.nombreCliente}>{s.modelo}</span>
+                        <span className={styles.subCelda}>{s.semanas} semanas</span>
+                      </td>
+                      <td className={styles.colNum}>${Number(s.enganche).toLocaleString()}</td>
+                      <td className={styles.colNum}>${Number(s.pagoSemanal).toLocaleString()}</td>
+                      <td><span className={styles.subCelda}>{formatearFecha(s.fecha)}</span></td>
+                      <td>
+                        <span className={`${styles.status} ${getStatusClass(s.estatus)}`}>{s.estatus}</span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className={styles.emptyList}>
+              {hayFiltrosActivos
+                ? 'Ninguna solicitud coincide con estos filtros.'
+                : 'Todavía no hay solicitudes registradas.'}
+            </div>
+          )}
         </div>
+      )}
 
-        {/* PANEL DERECHO: DETALLES */}
+      {/* DETALLE — pantalla completa, reemplaza al listado */}
+      {solicitudSeleccionada && (
         <div className={styles.panel}>
           {solicitudSeleccionada ? (
             <div className={styles.detailWrapper}>
+              <button
+                type="button"
+                className={styles.volverListado}
+                onClick={() => setSolicitudSeleccionada(null)}
+              >
+                <FiArrowLeft /> Volver al listado
+              </button>
               <div className={styles.detailHeader}>
                 <div>
                   <h2>Detalle del Cliente</h2>
@@ -665,13 +791,16 @@ export const Admin: React.FC<AdminProps> = ({ solicitudes, onUpdateStatus, onSav
                             {!loadFrente && (
                               <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%)', backgroundSize: '200% 100%', animation: 'shimmer 1.5s infinite', borderRadius: '8px' }}></div>
                             )}
-                            <img 
-                              src={solicitudSeleccionada.ineFrente} 
-                              alt="INE Frente" 
-                              className={styles.docImage} 
+                            <img
+                              src={solicitudSeleccionada.ineFrente}
+                              alt="INE Frente"
+                              className={styles.docImage}
                               onLoad={() => setLoadFrente(true)}
-                              style={{ opacity: loadFrente ? 1 : 0, transition: 'opacity 0.25s ease' }}
+                              onClick={() => setImagenAmpliada({ src: solicitudSeleccionada.ineFrente!, titulo: 'INE Frente' })}
+                              title="Clic para ampliar"
+                              style={{ opacity: loadFrente ? 1 : 0, transition: 'opacity 0.25s ease', cursor: 'zoom-in' }}
                             />
+                            {loadFrente && <span className={styles.zoomHint}><FiZoomIn /> Ampliar</span>}
                           </div>
                         ) : (
                           <div className={styles.noDoc}>Sin foto cargada</div>
@@ -688,13 +817,16 @@ export const Admin: React.FC<AdminProps> = ({ solicitudes, onUpdateStatus, onSav
                             {!loadReverso && (
                               <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%)', backgroundSize: '200% 100%', animation: 'shimmer 1.5s infinite', borderRadius: '8px' }}></div>
                             )}
-                            <img 
-                              src={solicitudSeleccionada.ineReverso} 
-                              alt="INE Reverso" 
-                              className={styles.docImage} 
+                            <img
+                              src={solicitudSeleccionada.ineReverso}
+                              alt="INE Reverso"
+                              className={styles.docImage}
                               onLoad={() => setLoadReverso(true)}
-                              style={{ opacity: loadReverso ? 1 : 0, transition: 'opacity 0.25s ease' }}
+                              onClick={() => setImagenAmpliada({ src: solicitudSeleccionada.ineReverso!, titulo: 'INE Reverso' })}
+                              title="Clic para ampliar"
+                              style={{ opacity: loadReverso ? 1 : 0, transition: 'opacity 0.25s ease', cursor: 'zoom-in' }}
                             />
+                            {loadReverso && <span className={styles.zoomHint}><FiZoomIn /> Ampliar</span>}
                           </div>
                         ) : (
                           <div className={styles.noDoc}>Sin foto cargada</div>
@@ -711,13 +843,16 @@ export const Admin: React.FC<AdminProps> = ({ solicitudes, onUpdateStatus, onSav
                             {!loadSelfie && (
                               <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%)', backgroundSize: '200% 100%', animation: 'shimmer 1.5s infinite', borderRadius: '8px' }}></div>
                             )}
-                            <img 
-                              src={solicitudSeleccionada.selfie} 
-                              alt="Selfie" 
-                              className={styles.docImage} 
+                            <img
+                              src={solicitudSeleccionada.selfie}
+                              alt="Selfie"
+                              className={styles.docImage}
                               onLoad={() => setLoadSelfie(true)}
-                              style={{ maxWidth: '240px', opacity: loadSelfie ? 1 : 0, transition: 'opacity 0.25s ease' }}
+                              onClick={() => setImagenAmpliada({ src: solicitudSeleccionada.selfie!, titulo: 'Selfie Biométrica' })}
+                              title="Clic para ampliar"
+                              style={{ maxWidth: '240px', opacity: loadSelfie ? 1 : 0, transition: 'opacity 0.25s ease', cursor: 'zoom-in' }}
                             />
+                            {loadSelfie && <span className={styles.zoomHint}><FiZoomIn /> Ampliar</span>}
                           </div>
                         ) : (
                           <div className={styles.noDoc}>Sin selfie cargada</div>
@@ -735,8 +870,25 @@ export const Admin: React.FC<AdminProps> = ({ solicitudes, onUpdateStatus, onSav
             </div>
           )}
         </div>
+      )}
 
-      </div>
+      {/* Documento en grande. Se cierra con la X, clic en el fondo o Escape. */}
+      {imagenAmpliada && (
+        <div className={styles.lightbox} onClick={() => setImagenAmpliada(null)}>
+          <div className={styles.lightboxBarra}>
+            <span>{imagenAmpliada.titulo}</span>
+            <button type="button" onClick={() => setImagenAmpliada(null)} aria-label="Cerrar">
+              <FiX />
+            </button>
+          </div>
+          <img
+            src={imagenAmpliada.src}
+            alt={imagenAmpliada.titulo}
+            className={styles.lightboxImg}
+            onClick={e => e.stopPropagation()}
+          />
+        </div>
+      )}
     </div>
   );
 };
