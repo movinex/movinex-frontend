@@ -6,12 +6,13 @@
     <link rel="icon" type="image/png" href="/favicon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <title>Movinex | Celulares a pagos semanales sin buró ni tarjeta de crédito</title>
-    <!-- meta description y canonical: renderizados por página desde Landing.tsx
-         (React 19 los hoistea a <head>). No se declaran aquí como estáticos
-         porque, al ser una SPA con un solo index.html para todas las rutas,
-         coexistirían con la versión dinámica y quedarían duplicados —
-         confundiendo a Google sobre cuál description/canonical usar. -->
+    <!-- title, meta description y canonical: renderizados por página desde
+         Landing.tsx y Cotizador.tsx (React 19 los hoistea a <head>). No se
+         declaran aquí como estáticos porque, al ser una SPA con un solo
+         index.html para todas las rutas, coexistirían con la versión dinámica
+         y quedarían duplicados — confundiendo a Google sobre cuál
+         title/description/canonical usar (bug real encontrado 16 ago 2026:
+         el <title> estático viejo aparecía duplicado junto al de React). -->
     <meta name="robots" content="index, follow" />
     <meta name="google-site-verification" content="pygj2VzidJaIP3jDJcsoxZ7uAhpBvGz6UJ3bRaMCZtM" />
     <meta name="theme-color" content="#0B1B3A" />

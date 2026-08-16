@@ -43,6 +43,12 @@ export const Cotizador: React.FC<CotizadorProps> = ({ phone, onSiguiente, onVolv
 
   return (
     <div className={styles.wrap}>
+      <title>{`${modelo} a pagos semanales sin buró ni tarjeta | Movinex`}</title>
+      <meta
+        name="description"
+        content={`Estrena el ${modelo} con $${enganche.toLocaleString()} de enganche y pagos semanales, sin buró de crédito, sin tarjeta y sin aval. Envío a todo México.`}
+      />
+      <link rel="canonical" href={`https://www.movinex.mx/cotizar/${phone.id}`} />
       <div className={styles.card}>
         <div className={styles.header}>
           <div className={styles.detallesTelefono}>
