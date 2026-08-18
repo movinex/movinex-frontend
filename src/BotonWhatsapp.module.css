@@ -1,7 +1,10 @@
 .boton {
   position: fixed;
   right: 20px;
-  bottom: 20px;
+  /* env(safe-area-inset-bottom) es el alto del home indicator en iPhones con pantalla
+     completa (X en adelante) — sin sumarlo, el botón queda pegado o metido debajo de esa
+     franja y puede solaparse con cualquier CTA que también esté cerca del borde. */
+  bottom: calc(20px + env(safe-area-inset-bottom, 0px));
   z-index: 900;
   width: 56px;
   height: 56px;
@@ -29,7 +32,7 @@
 @media (max-width: 600px) {
   .boton {
     right: 16px;
-    bottom: 16px;
+    bottom: calc(16px + env(safe-area-inset-bottom, 0px));
     width: 52px;
     height: 52px;
   }

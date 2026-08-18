@@ -1,7 +1,9 @@
 .wrap {
   max-width: 480px;
   margin: 0 auto;
-  padding: 18px 16px 40px;
+  /* +env(safe-area-inset-bottom): mismo motivo que en Cotizador.module.css — que el
+     último botón de cada paso no quede pegado al home indicator del iPhone. */
+  padding: 18px 16px calc(40px + env(safe-area-inset-bottom, 0px));
   animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
@@ -257,6 +259,26 @@
   font-weight: 400;
   letter-spacing: 6px;
   color: rgba(11, 27, 58, 0.25);
+}
+
+.avisoWhatsapp {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #f2fbf5;
+  border: 1px solid rgba(22, 163, 73, 0.3);
+  border-radius: 10px;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #0b1b3a;
+}
+
+.avisoWhatsapp svg {
+  flex-shrink: 0;
+  color: #25d366;
+  width: 18px;
+  height: 18px;
 }
 
 .errorMsg {

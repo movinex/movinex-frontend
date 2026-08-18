@@ -13,7 +13,10 @@
     <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png" />
     <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192x192.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- viewport-fit=cover: sin esto, env(safe-area-inset-*) queda siempre en 0 y no hay
+         forma de darle al botón flotante de WhatsApp ni al último botón de cada paso el
+         margen necesario para no quedar tapados por la barra/home indicator del iPhone. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 
     <!-- title, meta description y canonical: renderizados por página desde
          Landing.tsx y Cotizador.tsx (React 19 los hoistea a <head>). No se

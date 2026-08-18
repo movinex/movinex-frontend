@@ -25,7 +25,13 @@ body {
   margin: 0;
   padding: 0;
   background-color: var(--hueso);
+  /* 100vh en Safari de iOS mide el viewport SIN la barra de navegación, así que cuando
+     esa barra está visible el contenido real queda más bajo de lo que el CSS cree —
+     dejando el último botón de cada paso tapado hasta que se scrollea. 100dvh sigue el
+     alto visible de verdad; min-height + 100vh queda de respaldo para navegadores que
+     todavía no soportan dvh. */
   min-height: 100vh;
+  min-height: 100dvh;
 }
 
 * {

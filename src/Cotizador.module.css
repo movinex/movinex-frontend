@@ -1,7 +1,9 @@
 .wrap {
   max-width: 480px;
   margin: 0 auto;
-  padding: 18px 16px 40px;
+  /* +env(safe-area-inset-bottom): en iPhones con home indicator, sin este margen extra
+     el botón "Solicitar Crédito Ahora" queda pegado (o tapado) justo en esa franja. */
+  padding: 18px 16px calc(40px + env(safe-area-inset-bottom, 0px));
   animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 

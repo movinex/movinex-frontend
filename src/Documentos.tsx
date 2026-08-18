@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import styles from "./Documentos.module.css";
 import logoBlanco from "./assets/movinex_blanco.webp";
 import { FiCheck } from "react-icons/fi";
+import { FaWhatsapp } from "react-icons/fa6";
 
 export interface ResumenSolicitud {
   id: string;
@@ -439,6 +440,9 @@ export const Documentos: React.FC<DocumentosProps> = ({ planData, onVolver, resu
               <div className={styles.tituloWrap}>
                 <p className={styles.titulo}>Verifica tu número de celular</p>
               </div>
+              <div className={styles.avisoWhatsapp}>
+                <FaWhatsapp /> Código enviado a tu WhatsApp
+              </div>
               <div className={styles.campo}>
                 <label>Ingresa el código enviado al <b>{celular}</b></label>
                 <input
@@ -654,6 +658,9 @@ export const Documentos: React.FC<DocumentosProps> = ({ planData, onVolver, resu
               <div className={styles.tituloWrap}>
                 <p className={styles.titulo}>Confirma tu identidad</p>
                 <p className={styles.subtitulo}>Te reenviamos un código para confirmar que sigues siendo tú</p>
+              </div>
+              <div className={styles.avisoWhatsapp}>
+                <FaWhatsapp /> Código enviado a tu WhatsApp
               </div>
               <div className={styles.campo}>
                 <label>Ingresa el código enviado al <b>{celular}</b></label>
