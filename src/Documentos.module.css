@@ -162,6 +162,10 @@
   color: #0b1b3a;
 }
 
+.requerido {
+  color: #db001d;
+}
+
 .campo input {
   width: 100%;
   border: 1px solid rgba(11, 27, 58, 0.05);
@@ -184,6 +188,49 @@
   color: rgba(11, 27, 58, 0.35);
 }
 
+.campo select {
+  width: 100%;
+  border: 1px solid rgba(11, 27, 58, 0.05);
+  border-radius: 12px;
+  padding: 12px;
+  height: 44px;
+  font-size: 14px;
+  font-family: inherit;
+  color: #0b1b3a;
+  background: #fff;
+}
+
+.campo select:focus {
+  outline: none;
+  border-color: #246aeb;
+}
+
+/* ========== TOGGLE (ej. Género) ========== */
+.toggleGroup {
+  display: flex;
+  gap: 8px;
+}
+
+.toggleBtn {
+  flex: 1;
+  height: 44px;
+  border-radius: 12px;
+  border: 1px solid rgba(11, 27, 58, 0.1);
+  background: #fff;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(11, 27, 58, 0.6);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.toggleBtnActivo {
+  background: #0b1b3a;
+  border-color: #0b1b3a;
+  color: #fff;
+}
+
 .campo .hint {
   font-size: 12px;
   color: rgba(11, 27, 58, 0.7);
@@ -197,6 +244,19 @@
 
 .inputError {
   border-color: #db001d !important;
+}
+
+.otpInput {
+  text-align: center;
+  font-size: 22px !important;
+  font-weight: 700;
+  letter-spacing: 10px;
+}
+
+.otpInput::placeholder {
+  font-weight: 400;
+  letter-spacing: 6px;
+  color: rgba(11, 27, 58, 0.25);
 }
 
 .errorMsg {

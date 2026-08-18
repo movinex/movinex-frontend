@@ -37,7 +37,7 @@ export interface Solicitud {
   enganche: number;
   semanas: number;
   pagoSemanal: number;
-  estatus: 'Iniciada' | 'Pendiente' | 'Aprobado' | 'Rechazado' | 'Pendiente de envío' | 'Preparando paquete' | 'Enviado' | 'Entregado';
+  estatus: 'Iniciada' | 'Lista para pago' | 'Verificando identidad' | 'Pendiente' | 'Aprobado' | 'Rechazado' | 'Pendiente de envío' | 'Preparando paquete' | 'Enviado' | 'Entregado' | 'Cancelada';
   fecha: string;
   ineFrente?: string; // Base64
   ineReverso?: string; // Base64

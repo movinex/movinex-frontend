@@ -3,7 +3,8 @@ import { Routes, Route, Navigate, useNavigate, useLocation, useParams, useSearch
 import { Landing } from './Landing';
 import { Cotizador } from './Cotizador';
 import { Documentos } from './Documentos';
-import { Domicilio } from './Domicilio';
+import type { ResumenSolicitud } from './Documentos';
+import { Verificacion } from './Verificacion';
 import { Admin } from './Admin';
 import { SadminPortal, SadminLogin } from './Sadmin';
 import { BotonWhatsapp } from './BotonWhatsapp';
@@ -207,6 +208,23 @@ function App() {
     );
   };
 
+  const handleCancelarSolicitud = async (id: string) => {
+    const response = await fetch(`${backendUrl}/api/admin/solicitudes/${id}/cancelar`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(adminToken ? { Authorization: `Bearer ${adminToken}` } : {})
+      }
+    });
+
+    const res = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      throw new Error(res.error || 'No se pudo cancelar la solicitud.');
+    }
+
+    setSolicitudes(prev => prev.map(s => (s.id === id ? { ...s, estatus: 'Cancelada' } : s)));
+  };
+
   const handleSaveImei = async (id: string, imei: string) => {
     const response = await fetch(`${backendUrl}/api/solicitudes/${id}`, {
       method: 'PATCH',
@@ -273,6 +291,7 @@ function App() {
           <SadminPortal
             solicitudes={solicitudes}
             onUpdateStatus={handleUpdateStatus}
+            onCancelarSolicitud={handleCancelarSolicitud}
             onSaveImei={handleSaveImei}
             onSaveDireccion={handleSaveDireccion}
             onVolver={() => navigate('/')}
@@ -301,6 +320,7 @@ function App() {
             <Admin
               solicitudes={solicitudes}
               onUpdateStatus={handleUpdateStatus}
+              onCancelarSolicitud={handleCancelarSolicitud}
               onSaveImei={handleSaveImei}
               onSaveDireccion={handleSaveDireccion}
               onVolver={() => navigate('/tienda')}
@@ -332,9 +352,9 @@ function App() {
       />
 
       <Route
-        path="/domicilio"
+        path="/verificacion"
         element={
-          <DomicilioRoute
+          <VerificacionRoute
             setSolicitudPagadaId={setSolicitudPagadaId}
             setModeloPagado={setModeloPagado}
             phones={phones}
@@ -434,6 +454,14 @@ function CotizarRoute({
   );
 }
 
+// Estatus que significan "ya pagó el enganche" — si una solicitud reanudada por URL
+// llegó hasta ahí, /documentos ya no es la pantalla correcta, el siguiente paso es
+// /verificacion (o más allá, ya en preparación/enviado).
+const ESTATUS_PAGADOS = ['Verificando identidad', 'Preparando paquete', 'Pendiente de envío', 'Enviado', 'Entregado', 'Pendiente', 'Aprobado', 'Rechazado'];
+// Una solicitud cancelada no se retoma: el backend además lo bloquea, pero mandarla al
+// inicio evita que el cliente complete todo un formulario para chocarse con un error.
+const ESTATUS_CANCELADOS = ['Cancelada'];
+
 function DocumentosRoute({
   selectedPhone,
   planSelected
@@ -449,7 +477,7 @@ function DocumentosRoute({
   // Si no hay estado en memoria (refresh, o volvió con el link más tarde) pero la URL
   // trae ?solicitud=X, se reconstruye todo desde ahí — la solicitud ya se creó apenas
   // se verificó el OTP (ver Documentos.tsx), así que el celular/plan ya están guardados.
-  const [resumen, setResumen] = useState<any>(null);
+  const [resumen, setResumen] = useState<ResumenSolicitud | null>(null);
   const [cargandoResumen, setCargandoResumen] = useState(false);
   const [errorResumen, setErrorResumen] = useState(false);
 
@@ -478,6 +506,12 @@ function DocumentosRoute({
     if (cargandoResumen || !resumen) {
       return <PageLoader />;
     }
+    if (ESTATUS_CANCELADOS.includes(resumen.estatus)) {
+      return <Navigate to="/" replace />;
+    }
+    if (ESTATUS_PAGADOS.includes(resumen.estatus)) {
+      return <Navigate to={`/verificacion?solicitud=${resumen.id}&modelo=${encodeURIComponent(resumen.modelo)}`} replace />;
+    }
     return (
       <Documentos
         planData={{
@@ -488,19 +522,7 @@ function DocumentosRoute({
           envioGratis: (resumen.costoEnvio || 0) === 0,
           costoEnvio: resumen.costoEnvio
         }}
-        initialSolicitudId={resumen.id}
-        initialCelular={resumen.celular}
-        initialEmail={resumen.email || ''}
-        initialOtpVerificado
-        initialDocsGuardados={{
-          ineFrente: resumen.tieneIneFrente,
-          ineReverso: resumen.tieneIneReverso,
-          selfie: resumen.tieneSelfie
-        }}
-        initialIneFrenteFallida={resumen.ocrOk === false}
-        initialSelfieFallida={resumen.biometricoOk === false}
-        initialStatus={resumen.estatus === 'Iniciada' ? 'form' : 'exito'}
-        initialEsAprobadoDirecto={resumen.estatus === 'Aprobado'}
+        resumenInicial={resumen}
         onVolver={() => navigate('/tienda')}
       />
     );
@@ -520,7 +542,7 @@ function DocumentosRoute({
   );
 }
 
-function DomicilioRoute({
+function VerificacionRoute({
   setSolicitudPagadaId,
   setModeloPagado,
   phones
@@ -544,7 +566,7 @@ function DomicilioRoute({
   }
 
   return (
-    <Domicilio
+    <Verificacion
       solicitudId={solicitud}
       modelo={modelo}
       imagen={phones.find(p => p.modelo === modelo)?.imagen}

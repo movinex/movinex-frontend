@@ -1,8 +1,36 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router";
 import styles from "./Documentos.module.css";
 import logoBlanco from "./assets/movinex_blanco.webp";
-import { FiCamera, FiUpload, FiCheck, FiAward, FiInfo, FiTrash2 } from "react-icons/fi";
+import { FiCheck } from "react-icons/fi";
+
+export interface ResumenSolicitud {
+  id: string;
+  celular: string;
+  email?: string | null;
+  modelo: string;
+  enganche: number;
+  semanas: number;
+  pagoSemanal: number;
+  costoEnvio?: number;
+  estatus: string;
+  pagoConfirmado: boolean;
+  nombre?: string | null;
+  apellidos?: string | null;
+  curp?: string | null;
+  fechaNacimiento?: string | null;
+  genero?: string | null;
+  estadoCivil?: string | null;
+  dependientesEconomicos?: number | null;
+  nivelEstudios?: string | null;
+  calle?: string | null;
+  numeroExterior?: string | null;
+  numeroInterior?: string | null;
+  codigoPostal?: string | null;
+  colonia?: string | null;
+  alcaldiaMunicipio?: string | null;
+  estado?: string | null;
+  aceptaTerminos: boolean;
+}
 
 interface DocumentosProps {
   planData: {
@@ -12,149 +40,87 @@ interface DocumentosProps {
     modelo: string;
     envioGratis?: boolean;
     costoEnvio?: number;
-    // Opcional: solo disponible cuando se llega desde el Cotizador con el catálogo
-    // ya cargado (ver DocumentosRoute en App.tsx) — al reanudar una solicitud por
-    // URL (/documentos?solicitud=X) el resumen del backend no trae la imagen del
-    // catálogo, así que el header simplemente no la muestra en ese caso.
+    // Opcional: solo disponible cuando se llega desde el Cotizador con el catálogo ya
+    // cargado — al reanudar por URL el resumen del backend no trae la imagen.
     imagen?: string;
   };
   onVolver: () => void;
-  // Presentes solo al reanudar una solicitud desde /documentos?solicitud=X (ver
-  // DocumentosRoute en App.tsx) — el celular ya está verificado y la solicitud ya
-  // existe, así que el formulario arranca más adelante en vez de pedir el OTP de nuevo.
-  initialSolicitudId?: string;
-  initialCelular?: string;
-  initialEmail?: string;
-  initialOtpVerificado?: boolean;
-  initialDocsGuardados?: { ineFrente: boolean; ineReverso: boolean; selfie: boolean };
-  // true si la verificación automática ya corrió y no pasó — separado en dos flags
-  // porque el backend los computa de forma independiente (ocrOk = lectura del INE,
-  // biometricoOk = comparación selfie contra INE): si solo una de las dos fotos es la
-  // causa de la revisión manual, la otra no debe mostrarse como fallida también.
-  initialIneFrenteFallida?: boolean;
-  initialSelfieFallida?: boolean;
-  // Si la solicitud ya se finalizó (estatus distinto de "Iniciada"), hay que ir directo
-  // a la pantalla de pago/revisión en vez de mostrar el formulario de nuevo — ya no
-  // hay nada que completar, solo pagar (o esperar la revisión manual).
-  initialStatus?: "form" | "exito";
-  initialEsAprobadoDirecto?: boolean;
+  // Presente solo al reanudar una solicitud desde /documentos?solicitud=X — ver
+  // DocumentosRoute en App.tsx. Si no viene, arranca desde cero (paso "celular").
+  resumenInicial?: ResumenSolicitud;
 }
-
-const compressAndGetBase64 = (file: File): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => {
-      const img = new Image();
-      img.onload = () => {
-        const maxDimension = 800;
-        let width = img.width;
-        let height = img.height;
-
-        if (width > height && width > maxDimension) {
-          height = Math.round((height * maxDimension) / width);
-          width = maxDimension;
-        } else if (height > width && height > maxDimension) {
-          width = Math.round((width * maxDimension) / height);
-          height = maxDimension;
-        }
-
-        const canvas = document.createElement("canvas");
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext("2d");
-        if (ctx) {
-          ctx.fillStyle = "#fff";
-          ctx.fillRect(0, 0, width, height);
-          ctx.drawImage(img, 0, 0, width, height);
-          const dataUrl = canvas.toDataURL("image/jpeg", 0.5);
-          resolve(dataUrl.split(",")[1]);
-        } else {
-          reject(new Error("Canvas context not available"));
-        }
-      };
-      img.onerror = () => {
-        if (typeof reader.result === "string") {
-          resolve(reader.result.split(",")[1]);
-        } else {
-          reject(new Error("FileReader result is empty"));
-        }
-      };
-      img.src = reader.result as string;
-    };
-    reader.onerror = (error) => reject(error);
-  });
-};
 
 const RESEND_COOLDOWN_S = 32;
 
-export const Documentos: React.FC<DocumentosProps> = ({
-  planData,
-  onVolver,
-  initialSolicitudId,
-  initialCelular,
-  initialEmail,
-  initialOtpVerificado,
-  initialDocsGuardados,
-  initialIneFrenteFallida,
-  initialSelfieFallida,
-  initialStatus,
-  initialEsAprobadoDirecto,
-}) => {
-  const navigate = useNavigate();
-  const [celular, setCelular] = useState(initialCelular || "");
-  const [email, setEmail] = useState(initialEmail || "");
-  const [ineFrente, setIneFrente] = useState<File | null>(null);
-  const [ineReverso, setIneReverso] = useState<File | null>(null);
-  const [selfie, setSelfie] = useState<File | null>(null);
-  // Independiente de los File de arriba: al reanudar una solicitud no hay un File en
-  // memoria (la foto ya se subió en otra sesión), pero igual hay que mostrar la
-  // tarjeta como cargada y dejar avanzar el formulario.
-  const [ineFrenteGuardado, setIneFrenteGuardado] = useState(initialDocsGuardados?.ineFrente || false);
-  const [ineReversoGuardado, setIneReversoGuardado] = useState(initialDocsGuardados?.ineReverso || false);
-  const [selfieGuardado, setSelfieGuardado] = useState(initialDocsGuardados?.selfie || false);
-  const [guardandoCampo, setGuardandoCampo] = useState<string | null>(null);
-  const [errorProgreso, setErrorProgreso] = useState("");
-  // El frente del INE y la selfie no se pueden mostrar como "cargada correctamente"
-  // (verde) cuando la verificación automática ya corrió y no pasó — confunde, porque
-  // esas dos fotos son justo la causa de que la solicitud haya quedado en revisión.
-  // Separados porque el backend los computa de forma independiente: si solo una de
-  // las dos fotos falló, la otra no debe quedar marcada como fallida también (bug
-  // reportado 2026-08-14 — con un solo flag compartido, resubir la foto que sí estaba
-  // mal nunca "limpiaba" del todo la pantalla porque la otra seguía en rojo).
-  const [ineFrenteFallida, setIneFrenteFallida] = useState(initialIneFrenteFallida || false);
-  const [selfieFallida, setSelfieFallida] = useState(initialSelfieFallida || false);
+type Paso = "celular" | "codigo" | "datos" | "direccion" | "codigo2" | "pago";
 
-  const [status, setStatus] = useState<
-    "form" | "subiendo" | "exito" | "error"
-  >(initialStatus || "form");
-  const [errorMessage, setErrorMessage] = useState("");
+const pasoInicialDesdeResumen = (r: ResumenSolicitud): Paso => {
+  if (r.estatus === "Lista para pago") return "pago";
+  if (!r.nombre || !r.curp) return "datos";
+  if (!r.calle) return "direccion";
+  return "codigo2";
+};
 
-  const [solicitudId, setSolicitudId] = useState<string>(initialSolicitudId || "");
-  const [esAprobadoDirecto, setEsAprobadoDirecto] = useState<boolean>(initialEsAprobadoDirecto ?? true);
+export const Documentos: React.FC<DocumentosProps> = ({ planData, onVolver, resumenInicial }) => {
+  const backendUrl = import.meta.env.VITE_BACKEND_URL || 'https://movinex-backend-production.up.railway.app';
 
-  // Verificación del celular por OTP de WhatsApp, ANTES de poder llenar el resto del
-  // formulario — evita que un bot/script mande INE y selfie falsos sin un WhatsApp real
-  // detrás. El código vence a los 10 minutos (WhatsappOtpService del backend).
-  const [otpEnviado, setOtpEnviado] = useState(false);
-  const [otpVerificado, setOtpVerificado] = useState(initialOtpVerificado || false);
+  const [celular, setCelular] = useState(resumenInicial?.celular || "");
+  const [solicitudId, setSolicitudId] = useState<string>(resumenInicial?.id || "");
+  const [paso, setPaso] = useState<Paso>(resumenInicial ? pasoInicialDesdeResumen(resumenInicial) : "celular");
+
+  // --- OTP (compartido entre el paso 2 y el paso 5 — el celular es el mismo, solo
+  // cambia a dónde avanza al verificarse) ---
   const [otpCodigo, setOtpCodigo] = useState("");
   const [otpEnviando, setOtpEnviando] = useState(false);
   const [otpError, setOtpError] = useState("");
-  const [aceptaTerminos, setAceptaTerminos] = useState(false);
-  // Cuenta regresiva antes de poder pedir un nuevo código — se salta apenas el código
-  // ingresado da error, para no hacer esperar a alguien que ya sabe que lo necesita.
+  const [otpVerificado, setOtpVerificado] = useState(false);
   const [resendCountdown, setResendCountdown] = useState(0);
 
-  // Pago del enganche con Stripe Checkout (página hosteada por Stripe — la tarjeta del
-  // cliente nunca pasa por nuestro servidor). El celular ya quedó verificado más
-  // arriba, así que acá no se vuelve a pedir OTP.
+  const [guardando, setGuardando] = useState(false);
+  const [errorGuardado, setErrorGuardado] = useState("");
+  // Se activan al tocar "Siguiente" con el formulario incompleto — muestran el aviso de
+  // "campos requeridos" hasta que se completan, momento en el que datosValidos/
+  // direccionValida pasa a true y el aviso desaparece solo (no hace falta resetearlo a mano).
+  const [intentoDatos, setIntentoDatos] = useState(false);
+  const [intentoDireccion, setIntentoDireccion] = useState(false);
+  const [intentoCodigo2, setIntentoCodigo2] = useState(false);
+
+  // --- Paso 3: Datos del cliente ---
+  const [nombre, setNombre] = useState(resumenInicial?.nombre || "");
+  const [apellidos, setApellidos] = useState(resumenInicial?.apellidos || "");
+  const [email, setEmail] = useState(resumenInicial?.email || "");
+  const [fechaNacimiento, setFechaNacimiento] = useState(resumenInicial?.fechaNacimiento || "");
+  const [curp, setCurp] = useState(resumenInicial?.curp || "");
+  const [genero, setGenero] = useState(resumenInicial?.genero || "");
+  const [estadoCivil, setEstadoCivil] = useState(resumenInicial?.estadoCivil || "");
+  const [dependientesEconomicos, setDependientesEconomicos] = useState(
+    resumenInicial?.dependientesEconomicos != null ? String(resumenInicial.dependientesEconomicos) : ""
+  );
+  const [nivelEstudios, setNivelEstudios] = useState(resumenInicial?.nivelEstudios || "");
+
+  // --- Paso 4: Dirección ---
+  const [calle, setCalle] = useState(resumenInicial?.calle || "");
+  const [numeroExterior, setNumeroExterior] = useState(resumenInicial?.numeroExterior || "");
+  const [numeroInterior, setNumeroInterior] = useState(resumenInicial?.numeroInterior || "");
+  const [codigoPostal, setCodigoPostal] = useState(resumenInicial?.codigoPostal || "");
+  const [colonia, setColonia] = useState(resumenInicial?.colonia || "");
+  const [alcaldiaMunicipio, setAlcaldiaMunicipio] = useState(resumenInicial?.alcaldiaMunicipio || "");
+  const [estado, setEstado] = useState(resumenInicial?.estado || "");
+
+  // --- Paso 5: Términos ---
+  const [aceptaTerminos, setAceptaTerminos] = useState(false);
+
+  // --- Paso 6: Pago ---
   const [iniciandoPago, setIniciandoPago] = useState(false);
   const [pagoError, setPagoError] = useState("");
 
-  const backendUrl = import.meta.env.VITE_BACKEND_URL || 'https://movinex-backend-production.up.railway.app';
+  useEffect(() => {
+    if (resendCountdown <= 0) return;
+    const t = setTimeout(() => setResendCountdown((c) => c - 1), 1000);
+    return () => clearTimeout(t);
+  }, [resendCountdown]);
 
-  const handleEnviarOtpInicial = async () => {
+  const handleEnviarOtp = async () => {
     if (celular.length < 10) return;
     setOtpEnviando(true);
     setOtpError("");
@@ -168,7 +134,6 @@ export const Documentos: React.FC<DocumentosProps> = ({
         const res = await response.json();
         throw new Error(res.error || "No se pudo enviar el código de verificación.");
       }
-      setOtpEnviado(true);
       setOtpCodigo("");
       setResendCountdown(RESEND_COOLDOWN_S);
     } catch (error: any) {
@@ -178,11 +143,8 @@ export const Documentos: React.FC<DocumentosProps> = ({
     }
   };
 
-  // Crea la solicitud apenas se verifica el OTP (celular + plan elegido, todavía sin
-  // email/INE/selfie) para no perder el lead si se cae del formulario a mitad de
-  // camino, y refleja el id en la URL para poder reanudar. Separada de
-  // handleVerificarOtpInicial para poder reintentarla sola si falla, sin pedir el
-  // código de nuevo (el OTP ya quedó verificado del lado del backend).
+  // Crea la solicitud apenas se verifica el OTP inicial (paso 2), para no perder el
+  // lead si se cae del formulario a mitad de camino.
   const crearSolicitudSiHaceFalta = async () => {
     if (solicitudId) return;
     try {
@@ -203,13 +165,13 @@ export const Documentos: React.FC<DocumentosProps> = ({
         throw new Error(res.error || "No se pudo iniciar tu solicitud.");
       }
       setSolicitudId(res.solicitud.id);
-      navigate(`/documentos?solicitud=${res.solicitud.id}`, { replace: true });
+      window.history.replaceState(null, "", `/documentos?solicitud=${res.solicitud.id}`);
     } catch (error: any) {
       setOtpError(error.message || "No se pudo iniciar tu solicitud. Intenta de nuevo.");
     }
   };
 
-  const handleVerificarOtpInicial = async () => {
+  const handleVerificarOtp = async (alVerificar: () => void | Promise<void>) => {
     setOtpEnviando(true);
     setOtpError("");
     try {
@@ -223,7 +185,7 @@ export const Documentos: React.FC<DocumentosProps> = ({
         throw new Error(res.error || "Código inválido");
       }
       setOtpVerificado(true);
-      await crearSolicitudSiHaceFalta();
+      await alVerificar();
     } catch (error: any) {
       setOtpError(error.message || "Código inválido");
       setResendCountdown(0);
@@ -232,51 +194,147 @@ export const Documentos: React.FC<DocumentosProps> = ({
     }
   };
 
-  // El código se verifica solo apenas se completan los 6 dígitos — sin botón manual
-  // de "Verificar", según el diseño de Figma (Paso 3).
+  // El código se verifica solo apenas se completan los 6 dígitos, sin botón manual.
   useEffect(() => {
     if (otpCodigo.length === 6 && !otpVerificado && !otpEnviando) {
-      handleVerificarOtpInicial();
+      if (paso === "codigo") {
+        handleVerificarOtp(async () => {
+          await crearSolicitudSiHaceFalta();
+          setPaso("datos");
+        });
+      } else if (paso === "codigo2") {
+        handleVerificarOtp(() => {});
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [otpCodigo]);
 
+  // Al entrar al paso 5, se resetea el OTP y se manda un código nuevo automáticamente
+  // (ya sabemos el celular, no hace falta que lo vuelva a pedir).
   useEffect(() => {
-    if (resendCountdown <= 0) return;
-    const t = setTimeout(() => setResendCountdown((c) => c - 1), 1000);
-    return () => clearTimeout(t);
-  }, [resendCountdown]);
+    if (paso === "codigo2") {
+      setOtpVerificado(false);
+      setOtpCodigo("");
+      setOtpError("");
+      handleEnviarOtp();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [paso]);
 
-  // Guarda un campo (email, o una foto ya en base64) apenas está listo, sin esperar al
-  // submit final — así no se pierde nada si el cliente se cae del formulario a mitad
-  // de camino. Se puede llamar varias veces, cada vez con lo que corresponda.
-  const guardarProgreso = async (campos: Record<string, string>, nombreCampo: string): Promise<any | null> => {
-    if (!solicitudId) return null;
-    setGuardandoCampo(nombreCampo);
-    setErrorProgreso("");
+  const emailValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const curpValida = /^[A-Za-z0-9]{18}$/.test(curp.trim());
+
+  const datosValidos =
+    nombre.trim() !== "" &&
+    apellidos.trim() !== "" &&
+    emailValido &&
+    fechaNacimiento !== "" &&
+    curpValida &&
+    (genero === "Masculino" || genero === "Femenino") &&
+    estadoCivil !== "" &&
+    dependientesEconomicos !== "" &&
+    nivelEstudios !== "";
+
+  const handleGuardarDatos = async () => {
+    if (!datosValidos) {
+      setIntentoDatos(true);
+      return;
+    }
+    if (!solicitudId) return;
+    setGuardando(true);
+    setErrorGuardado("");
     try {
       const response = await fetch(`${backendUrl}/api/solicitudes/${solicitudId}/progreso`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(campos),
+        body: JSON.stringify({
+          email: email.trim(),
+          nombre: nombre.trim(),
+          apellidos: apellidos.trim(),
+          fecha_nacimiento: fechaNacimiento,
+          curp: curp.trim().toUpperCase(),
+          genero,
+          estado_civil: estadoCivil,
+          dependientes_economicos: Number(dependientesEconomicos),
+          nivel_estudios: nivelEstudios,
+        }),
       });
       const res = await response.json().catch(() => ({}));
-      if (!response.ok) {
-        throw new Error(res.error || "No se pudo guardar.");
-      }
-      return res.solicitud || null;
+      if (!response.ok) throw new Error(res.error || "No se pudo guardar. Intenta de nuevo.");
+      setPaso("direccion");
     } catch (error: any) {
-      setErrorProgreso(error.message || "No se pudo guardar. Intenta de nuevo.");
-      return null;
+      setErrorGuardado(error.message || "No se pudo guardar. Intenta de nuevo.");
     } finally {
-      setGuardandoCampo(null);
+      setGuardando(false);
     }
   };
 
-  // Pide al backend una Checkout Session de Stripe y redirige al cliente a la página
-  // hosteada por Stripe para pagar. Stripe lo trae de vuelta solo a /domicilio si el
-  // pago sale bien (o a "/" si cancela) — la confirmación real la hace el webhook
-  // checkout.session.completed, no esta respuesta.
+  const direccionValida =
+    calle.trim() !== "" &&
+    numeroExterior.trim() !== "" &&
+    codigoPostal.trim().length === 5 &&
+    colonia.trim() !== "" &&
+    alcaldiaMunicipio.trim() !== "" &&
+    estado.trim() !== "";
+
+  const handleGuardarDireccion = async () => {
+    if (!direccionValida) {
+      setIntentoDireccion(true);
+      return;
+    }
+    if (!solicitudId) return;
+    setGuardando(true);
+    setErrorGuardado("");
+    try {
+      const response = await fetch(`${backendUrl}/api/solicitudes/${solicitudId}/domicilio`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          calle: calle.trim(),
+          numero_exterior: numeroExterior.trim(),
+          numero_interior: numeroInterior.trim() || undefined,
+          codigo_postal: codigoPostal.trim(),
+          colonia: colonia.trim(),
+          alcaldia_municipio: alcaldiaMunicipio.trim(),
+          estado: estado.trim(),
+        }),
+      });
+      const res = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(res.error || "No se pudo guardar tu dirección. Intenta de nuevo.");
+      setPaso("codigo2");
+    } catch (error: any) {
+      setErrorGuardado(error.message || "No se pudo guardar tu dirección. Intenta de nuevo.");
+    } finally {
+      setGuardando(false);
+    }
+  };
+
+  const handleConfirmarTerminos = async () => {
+    if (!otpVerificado || !aceptaTerminos) {
+      setIntentoCodigo2(true);
+      return;
+    }
+    if (!solicitudId) return;
+    setGuardando(true);
+    setErrorGuardado("");
+    try {
+      const response = await fetch(`${backendUrl}/api/solicitudes/${solicitudId}/confirmar-terminos`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ aceptaTerminos: true }),
+      });
+      const res = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(res.error || "No se pudo confirmar. Intenta de nuevo.");
+      setPaso("pago");
+    } catch (error: any) {
+      setErrorGuardado(error.message || "No se pudo confirmar. Intenta de nuevo.");
+    } finally {
+      setGuardando(false);
+    }
+  };
+
+  // Pide al backend una Checkout Session de Stripe y redirige al cliente ahí — Stripe lo
+  // trae de vuelta a /verificacion (paso 7, biométricos en vivo) una vez que paga.
   const handleIniciarPago = async () => {
     setIniciandoPago(true);
     setPagoError("");
@@ -295,149 +353,7 @@ export const Documentos: React.FC<DocumentosProps> = ({
     }
   };
 
-  // Además de guardar el File localmente (para la vista previa), sube la foto al
-  // backend ya mismo — no espera al submit final, así no se pierde si el cliente se
-  // cae del formulario a mitad de camino.
-  const handleFileChange = async (
-    e: React.ChangeEvent<HTMLInputElement>,
-    setFile: (file: File | null) => void,
-    campoBackend: "ine_frente" | "ine_reverso" | "selfie",
-    setGuardado: (v: boolean) => void,
-  ) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setFile(file);
-    setGuardado(false);
-    try {
-      const base64 = await compressAndGetBase64(file);
-      const solicitudActualizada = await guardarProgreso({ [campoBackend]: `data:image/jpeg;base64,${base64}` }, campoBackend);
-      if (solicitudActualizada) {
-        setGuardado(true);
-        // El backend ya no espera a Verificamex para responder acá (por eso esto es
-        // rápido) — corre OCR/biométrico en segundo plano, así que el resultado fresco
-        // todavía no está en esta respuesta. Se consulta una vez, unos segundos
-        // después, para que el aviso ámbar se actualice solo sin tener que recargar.
-        if (campoBackend === "ine_frente" || campoBackend === "selfie") {
-          setTimeout(() => {
-            fetch(`${backendUrl}/api/solicitudes/${solicitudId}/resumen`)
-              .then((r) => (r.ok ? r.json() : null))
-              .then((resumen) => {
-                if (resumen) {
-                  setIneFrenteFallida(resumen.ocrOk === false);
-                  setSelfieFallida(resumen.biometricoOk === false);
-                }
-              })
-              .catch(() => {});
-          }, 2500);
-        }
-      }
-    } catch {
-      // guardarProgreso ya dejó el error en errorProgreso
-    }
-  };
-
-  // "Eliminar foto" (aparece una vez subida, según el diseño de Figma) — vuelve a
-  // mostrar los botones de "Tomar foto"/"Subir archivo" para reintentar. No hace falta
-  // borrar nada del backend: la próxima foto que se suba pisa el valor guardado.
-  const handleEliminarFoto = (
-    setFile: (file: File | null) => void,
-    setGuardado: (v: boolean) => void,
-  ) => {
-    setFile(null);
-    setGuardado(false);
-  };
-
-  // Dos botones en vez de un solo input cubriendo toda la tarjeta: "Tomar foto" abre la
-  // cámara directo en el celular (atributo `capture`), "Subir archivo" abre la galería/
-  // explorador normal, sin forzar una sobre la otra.
-  const renderBotonesCaptura = (
-    idPrefix: string,
-    captureMode: "environment" | "user",
-    setter: (file: File | null) => void,
-    campoBackend: "ine_frente" | "ine_reverso" | "selfie",
-    setGuardado: (v: boolean) => void,
-  ) => (
-    <div className={styles.docBotones}>
-      <input
-        type="file"
-        accept="image/*"
-        capture={captureMode}
-        onChange={(e) => handleFileChange(e, setter, campoBackend, setGuardado)}
-        style={{ display: "none" }}
-        id={`${idPrefix}-camara`}
-      />
-      <label htmlFor={`${idPrefix}-camara`} className={styles.docBoton}>
-        <FiCamera /> Tomar foto
-      </label>
-
-      <input
-        type="file"
-        accept="image/*"
-        onChange={(e) => handleFileChange(e, setter, campoBackend, setGuardado)}
-        style={{ display: "none" }}
-        id={`${idPrefix}-archivo`}
-      />
-      <label htmlFor={`${idPrefix}-archivo`} className={styles.docBoton}>
-        <FiUpload /> Subir archivo
-      </label>
-    </div>
-  );
-
-  // Todo lo demás (email, INE, selfie) ya se guardó progresivamente vía
-  // guardarProgreso — acá solo se cierra el ciclo: corre Verificamex con lo que ya
-  // está guardado y decide el estatus final.
-  const handleEnviar = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!solicitudId || !isFormValid) return;
-
-    setStatus("subiendo");
-    setErrorMessage("");
-
-    try {
-      const response = await fetch(
-        `${backendUrl}/api/solicitudes/${solicitudId}/finalizar`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ aceptaTerminos }),
-        },
-      );
-      const res = await response.json();
-
-      if (!response.ok) {
-        throw new Error(
-          res.error || "Ocurrió un error al procesar tu solicitud.",
-        );
-      }
-
-      const fueAprobado = res.solicitud?.estatus === "Aprobado";
-      setEsAprobadoDirecto(fueAprobado);
-
-      setStatus("exito");
-    } catch (error: any) {
-      console.error(error);
-      setErrorMessage(
-        error.message ||
-          "Ocurrió un error al procesar tu solicitud de crédito. Por favor intenta de nuevo.",
-      );
-      setStatus("error");
-    }
-  };
-
-  const isFormValid =
-    otpVerificado &&
-    celular.trim().length >= 10 &&
-    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) &&
-    ineFrenteGuardado &&
-    ineReversoGuardado &&
-    selfieGuardado &&
-    aceptaTerminos;
-
-  // "Paso 2" (celular), "Paso 3" (código) y "Paso 4" (documentos) del diseño de Figma
-  // — todas comparten el mismo header con "Identidad" como paso activo.
-  const vista: "celular" | "codigo" | "documentos" = !otpVerificado
-    ? (otpEnviado ? "codigo" : "celular")
-    : "documentos";
+  const fase2Activa = paso !== "pago";
 
   const renderHeader = () => (
     <div className={styles.header}>
@@ -462,134 +378,24 @@ export const Documentos: React.FC<DocumentosProps> = ({
           </span>
           <span>Cotizar celular</span>
         </div>
-        <div className={`${styles.pasoIndicador} ${styles.pasoActivo}`}>
-          <span className={styles.pasoNum}>2</span>
-          <span>Identidad</span>
+        <div className={`${styles.pasoIndicador} ${fase2Activa ? styles.pasoActivo : ""}`}>
+          <span className={styles.pasoNum}>{fase2Activa ? "2" : <FiCheck />}</span>
+          <span>Tus datos</span>
         </div>
-        <div className={styles.pasoIndicador}>
+        <div className={`${styles.pasoIndicador} ${!fase2Activa ? styles.pasoActivo : ""}`}>
           <span className={styles.pasoNum}>3</span>
-          <span>Envío</span>
+          <span>Pago</span>
         </div>
       </div>
     </div>
   );
-
-  if (status === "subiendo") {
-    return (
-      <div className={styles.wrap}>
-        <div className={styles.card}>
-          <div className={styles.body}>
-            <div className={styles.estado}>
-              <div className={styles.spinner}></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (status === "exito") {
-    return (
-      <div className={styles.wrap}>
-        <div className={styles.card}>
-          {renderHeader()}
-          <div className={styles.body}>
-            {esAprobadoDirecto ? (
-              <div className={styles.estado}>
-                <div className={styles.badgeOk}>
-                  <FiAward />
-                </div>
-                <div className={styles.et}>¡Felicidades, fuiste autorizado!</div>
-                <div className={styles.ed}>
-                  {`Tu identidad quedó validada. El siguiente paso es el pago inicial para procesar el envío de tu ${planData.modelo}:`}
-                </div>
-                <div className={styles.resumenPago}>
-                  <div className={styles.filaResumen}>
-                    <span>Enganche requerido:</span>
-                    <b>${planData.enganche.toLocaleString()}</b>
-                  </div>
-                  <div className={styles.filaResumen}>
-                    <span>Costo de envío:</span>
-                    <b className={planData.envioGratis !== false ? styles.gratis : undefined}>
-                      {planData.envioGratis !== false ? "¡Gratis!" : `$${(planData.costoEnvio || 0).toLocaleString()}`}
-                    </b>
-                  </div>
-                  <div className={styles.dividerResumen} />
-                  <div className={`${styles.filaResumen} ${styles.filaTotal}`}>
-                    <span>Total Inicial a pagar:</span>
-                    <b>${(planData.enganche + (planData.envioGratis !== false ? 0 : (planData.costoEnvio || 0))).toLocaleString()}</b>
-                  </div>
-                </div>
-                {pagoError && <span className={styles.errorMsg}>{pagoError}</span>}
-                <button
-                  className={styles.cta}
-                  onClick={handleIniciarPago}
-                  disabled={iniciandoPago || !solicitudId}
-                >
-                  {iniciandoPago ? "Preparando pago..." : "Pagar enganche →"}
-                </button>
-              </div>
-            ) : (
-              // Paso 5 de Figma: "solicitud en revisión" — se muestra cuando la
-              // identidad no quedó validada automática y hace falta revisión manual;
-              // no tiene sentido cobrarle antes de esa revisión.
-              <div className={styles.estado}>
-                <FiInfo className={styles.infoIcon} />
-                <div className={styles.et}>Tu solicitud está en revisión</div>
-                <div className={styles.ed}>
-                  {`Tu identidad está siendo validada por nuestro equipo. Te contactaremos por Whatsapp en cuanto tu solicitud del ${planData.modelo} esté aprobada para continuar con el pago.`}
-                </div>
-                <div className={styles.cerrarWrap}>
-                  <p className={styles.cerrarHint}>Puedes cerrar esta ventana ó</p>
-                  <button type="button" className={styles.linkVolver} onClick={onVolver}>
-                    Volver a la tienda →
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (status === "error") {
-    return (
-      <div className={styles.wrap}>
-        <div className={styles.card}>
-          <div className={styles.body}>
-            <div className={styles.estado}>
-              <div className={styles.badgeErr}>
-                <svg
-                  width="28"
-                  height="28"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="#DC2626"
-                  strokeWidth="3"
-                >
-                  <line x1="18" y1="6" x2="6" y2="18"></line>
-                  <line x1="6" y1="6" x2="18" y2="18"></line>
-                </svg>
-              </div>
-              <div className={styles.et}>No pudimos verificarte</div>
-              <div className={styles.ed}>{errorMessage}</div>
-              <button className={styles.cta} onClick={() => setStatus("form")}>
-                Volver a intentar
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className={styles.wrap}>
       <div className={styles.card}>
         {renderHeader()}
         <div className={styles.body}>
-          {vista === "celular" && (
+          {paso === "celular" && (
             <div className={styles.paso}>
               <div className={styles.tituloWrap}>
                 <p className={styles.titulo}>Verifica tu número de celular</p>
@@ -616,7 +422,7 @@ export const Documentos: React.FC<DocumentosProps> = ({
                 <button
                   type="button"
                   className={styles.cta}
-                  onClick={handleEnviarOtpInicial}
+                  onClick={async () => { await handleEnviarOtp(); setPaso("codigo"); }}
                   disabled={celular.length < 10 || otpEnviando}
                 >
                   {otpEnviando ? "Enviando..." : "Enviar Código"}
@@ -628,7 +434,7 @@ export const Documentos: React.FC<DocumentosProps> = ({
             </div>
           )}
 
-          {vista === "codigo" && (
+          {paso === "codigo" && (
             <div className={styles.paso}>
               <div className={styles.tituloWrap}>
                 <p className={styles.titulo}>Verifica tu número de celular</p>
@@ -638,14 +444,11 @@ export const Documentos: React.FC<DocumentosProps> = ({
                 <input
                   type="text"
                   inputMode="numeric"
-                  placeholder="000000"
+                  placeholder="• • • • • •"
                   maxLength={6}
                   value={otpCodigo}
-                  onChange={(e) => {
-                    setOtpCodigo(e.target.value.replace(/\D/g, ""));
-                    setOtpError("");
-                  }}
-                  className={otpError ? styles.inputError : ""}
+                  onChange={(e) => { setOtpCodigo(e.target.value.replace(/\D/g, "")); setOtpError(""); }}
+                  className={`${styles.otpInput} ${otpError ? styles.inputError : ""}`}
                 />
                 {otpError && <span className={styles.errorMsg}>{otpError}</span>}
               </div>
@@ -653,168 +456,232 @@ export const Documentos: React.FC<DocumentosProps> = ({
                 <button
                   type="button"
                   className={styles.cta}
-                  onClick={handleEnviarOtpInicial}
+                  onClick={handleEnviarOtp}
                   disabled={otpEnviando || (resendCountdown > 0 && !otpError)}
                 >
-                  {otpEnviando
-                    ? "Enviando..."
-                    : resendCountdown > 0 && !otpError
-                    ? `Reenviar Código (${resendCountdown})`
-                    : "Reenviar Código"}
+                  {otpEnviando ? "Enviando..." : resendCountdown > 0 && !otpError ? `Reenviar Código (${resendCountdown})` : "Reenviar Código"}
                 </button>
-                <button
-                  type="button"
-                  className={styles.pasoAnterior}
-                  onClick={() => {
-                    setOtpEnviado(false);
-                    setOtpCodigo("");
-                    setOtpError("");
-                  }}
-                >
+                <button type="button" className={styles.pasoAnterior} onClick={() => setPaso("celular")}>
                   Paso Anterior
                 </button>
               </div>
             </div>
           )}
 
-          {vista === "documentos" && (
-            <form className={styles.paso} onSubmit={handleEnviar}>
+          {paso === "datos" && (
+            <div className={styles.paso}>
               <div className={styles.tituloWrap}>
-                <p className={styles.titulo}>Sube tus documentos</p>
-                <p className={styles.subtitulo}>Para autorizar tu crédito requerimos validar tu identidad</p>
+                <p className={styles.titulo}>Datos del cliente</p>
+                <p className={styles.subtitulo}>Necesitamos estos datos para tu solicitud de crédito</p>
               </div>
 
               <div className={styles.campo}>
-                <label htmlFor="email">Correo electrónico</label>
+                <label htmlFor="nombre">Nombre(s) <span className={styles.requerido}>*</span></label>
+                <input id="nombre" type="text" value={nombre} onChange={(e) => setNombre(e.target.value)} required />
+              </div>
+              <div className={styles.campo}>
+                <label htmlFor="apellidos">Apellidos <span className={styles.requerido}>*</span></label>
+                <input id="apellidos" type="text" value={apellidos} onChange={(e) => setApellidos(e.target.value)} required />
+              </div>
+              <div className={styles.campo}>
+                <label htmlFor="email">Correo electrónico <span className={styles.requerido}>*</span></label>
                 <input
                   id="email"
                   type="email"
                   placeholder="tucorreo@ejemplo.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  onBlur={() => {
-                    if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-                      guardarProgreso({ email: email.trim() }, "email");
-                    }
-                  }}
-                  className={email.length > 0 && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? styles.inputError : ""}
+                  className={email.length > 0 && !emailValido ? styles.inputError : ""}
                   required
                 />
-                {email.length > 0 && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && (
-                  <span className={styles.errorMsg}>Ingresa un correo electrónico válido</span>
+              </div>
+              <div className={styles.campo}>
+                <label htmlFor="fechaNacimiento">Fecha de nacimiento <span className={styles.requerido}>*</span></label>
+                <input id="fechaNacimiento" type="date" value={fechaNacimiento} onChange={(e) => setFechaNacimiento(e.target.value)} required />
+              </div>
+              <div className={styles.campo}>
+                <label htmlFor="curp">CURP <span className={styles.requerido}>*</span></label>
+                <input
+                  id="curp"
+                  type="text"
+                  maxLength={18}
+                  value={curp}
+                  onChange={(e) => setCurp(e.target.value.toUpperCase())}
+                  className={curp.length > 0 && !curpValida ? styles.inputError : ""}
+                  required
+                />
+                {curp.length > 0 && !curpValida && (
+                  <span className={styles.errorMsg}>La CURP debe tener 18 caracteres</span>
                 )}
-                {guardandoCampo === "email" && <span className={styles.hint}>Guardando...</span>}
+              </div>
+              <div className={styles.campo}>
+                <label>Género <span className={styles.requerido}>*</span></label>
+                <div className={styles.toggleGroup}>
+                  <button
+                    type="button"
+                    className={`${styles.toggleBtn} ${genero === "Masculino" ? styles.toggleBtnActivo : ""}`}
+                    onClick={() => setGenero("Masculino")}
+                  >
+                    Masculino
+                  </button>
+                  <button
+                    type="button"
+                    className={`${styles.toggleBtn} ${genero === "Femenino" ? styles.toggleBtnActivo : ""}`}
+                    onClick={() => setGenero("Femenino")}
+                  >
+                    Femenino
+                  </button>
+                </div>
+              </div>
+              <div className={styles.campo}>
+                <label htmlFor="estadoCivil">Estado civil <span className={styles.requerido}>*</span></label>
+                <select id="estadoCivil" value={estadoCivil} onChange={(e) => setEstadoCivil(e.target.value)} required>
+                  <option value="">Selecciona una opción</option>
+                  <option value="Soltero/a">Soltero/a</option>
+                  <option value="Casado/a">Casado/a</option>
+                  <option value="Unión libre">Unión libre</option>
+                  <option value="Divorciado/a">Divorciado/a</option>
+                  <option value="Viudo/a">Viudo/a</option>
+                </select>
+              </div>
+              <div className={styles.campo}>
+                <label htmlFor="dependientes">Dependientes económicos <span className={styles.requerido}>*</span></label>
+                <input
+                  id="dependientes"
+                  type="number"
+                  min={0}
+                  value={dependientesEconomicos}
+                  onChange={(e) => setDependientesEconomicos(e.target.value.replace(/\D/g, ""))}
+                  required
+                />
+              </div>
+              <div className={styles.campo}>
+                <label htmlFor="nivelEstudios">Nivel de estudios <span className={styles.requerido}>*</span></label>
+                <select id="nivelEstudios" value={nivelEstudios} onChange={(e) => setNivelEstudios(e.target.value)} required>
+                  <option value="">Selecciona una opción</option>
+                  <option value="Primaria">Primaria</option>
+                  <option value="Secundaria">Secundaria</option>
+                  <option value="Preparatoria">Preparatoria</option>
+                  <option value="Licenciatura">Licenciatura</option>
+                  <option value="Posgrado">Posgrado</option>
+                </select>
               </div>
 
-              {errorProgreso && (
-                <div className={styles.errorMsg} style={{ marginBottom: "10px" }}>{errorProgreso}</div>
+              {errorGuardado && <span className={styles.errorMsg}>{errorGuardado}</span>}
+              {intentoDatos && !datosValidos && (
+                <span className={styles.errorMsg}>Completá todos los campos requeridos para continuar.</span>
               )}
 
-              <div className={styles.divider} />
+              <div className={styles.botonesFinal}>
+                <button type="button" className={styles.cta} onClick={handleGuardarDatos} disabled={guardando}>
+                  {guardando ? "Guardando..." : "Siguiente"}
+                </button>
+                <button type="button" className={styles.pasoAnterior} onClick={onVolver}>
+                  Paso Anterior
+                </button>
+              </div>
+            </div>
+          )}
 
-              {/* Frente */}
-              {(() => {
-                const cargada = !!(ineFrente || ineFrenteGuardado);
-                const necesitaRevision = cargada && ineFrenteFallida;
-                const verificado = cargada && !necesitaRevision;
-                return (
-                  <div className={styles.docCampo}>
-                    <div className={styles.docEtiqueta}>
-                      <span>Frente de tu INE</span>
-                      {verificado && <FiCheck className={styles.docCheckOk} />}
-                    </div>
-                    <div
-                      className={`${styles.docBox} ${verificado ? styles.docBoxOk : ""} ${necesitaRevision ? styles.docBoxWarn : ""}`}
-                    >
-                      {ineFrente && <img src={URL.createObjectURL(ineFrente)} alt="Frente INE" className={styles.docThumb} />}
-                      {!cargada && guardandoCampo !== "ine_frente" && renderBotonesCaptura("ine-frente", "environment", setIneFrente, "ine_frente", setIneFrenteGuardado)}
-                      {guardandoCampo === "ine_frente" && <div className={styles.docGuardando}>Guardando...</div>}
-                    </div>
-                    {necesitaRevision && (
-                      <span className={styles.errorMsg}>No se pudo verificar — vuelve a tomarla bien iluminada y sin reflejos</span>
-                    )}
-                    {cargada && guardandoCampo !== "ine_frente" && (
-                      <button type="button" className={styles.eliminarFoto} onClick={() => handleEliminarFoto(setIneFrente, setIneFrenteGuardado)}>
-                        Eliminar foto <FiTrash2 />
-                      </button>
-                    )}
-                  </div>
-                );
-              })()}
+          {paso === "direccion" && (
+            <div className={styles.paso}>
+              <div className={styles.tituloWrap}>
+                <p className={styles.titulo}>Agrega tu dirección</p>
+                <p className={styles.subtitulo}>La necesitamos para programar el envío de tu celular</p>
+              </div>
 
-              <div className={styles.divider} />
+              <div className={styles.campo}>
+                <label htmlFor="calle">Calle <span className={styles.requerido}>*</span></label>
+                <input id="calle" type="text" placeholder="Av. Insurgentes Sur" value={calle} onChange={(e) => setCalle(e.target.value)} required />
+              </div>
+              <div style={{ display: "flex", gap: "16px" }}>
+                <div className={styles.campo} style={{ flex: 1 }}>
+                  <label htmlFor="numeroExterior">No. exterior <span className={styles.requerido}>*</span></label>
+                  <input id="numeroExterior" type="text" placeholder="123" value={numeroExterior} onChange={(e) => setNumeroExterior(e.target.value)} required />
+                </div>
+                <div className={styles.campo} style={{ flex: 1 }}>
+                  <label htmlFor="numeroInterior">No. interior (opcional)</label>
+                  <input id="numeroInterior" type="text" placeholder="4B" value={numeroInterior} onChange={(e) => setNumeroInterior(e.target.value)} />
+                </div>
+              </div>
+              <div className={styles.campo}>
+                <label htmlFor="codigoPostal">Código postal <span className={styles.requerido}>*</span></label>
+                <input
+                  id="codigoPostal"
+                  type="text"
+                  placeholder="06600"
+                  value={codigoPostal}
+                  onChange={(e) => setCodigoPostal(e.target.value.replace(/\D/g, ""))}
+                  maxLength={5}
+                  className={codigoPostal.length > 0 && codigoPostal.length < 5 ? styles.inputError : ""}
+                  required
+                />
+                {codigoPostal.length > 0 && codigoPostal.length < 5 && (
+                  <span className={styles.errorMsg}>El código postal debe contener exactamente 5 dígitos</span>
+                )}
+              </div>
+              <div className={styles.campo}>
+                <label htmlFor="colonia">Colonia <span className={styles.requerido}>*</span></label>
+                <input id="colonia" type="text" placeholder="Roma Norte" value={colonia} onChange={(e) => setColonia(e.target.value)} required />
+              </div>
+              <div className={styles.campo}>
+                <label htmlFor="alcaldiaMunicipio">Alcaldía / Municipio <span className={styles.requerido}>*</span></label>
+                <input id="alcaldiaMunicipio" type="text" placeholder="Cuauhtémoc" value={alcaldiaMunicipio} onChange={(e) => setAlcaldiaMunicipio(e.target.value)} required />
+              </div>
+              <div className={styles.campo}>
+                <label htmlFor="estado">Estado <span className={styles.requerido}>*</span></label>
+                <input id="estado" type="text" placeholder="Ciudad de México" value={estado} onChange={(e) => setEstado(e.target.value)} required />
+              </div>
 
-              {/* Reverso */}
-              {(() => {
-                const cargada = !!(ineReverso || ineReversoGuardado);
-                return (
-                  <div className={styles.docCampo}>
-                    <div className={styles.docEtiqueta}>
-                      <span>Reverso de tu INE</span>
-                      {cargada && <FiCheck className={styles.docCheckOk} />}
-                    </div>
-                    <div className={`${styles.docBox} ${cargada ? styles.docBoxOk : ""}`}>
-                      {ineReverso && <img src={URL.createObjectURL(ineReverso)} alt="Reverso INE" className={styles.docThumb} />}
-                      {!cargada && guardandoCampo !== "ine_reverso" && renderBotonesCaptura("ine-reverso", "environment", setIneReverso, "ine_reverso", setIneReversoGuardado)}
-                      {guardandoCampo === "ine_reverso" && <div className={styles.docGuardando}>Guardando...</div>}
-                    </div>
-                    {cargada && guardandoCampo !== "ine_reverso" && (
-                      <button type="button" className={styles.eliminarFoto} onClick={() => handleEliminarFoto(setIneReverso, setIneReversoGuardado)}>
-                        Eliminar foto <FiTrash2 />
-                      </button>
-                    )}
-                  </div>
-                );
-              })()}
+              {errorGuardado && <span className={styles.errorMsg}>{errorGuardado}</span>}
+              {intentoDireccion && !direccionValida && (
+                <span className={styles.errorMsg}>Completá todos los campos requeridos para continuar.</span>
+              )}
 
-              <div className={styles.divider} />
+              <div className={styles.botonesFinal}>
+                <button type="button" className={styles.cta} onClick={handleGuardarDireccion} disabled={guardando}>
+                  {guardando ? "Guardando..." : "Siguiente"}
+                </button>
+                <button type="button" className={styles.pasoAnterior} onClick={() => setPaso("datos")}>
+                  Paso Anterior
+                </button>
+              </div>
+            </div>
+          )}
 
-              {/* Selfie */}
-              {(() => {
-                const cargada = !!(selfie || selfieGuardado);
-                const necesitaRevision = cargada && selfieFallida;
-                const verificado = cargada && !necesitaRevision;
-                return (
-                  <div className={styles.docCampo}>
-                    <div className={styles.docEtiqueta}>
-                      <span>Selfie</span>
-                      {verificado && <FiCheck className={styles.docCheckOk} />}
-                    </div>
-                    <div
-                      className={`${styles.docBox} ${verificado ? styles.docBoxOk : ""} ${necesitaRevision ? styles.docBoxWarn : ""}`}
-                    >
-                      {selfie && <img src={URL.createObjectURL(selfie)} alt="Selfie" className={styles.docThumb} />}
-                      {!cargada && guardandoCampo !== "selfie" && renderBotonesCaptura("selfie", "user", setSelfie, "selfie", setSelfieGuardado)}
-                      {guardandoCampo === "selfie" && <div className={styles.docGuardando}>Guardando...</div>}
-                    </div>
-                    {!cargada && <div className={styles.hintSelfie}>Tu rostro, bien iluminado</div>}
-                    {necesitaRevision && (
-                      <span className={styles.errorMsg}>No se pudo verificar contra tu INE — vuelve a tomarla de frente y bien iluminada</span>
-                    )}
-                    {cargada && guardandoCampo !== "selfie" && (
-                      <button type="button" className={styles.eliminarFoto} onClick={() => handleEliminarFoto(setSelfie, setSelfieGuardado)}>
-                        Eliminar foto <FiTrash2 />
-                      </button>
-                    )}
-                  </div>
-                );
-              })()}
+          {paso === "codigo2" && (
+            <div className={styles.paso}>
+              <div className={styles.tituloWrap}>
+                <p className={styles.titulo}>Confirma tu identidad</p>
+                <p className={styles.subtitulo}>Te reenviamos un código para confirmar que sigues siendo tú</p>
+              </div>
+              <div className={styles.campo}>
+                <label>Ingresa el código enviado al <b>{celular}</b></label>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  placeholder="• • • • • •"
+                  maxLength={6}
+                  value={otpCodigo}
+                  onChange={(e) => { setOtpCodigo(e.target.value.replace(/\D/g, "")); setOtpError(""); }}
+                  className={`${styles.otpInput} ${otpError ? styles.inputError : ""}`}
+                />
+                {otpError && <span className={styles.errorMsg}>{otpError}</span>}
+                {otpVerificado && <span className={styles.hint}>Código verificado ✓</span>}
+              </div>
+              <button
+                type="button"
+                className={styles.pasoAnterior}
+                onClick={handleEnviarOtp}
+                disabled={otpEnviando || (resendCountdown > 0 && !otpError)}
+                style={{ alignSelf: "flex-start" }}
+              >
+                {otpEnviando ? "Enviando..." : resendCountdown > 0 && !otpError ? `Reenviar Código (${resendCountdown})` : "Reenviar Código"}
+              </button>
 
               <div className={styles.legalBlock}>
-                <div className={styles.privacidad}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                  </svg>
-                  Tus datos biométricos y fotos se encriptan de extremo a extremo conforme a la Ley de Protección de Datos Personales.
-                </div>
-
                 <label className={styles.terminos}>
-                  <input
-                    type="checkbox"
-                    checked={aceptaTerminos}
-                    onChange={(e) => setAceptaTerminos(e.target.checked)}
-                  />
+                  <input type="checkbox" checked={aceptaTerminos} onChange={(e) => setAceptaTerminos(e.target.checked)} />
                   Acepto los{" "}
                   <a href="/terminos" target="_blank" rel="noopener noreferrer">
                     Términos y condiciones
@@ -822,15 +689,59 @@ export const Documentos: React.FC<DocumentosProps> = ({
                 </label>
               </div>
 
+              {errorGuardado && <span className={styles.errorMsg}>{errorGuardado}</span>}
+              {intentoCodigo2 && (!otpVerificado || !aceptaTerminos) && (
+                <span className={styles.errorMsg}>
+                  {!otpVerificado ? "Verificá el código para continuar." : "Aceptá los términos y condiciones para continuar."}
+                </span>
+              )}
+
               <div className={styles.botonesFinal}>
-                <button type="submit" className={styles.cta} disabled={!isFormValid}>
-                  Enviar y Verificar la Identidad
+                <button
+                  type="button"
+                  className={styles.cta}
+                  onClick={handleConfirmarTerminos}
+                  disabled={guardando}
+                >
+                  {guardando ? "Confirmando..." : "Confirmar y continuar"}
                 </button>
-                <button type="button" className={styles.pasoAnterior} onClick={onVolver}>
+                <button type="button" className={styles.pasoAnterior} onClick={() => setPaso("direccion")}>
                   Paso Anterior
                 </button>
               </div>
-            </form>
+            </div>
+          )}
+
+          {paso === "pago" && (
+            <div className={styles.estado}>
+              <div className={styles.tituloWrap}>
+                <p className={styles.titulo}>¡Ya casi estás!</p>
+              </div>
+              <div className={styles.ed}>
+                {`Solo falta el pago inicial para procesar el envío de tu ${planData.modelo}. La verificación de tu identidad es el último paso, después de pagar.`}
+              </div>
+              <div className={styles.resumenPago}>
+                <div className={styles.filaResumen}>
+                  <span>Enganche requerido:</span>
+                  <b>${planData.enganche.toLocaleString()}</b>
+                </div>
+                <div className={styles.filaResumen}>
+                  <span>Costo de envío:</span>
+                  <b className={planData.envioGratis !== false ? styles.gratis : undefined}>
+                    {planData.envioGratis !== false ? "¡Gratis!" : `$${(planData.costoEnvio || 0).toLocaleString()}`}
+                  </b>
+                </div>
+                <div className={styles.dividerResumen} />
+                <div className={`${styles.filaResumen} ${styles.filaTotal}`}>
+                  <span>Total Inicial a pagar:</span>
+                  <b>${(planData.enganche + (planData.envioGratis !== false ? 0 : (planData.costoEnvio || 0))).toLocaleString()}</b>
+                </div>
+              </div>
+              {pagoError && <span className={styles.errorMsg}>{pagoError}</span>}
+              <button className={styles.cta} onClick={handleIniciarPago} disabled={iniciandoPago || !solicitudId} style={{ marginTop: 16 }}>
+                {iniciandoPago ? "Preparando pago..." : "Pagar enganche →"}
+              </button>
+            </div>
           )}
         </div>
       </div>

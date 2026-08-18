@@ -49,6 +49,7 @@ interface DireccionInput {
 interface SadminProps {
   solicitudes: Solicitud[];
   onUpdateStatus: (id: string, nuevoEstatus: Solicitud['estatus']) => Promise<void>;
+  onCancelarSolicitud: (id: string) => Promise<void>;
   onSaveImei: (id: string, imei: string) => Promise<void>;
   onSaveDireccion: (id: string, direccion: DireccionInput) => Promise<void>;
   onVolver: () => void;
@@ -66,6 +67,7 @@ interface SadminProps {
 export const SadminPortal: React.FC<SadminProps> = ({
   solicitudes,
   onUpdateStatus,
+  onCancelarSolicitud,
   onSaveImei,
   onSaveDireccion,
   onVolver,
@@ -342,6 +344,7 @@ export const SadminPortal: React.FC<SadminProps> = ({
           <Admin
             solicitudes={solicitudes}
             onUpdateStatus={onUpdateStatus}
+            onCancelarSolicitud={onCancelarSolicitud}
             onSaveImei={onSaveImei}
             onSaveDireccion={onSaveDireccion}
             onVolver={onVolverTienda}

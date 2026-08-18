@@ -38,6 +38,7 @@ interface DireccionInput {
 interface AdminProps {
   solicitudes: Solicitud[];
   onUpdateStatus: (id: string, nuevoEstatus: EstatusSolicitud) => Promise<void>;
+  onCancelarSolicitud: (id: string) => Promise<void>;
   onSaveImei: (id: string, imei: string) => Promise<void>;
   onSaveDireccion: (id: string, direccion: DireccionInput) => Promise<void>;
   onVolver: () => void;
@@ -45,7 +46,7 @@ interface AdminProps {
   segundosParaRefresh: number;
 }
 
-export const Admin: React.FC<AdminProps> = ({ solicitudes, onUpdateStatus, onSaveImei, onSaveDireccion, onVolver, onRefrescar, segundosParaRefresh }) => {
+export const Admin: React.FC<AdminProps> = ({ solicitudes, onUpdateStatus, onCancelarSolicitud, onSaveImei, onSaveDireccion, onVolver, onRefrescar, segundosParaRefresh }) => {
   // `solicitudSeleccionada` decide qué vista se muestra: en null se ve el listado
   // completo, y al elegir una fila se pasa a la vista de detalle (pantalla entera, ya
   // no una columna angosta al lado de la lista).
@@ -209,16 +210,18 @@ export const Admin: React.FC<AdminProps> = ({ solicitudes, onUpdateStatus, onSav
   const getAccionPendiente = (s: Solicitud): { mensaje: string; link: string } | null => {
     const origin = window.location.origin;
     if (s.estatus === 'Iniciada') {
-      return { mensaje: 'Falta que el cliente valide su INE y selfie', link: `${origin}/documentos?solicitud=${s.id}` };
+      return { mensaje: 'Falta que el cliente complete sus datos, dirección o el segundo código', link: `${origin}/documentos?solicitud=${s.id}` };
     }
-    if (s.estatus === 'Pendiente') {
-      return { mensaje: 'La verificación no se completó automática — el cliente puede volver a intentar', link: `${origin}/documentos?solicitud=${s.id}` };
-    }
-    if (s.estatus === 'Aprobado' && !s.pagoConfirmado) {
+    if (s.estatus === 'Lista para pago') {
       return { mensaje: 'Falta que el cliente pague el enganche', link: `${origin}/documentos?solicitud=${s.id}` };
     }
-    if (s.pagoConfirmado && !s.calle) {
-      return { mensaje: 'Pago confirmado — falta que el cliente complete su dirección de envío', link: `${origin}/domicilio?solicitud=${s.id}&modelo=${encodeURIComponent(s.modelo)}` };
+    if (s.estatus === 'Verificando identidad') {
+      return { mensaje: 'Pago confirmado — falta que el cliente complete la verificación de identidad en vivo', link: `${origin}/verificacion?solicitud=${s.id}&modelo=${encodeURIComponent(s.modelo)}` };
+    }
+    if (s.estatus === 'Pendiente') {
+      // Sin link: acá ya no hay nada que el cliente pueda hacer — se agotaron los 3
+      // intentos de la verificación en vivo, queda en manos del admin (Aprobar/Rechazar).
+      return { mensaje: 'La verificación de identidad no pasó automática tras varios intentos — revisala y aprobá o rechazá manualmente', link: '' };
     }
     return null;
   };
@@ -226,9 +229,12 @@ export const Admin: React.FC<AdminProps> = ({ solicitudes, onUpdateStatus, onSav
   const getStatusClass = (estatus: Solicitud['estatus']) => {
     switch (estatus) {
       case 'Iniciada': return styles.statusIniciada;
+      case 'Lista para pago': return styles.statusIniciada;
+      case 'Verificando identidad': return styles.statusPending;
       case 'Pendiente': return styles.statusPending;
       case 'Aprobado': return styles.statusApproved;
       case 'Rechazado': return styles.statusRejected;
+      case 'Cancelada': return styles.statusRejected;
       case 'Pendiente de envío': return styles.statusShipping;
       case 'Preparando paquete': return styles.statusPacking;
       case 'Enviado': return styles.statusShipped;
@@ -257,6 +263,24 @@ export const Admin: React.FC<AdminProps> = ({ solicitudes, onUpdateStatus, onSav
       }
     } catch (error: any) {
       setErrorEstatus(error.message || 'No se pudo actualizar el estatus.');
+    } finally {
+      setAvanzandoEstatus(false);
+    }
+  };
+
+  const handleCancelar = async (id: string) => {
+    if (!window.confirm('¿Cancelar esta solicitud? Si ya pagó el enganche, se reembolsa y se cancela la suscripción semanal en Stripe.')) {
+      return;
+    }
+    setErrorEstatus('');
+    setAvanzandoEstatus(true);
+    try {
+      await onCancelarSolicitud(id);
+      if (solicitudSeleccionada && solicitudSeleccionada.id === id) {
+        setSolicitudSeleccionada(prev => prev ? { ...prev, estatus: 'Cancelada' as EstatusSolicitud } : null);
+      }
+    } catch (error: any) {
+      setErrorEstatus(error.message || 'No se pudo cancelar la solicitud.');
     } finally {
       setAvanzandoEstatus(false);
     }
@@ -528,6 +552,16 @@ export const Admin: React.FC<AdminProps> = ({ solicitudes, onUpdateStatus, onSav
                       {avanzandoEstatus ? 'Guardando...' : 'Marcar como Enviado →'}
                     </button>
                   )}
+                  {!['Enviado', 'Entregado', 'Cancelada'].includes(solicitudSeleccionada.estatus) && (
+                    <button
+                      className={styles.btnReject}
+                      style={{ width: 'auto', padding: '8px 16px', fontSize: '13px' }}
+                      onClick={() => handleCancelar(solicitudSeleccionada.id)}
+                      disabled={avanzandoEstatus}
+                    >
+                      Cancelar solicitud
+                    </button>
+                  )}
                   <span className={`${styles.status} ${getStatusClass(solicitudSeleccionada.estatus)}`}>
                     {solicitudSeleccionada.estatus}
                   </span>
@@ -542,12 +576,12 @@ export const Admin: React.FC<AdminProps> = ({ solicitudes, onUpdateStatus, onSav
               {(() => {
                 const accion = getAccionPendiente(solicitudSeleccionada);
                 if (!accion) return null;
-                const esDomicilio = accion.link.includes('/domicilio');
+                const faltaDireccion = !solicitudSeleccionada.calle;
                 return (
                   <div className={styles.alertBanner} style={{ marginBottom: '16px' }}>
                     <FiAlertTriangle style={{ verticalAlign: '-2px', marginRight: '6px' }} />
                     {accion.mensaje}
-                    {esDomicilio && !mostrarFormDireccion && (
+                    {faltaDireccion && !mostrarFormDireccion && (
                       <button
                         type="button"
                         onClick={() => setMostrarFormDireccion(true)}
@@ -556,17 +590,19 @@ export const Admin: React.FC<AdminProps> = ({ solicitudes, onUpdateStatus, onSav
                         Cargarla manualmente
                       </button>
                     )}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        navigator.clipboard.writeText(accion.link);
-                        setLinkCopiadoOk(true);
-                        setTimeout(() => setLinkCopiadoOk(false), 2500);
-                      }}
-                      style={{ marginLeft: '10px', background: 'none', border: 'none', color: '#2B6BE4', fontWeight: 700, cursor: 'pointer', textDecoration: 'underline', fontSize: 'inherit', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
-                    >
-                      {linkCopiadoOk ? (<><FiCheck /> ¡Copiado!</>) : (<><FiLink /> Copiar link para continuar</>)}
-                    </button>
+                    {accion.link && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          navigator.clipboard.writeText(accion.link);
+                          setLinkCopiadoOk(true);
+                          setTimeout(() => setLinkCopiadoOk(false), 2500);
+                        }}
+                        style={{ marginLeft: '10px', background: 'none', border: 'none', color: '#2B6BE4', fontWeight: 700, cursor: 'pointer', textDecoration: 'underline', fontSize: 'inherit', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                      >
+                        {linkCopiadoOk ? (<><FiCheck /> ¡Copiado!</>) : (<><FiLink /> Copiar link para continuar</>)}
+                      </button>
+                    )}
                   </div>
                 );
               })()}
