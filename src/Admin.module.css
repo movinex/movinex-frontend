@@ -324,6 +324,7 @@
   flex-direction: column;
   overflow-y: auto;
   flex: 1;
+  min-height: 0;
   padding-right: 4px;
 }
 
@@ -473,6 +474,7 @@
 /* TAB: DOCUMENTS */
 .documentBody {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
 }
 
