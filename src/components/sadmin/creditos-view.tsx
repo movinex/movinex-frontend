@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react';
-import { ArrowLeft, Check, Link as LinkIcon, AlertTriangle, RefreshCw } from 'lucide-react';
+import { ArrowLeft, Check, X, Link as LinkIcon, AlertTriangle, RefreshCw } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa';
 import { toast } from 'sonner';
 import { Card, CardContent } from '@/components/ui/card';
@@ -418,7 +418,24 @@ function DetalleCredito({ solicitud, onVolver, onUpdateStatus, onCancelarSolicit
             )}
           </div>
 
-          {solicitud.verificamexComments && (
+          {solicitud.verificamexErrores && solicitud.verificamexErrores.length > 0 ? (
+            <div className="space-y-1.5 rounded-lg border bg-muted/30 p-3 text-sm">
+              <p className="font-medium text-foreground">Detalle de la verificación</p>
+              {solicitud.verificamexErrores.map((err, i) => (
+                <div key={i} className="flex items-start gap-2 text-muted-foreground">
+                  {err.Result ? (
+                    <Check className="mt-0.5 size-4 shrink-0 text-[color:var(--status-good)]" />
+                  ) : (
+                    <X className="mt-0.5 size-4 shrink-0 text-[color:var(--status-critical)]" />
+                  )}
+                  <span>
+                    <span className="font-medium text-foreground">{err.Name || err.Category}: </span>
+                    {err.Output || err.Message}
+                  </span>
+                </div>
+              ))}
+            </div>
+          ) : solicitud.verificamexComments && (
             <div className="rounded-lg border bg-muted/30 p-3 text-sm text-muted-foreground">
               <span className="font-medium text-foreground">Detalle de Verificamex: </span>
               {solicitud.verificamexComments}

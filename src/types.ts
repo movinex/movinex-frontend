@@ -72,6 +72,7 @@ export interface Solicitud {
   verificamexIntentos?: number;
   verificamexResult?: number | null;
   verificamexComments?: string | null;
+  verificamexErrores?: Array<{ Name?: string; Category?: string; Result?: boolean; Output?: string; Message?: string }> | null;
   costoEnvio?: number;
 }
 

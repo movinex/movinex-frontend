@@ -131,6 +131,7 @@ function App() {
           verificamexIntentos: s.verificamex_intentos,
           verificamexResult: s.verificamex_result,
           verificamexComments: s.verificamex_comments,
+          verificamexErrores: s.verificamex_errores,
           costoEnvio: s.costo_envio != null ? Number(s.costo_envio) : undefined
         }));
         setSolicitudes(solicitudesAdaptadas);
