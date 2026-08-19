@@ -24,7 +24,7 @@ interface CobranzaViewProps {
 }
 
 export function CobranzaView({ solicitudes, onProcesarRecordatorios, onGenerarLinkTarjeta }: CobranzaViewProps) {
-  const [vista, setVista] = useState<Vista>('atrasados');
+  const [vista, setVista] = useState<Vista>('todos');
   const [q, setQ] = useState('');
   const [enviando, setEnviando] = useState(false);
   const [generandoLinkId, setGenerandoLinkId] = useState<string | null>(null);
