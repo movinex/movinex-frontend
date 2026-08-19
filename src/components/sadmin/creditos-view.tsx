@@ -399,6 +399,16 @@ function DetalleCredito({ solicitud, onVolver, onUpdateStatus, onCancelarSolicit
             {solicitud.verificamexStatus && (
               <Campo label="Verificación Verificamex" valor={`${solicitud.verificamexStatus}${solicitud.verificamexIntentos ? ` (intento ${solicitud.verificamexIntentos} de 3)` : ''}`} />
             )}
+            {typeof solicitud.verificamexResult === 'number' && (
+              <Campo
+                label="Puntaje de verificación"
+                valor={
+                  <span className={solicitud.verificamexResult >= 70 ? 'font-semibold text-[color:var(--status-good)]' : 'font-semibold text-[color:var(--status-warning)]'}>
+                    {solicitud.verificamexResult}/100
+                  </span>
+                }
+              />
+            )}
             {solicitud.trackingNumber && <Campo label="Número de rastreo" valor={solicitud.trackingNumber} />}
             {solicitud.labelUrl && (
               <Campo label="Guía de envío" valor={<a href={solicitud.labelUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Ver guía</a>} />
@@ -407,6 +417,13 @@ function DetalleCredito({ solicitud, onVolver, onUpdateStatus, onCancelarSolicit
               <Campo label="Comprobante" valor={<a href={solicitud.reciboUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Ver recibo de Stripe</a>} />
             )}
           </div>
+
+          {solicitud.verificamexComments && (
+            <div className="rounded-lg border bg-muted/30 p-3 text-sm text-muted-foreground">
+              <span className="font-medium text-foreground">Detalle de Verificamex: </span>
+              {solicitud.verificamexComments}
+            </div>
+          )}
 
           {solicitud.calle && !mostrarFormDireccion && (
             <Campo
@@ -417,7 +434,7 @@ function DetalleCredito({ solicitud, onVolver, onUpdateStatus, onCancelarSolicit
 
           {mostrarFormDireccion && (
             <div className="grid grid-cols-2 gap-3 rounded-lg border bg-muted/30 p-4">
-              <Input className="col-span-2" placeholder="Calle" value={direccionForm.calle} onChange={(e) => setDireccionForm((f) => ({ ...f, calle: e.target.value }))} />
+              <Input className="col-span-2" placeholder="Calle (sin número ni referencias, máx. 45)" maxLength={45} value={direccionForm.calle} onChange={(e) => setDireccionForm((f) => ({ ...f, calle: e.target.value.slice(0, 45) }))} />
               <Input placeholder="No. exterior" value={direccionForm.numeroExterior} onChange={(e) => setDireccionForm((f) => ({ ...f, numeroExterior: e.target.value }))} />
               <Input placeholder="No. interior (opcional)" value={direccionForm.numeroInterior} onChange={(e) => setDireccionForm((f) => ({ ...f, numeroInterior: e.target.value }))} />
               <Input placeholder="Colonia" value={direccionForm.colonia} onChange={(e) => setDireccionForm((f) => ({ ...f, colonia: e.target.value }))} />

@@ -686,7 +686,7 @@ export const Admin: React.FC<AdminProps> = ({ solicitudes, onUpdateStatus, onCan
 
                   {mostrarFormDireccion && (
                     <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '16px', margin: '10px 0', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                      <input placeholder="Calle" value={direccionForm.calle} onChange={e => setDireccionForm(f => ({ ...f, calle: e.target.value }))} style={{ gridColumn: 'span 2', padding: '8px', borderRadius: '8px', border: '1px solid #CBD5E1' }} />
+                      <input placeholder="Calle (sin número ni referencias, máx. 45)" value={direccionForm.calle} onChange={e => setDireccionForm(f => ({ ...f, calle: e.target.value.slice(0, 45) }))} maxLength={45} style={{ gridColumn: 'span 2', padding: '8px', borderRadius: '8px', border: '1px solid #CBD5E1' }} />
                       <input placeholder="No. exterior" value={direccionForm.numeroExterior} onChange={e => setDireccionForm(f => ({ ...f, numeroExterior: e.target.value }))} style={{ padding: '8px', borderRadius: '8px', border: '1px solid #CBD5E1' }} />
                       <input placeholder="No. interior (opcional)" value={direccionForm.numeroInterior} onChange={e => setDireccionForm(f => ({ ...f, numeroInterior: e.target.value }))} style={{ padding: '8px', borderRadius: '8px', border: '1px solid #CBD5E1' }} />
                       <input placeholder="Colonia" value={direccionForm.colonia} onChange={e => setDireccionForm(f => ({ ...f, colonia: e.target.value }))} style={{ padding: '8px', borderRadius: '8px', border: '1px solid #CBD5E1' }} />

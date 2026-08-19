@@ -596,7 +596,16 @@ export const Documentos: React.FC<DocumentosProps> = ({ planData, onVolver, resu
 
               <div className={styles.campo}>
                 <label htmlFor="calle">Calle <span className={styles.requerido}>*</span></label>
-                <input id="calle" type="text" placeholder="Av. Insurgentes Sur" value={calle} onChange={(e) => setCalle(e.target.value)} required />
+                <input
+                  id="calle"
+                  type="text"
+                  placeholder="Av. Insurgentes Sur"
+                  value={calle}
+                  onChange={(e) => setCalle(e.target.value.slice(0, 45))}
+                  maxLength={45}
+                  required
+                />
+                <span className={styles.hint}>Solo el nombre de la calle, sin número ni referencias (eso va abajo) · {calle.length}/45</span>
               </div>
               <div style={{ display: "flex", gap: "16px" }}>
                 <div className={styles.campo} style={{ flex: 1 }}>

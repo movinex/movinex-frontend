@@ -61,6 +61,8 @@ export interface Solicitud {
   stripeClabeReferencia?: string;
   verificamexStatus?: 'OPEN' | 'VERIFYING' | 'FINISHED' | 'FAILED';
   verificamexIntentos?: number;
+  verificamexResult?: number | null;
+  verificamexComments?: string | null;
   costoEnvio?: number;
 }
 

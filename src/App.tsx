@@ -127,6 +127,8 @@ function App() {
           stripeClabeReferencia: s.stripe_clabe_referencia,
           verificamexStatus: s.verificamex_status,
           verificamexIntentos: s.verificamex_intentos,
+          verificamexResult: s.verificamex_result,
+          verificamexComments: s.verificamex_comments,
           costoEnvio: s.costo_envio != null ? Number(s.costo_envio) : undefined
         }));
         setSolicitudes(solicitudesAdaptadas);
