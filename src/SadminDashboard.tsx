@@ -26,6 +26,7 @@ interface SadminDashboardProps {
   onSaveImei: (id: string, imei: string) => Promise<void>;
   onSaveDireccion: (id: string, direccion: DireccionInput) => Promise<void>;
   onProcesarRecordatorios: () => Promise<void>;
+  onGenerarLinkTarjeta: (id: string) => Promise<string>;
   phones: Phone[];
   onReloadPhones: () => void;
   adminUser: any;
@@ -36,7 +37,7 @@ interface SadminDashboardProps {
 }
 
 export function SadminDashboard({
-  solicitudes, onUpdateStatus, onCancelarSolicitud, onSaveImei, onSaveDireccion, onProcesarRecordatorios,
+  solicitudes, onUpdateStatus, onCancelarSolicitud, onSaveImei, onSaveDireccion, onProcesarRecordatorios, onGenerarLinkTarjeta,
   phones, onReloadPhones, adminUser, adminToken, onLogout, onRefrescar, segundosParaRefresh
 }: SadminDashboardProps) {
   return (
@@ -63,7 +64,7 @@ export function SadminDashboard({
             />
             <Route
               path="cobranza"
-              element={<CobranzaView solicitudes={solicitudes} onProcesarRecordatorios={onProcesarRecordatorios} />}
+              element={<CobranzaView solicitudes={solicitudes} onProcesarRecordatorios={onProcesarRecordatorios} onGenerarLinkTarjeta={onGenerarLinkTarjeta} />}
             />
             <Route
               path="catalogo"

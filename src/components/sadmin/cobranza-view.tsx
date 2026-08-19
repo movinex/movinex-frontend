@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Phone, Send } from 'lucide-react';
+import { Phone, Send, Link as LinkIcon, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -20,12 +20,15 @@ const TABS: { value: Vista; label: string }[] = [
 interface CobranzaViewProps {
   solicitudes: Solicitud[];
   onProcesarRecordatorios: () => Promise<void>;
+  onGenerarLinkTarjeta: (id: string) => Promise<string>;
 }
 
-export function CobranzaView({ solicitudes, onProcesarRecordatorios }: CobranzaViewProps) {
+export function CobranzaView({ solicitudes, onProcesarRecordatorios, onGenerarLinkTarjeta }: CobranzaViewProps) {
   const [vista, setVista] = useState<Vista>('atrasados');
   const [q, setQ] = useState('');
   const [enviando, setEnviando] = useState(false);
+  const [generandoLinkId, setGenerandoLinkId] = useState<string | null>(null);
+  const [linkCopiadoId, setLinkCopiadoId] = useState<string | null>(null);
 
   const activas = useMemo(() => solicitudes.filter(enCobranza), [solicitudes]);
 
@@ -63,6 +66,21 @@ export function CobranzaView({ solicitudes, onProcesarRecordatorios }: CobranzaV
       toast.error(error.message || 'No se pudieron enviar los recordatorios.');
     } finally {
       setEnviando(false);
+    }
+  };
+
+  const handleGenerarLink = async (id: string) => {
+    setGenerandoLinkId(id);
+    try {
+      const url = await onGenerarLinkTarjeta(id);
+      await navigator.clipboard.writeText(url);
+      setLinkCopiadoId(id);
+      toast.success('Link de pago copiado — mandalo por WhatsApp.');
+      setTimeout(() => setLinkCopiadoId((actual) => (actual === id ? null : actual)), 2500);
+    } catch (error: any) {
+      toast.error(error.message || 'No se pudo generar el link de pago.');
+    } finally {
+      setGenerandoLinkId(null);
     }
   };
 
@@ -119,6 +137,11 @@ export function CobranzaView({ solicitudes, onProcesarRecordatorios }: CobranzaV
                     <div className="flex items-center gap-3">
                       {s.cobroSemanalFallido && <Badge variant="critical">Pago falló</Badge>}
                       {!s.cobroSemanalFallido && atrasado && <Badge variant="critical">Atrasado</Badge>}
+                      {s.metodoPagoEnganche === 'card' && (
+                        <Button size="sm" variant="outline" disabled={generandoLinkId === s.id} onClick={() => handleGenerarLink(s.id)}>
+                          {linkCopiadoId === s.id ? (<><Check className="size-3.5" /> Copiado</>) : (<><LinkIcon className="size-3.5" /> {generandoLinkId === s.id ? 'Generando…' : 'Link de pago'}</>)}
+                        </Button>
+                      )}
                       <a href={`https://wa.me/52${s.celular}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
                         <Phone className="size-3.5" />
                         {s.celular}

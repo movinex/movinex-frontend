@@ -308,6 +308,20 @@ function App() {
     }
   };
 
+  const handleGenerarLinkTarjeta = async (id: string): Promise<string> => {
+    const response = await fetch(`${backendUrl}/api/admin/solicitudes/${id}/link-pago-tarjeta`, {
+      method: 'POST',
+      headers: adminToken ? { Authorization: `Bearer ${adminToken}` } : undefined
+    });
+
+    const res = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      throw new Error(res.error || 'No se pudo generar el link de pago.');
+    }
+
+    return res.url;
+  };
+
   return (
     <>
     <BotonWhatsapp />
@@ -329,6 +343,7 @@ function App() {
                 onSaveImei={handleSaveImei}
                 onSaveDireccion={handleSaveDireccion}
                 onProcesarRecordatorios={handleProcesarCobranza}
+                onGenerarLinkTarjeta={handleGenerarLinkTarjeta}
                 phones={phones}
                 onReloadPhones={() => setReloadTrigger(prev => prev + 1)}
                 adminUser={adminUser}
