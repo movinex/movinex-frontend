@@ -44,6 +44,7 @@ export function CobranzaView({ solicitudes, onProcesarRecordatorios }: CobranzaV
     }
 
     return [...base].sort((a, b) => {
+      if (a.cobroSemanalFallido !== b.cobroSemanalFallido) return a.cobroSemanalFallido ? -1 : 1;
       const fa = a.proximoCobroSemanal ? new Date(a.proximoCobroSemanal).getTime() : Infinity;
       const fb = b.proximoCobroSemanal ? new Date(b.proximoCobroSemanal).getTime() : Infinity;
       return fa - fb;
@@ -116,14 +117,15 @@ export function CobranzaView({ solicitudes, onProcesarRecordatorios }: CobranzaV
                       </p>
                     </div>
                     <div className="flex items-center gap-3">
-                      {atrasado && <Badge variant="critical">Atrasado</Badge>}
+                      {s.cobroSemanalFallido && <Badge variant="critical">Pago falló</Badge>}
+                      {!s.cobroSemanalFallido && atrasado && <Badge variant="critical">Atrasado</Badge>}
                       <a href={`https://wa.me/52${s.celular}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
                         <Phone className="size-3.5" />
                         {s.celular}
                       </a>
                       <div className="w-24 text-right">
                         <p className="font-semibold tabular-nums">{formatoMoneda(Number(s.pagoSemanal))}</p>
-                        {s.proximoCobroSemanal && <p className="text-xs text-muted-foreground">{formatoFecha(s.proximoCobroSemanal)}</p>}
+                        {!s.cobroSemanalFallido && s.proximoCobroSemanal && <p className="text-xs text-muted-foreground">{formatoFecha(s.proximoCobroSemanal)}</p>}
                       </div>
                     </div>
                   </div>

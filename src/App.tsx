@@ -123,6 +123,7 @@ function App() {
           metodoPagoEnganche: s.metodo_pago_enganche,
           semanasPagadas: s.semanas_pagadas,
           proximoCobroSemanal: s.proximo_cobro_semanal,
+          cobroSemanalFallido: s.cobro_semanal_fallido,
           stripeSubscriptionId: s.stripe_subscription_id,
           stripeClabeReferencia: s.stripe_clabe_referencia,
           verificamexStatus: s.verificamex_status,

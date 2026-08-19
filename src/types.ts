@@ -57,6 +57,7 @@ export interface Solicitud {
   metodoPagoEnganche?: 'card' | 'oxxo' | 'customer_balance';
   semanasPagadas?: number;
   proximoCobroSemanal?: string;
+  cobroSemanalFallido?: boolean;
   stripeSubscriptionId?: string;
   stripeClabeReferencia?: string;
   verificamexStatus?: 'OPEN' | 'VERIFYING' | 'FINISHED' | 'FAILED';
