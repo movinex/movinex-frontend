@@ -133,6 +133,13 @@ export function CobranzaView({ solicitudes, onProcesarRecordatorios, onGenerarLi
                         {s.modelo} · Semana {(s.semanasPagadas ?? 0) + 1} de {s.semanas}
                         {metodo && ` · ${metodo}`}
                       </p>
+                      {(s.imei || s.curp) && (
+                        <p className="text-xs text-muted-foreground">
+                          {s.imei && <>IMEI: <span className="tabular-nums">{s.imei}</span></>}
+                          {s.imei && s.curp && ' · '}
+                          {s.curp && <>CURP: {s.curp}</>}
+                        </p>
+                      )}
                     </div>
                     <div className="flex items-center gap-3">
                       {s.cobroSemanalFallido && <Badge variant="critical">Pago falló</Badge>}

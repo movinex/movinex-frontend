@@ -29,23 +29,6 @@ export const Cotizador: React.FC<CotizadorProps> = ({ phone, onSiguiente, onVolv
   const marca = (phone.marca || '').trim();
   const nombreCompleto = [marca, modelo].filter(Boolean).join(' ');
 
-  // Misma ficha técnica que el modal de Vista Rápida de la tienda. Acá es contenido
-  // indexable de la página del producto, no algo escondido detrás de un click.
-  const specs: [string, string][] = ([
-    ['Pantalla', phone.specsPantalla],
-    ['Procesador', phone.specsProcesador],
-    ['RAM / Almacenamiento', phone.specsRamAlmacenamiento],
-    ['MicroSD', phone.specsMicrosd],
-    ['Cámara Trasera', phone.specsCamaraTrasera],
-    ['Cámara Frontal', phone.specsCamaraFrontal],
-    ['Batería', phone.specsBateria],
-    ['Sistema', phone.specsSistema],
-    ['Seguridad', phone.specsSeguridad],
-    ['Resistencia', phone.specsResistencia],
-    ['Conectividad', phone.specsConectividad],
-    ['Dimensiones / Peso', phone.specsDimensionesPeso]
-  ] as [string, string | undefined][]).filter((entrada): entrada is [string, string] => Boolean(entrada[1]));
-
   // Opciones de plazos basadas en el teléfono seleccionado
   const plazos: PlazoOption[] = [
     { semanas: 52, montoSemanal: phone.montoSemanal52, totalPagar: phone.totalPagar52 },
@@ -163,20 +146,6 @@ export const Cotizador: React.FC<CotizadorProps> = ({ phone, onSiguiente, onVolv
             sin checar buró de crédito, sin tarjeta y sin aval. Solo necesitas tu INE y tu
             WhatsApp, la aprobación es en minutos y te lo enviamos a tu domicilio en todo México.
           </p>
-
-          {specs.length > 0 && (
-            <div className={styles.specs}>
-              <h2 className={styles.specsTitulo}>Ficha técnica del {nombreCompleto}</h2>
-              <div className={styles.specsTabla}>
-                {specs.map(([etiqueta, valor]) => (
-                  <div key={etiqueta} className={styles.specFila}>
-                    <span className={styles.specEtiqueta}>{etiqueta}</span>
-                    <span className={styles.specValor}>{valor}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
 
           <div className={styles.botones}>
             <button className={styles.cta} onClick={handleSiguiente}>
