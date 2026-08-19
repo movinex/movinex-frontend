@@ -10,7 +10,7 @@ interface VerificacionProps {
   onFinalizado: () => void;
 }
 
-type Estado = "cargando" | "redirigiendo" | "esperando" | "reintentar" | "revision" | "error" | "sinRespuesta";
+type Estado = "cargando" | "redirigiendo" | "esperando" | "revision" | "error" | "sinRespuesta";
 
 // 4s en vez de 3: la pantalla igual se siente instantánea, y baja un 25% las llamadas
 // contra nuestro propio rate limit — que pesa porque las operadoras mexicanas hacen NAT
@@ -25,12 +25,13 @@ const MAX_ESPERA_MS = 2 * 60 * 1000;
 // hosteada por ellos — nuestra app ya no captura fotos de INE/selfie). Este componente
 // cumple tres roles según cuándo se monta: (1) al llegar recién de Stripe, crea la sesión
 // y redirige a la página de Verificamex; (2) cuando Verificamex redirige de vuelta acá,
-// hace polling hasta tener una respuesta definitiva; (3) si falló, ofrece reintentar
-// (hasta 3 intentos en total) o muestra el mensaje de revisión manual en el 3ro.
+// hace polling hasta tener una respuesta definitiva; (3) si falló (cualquier motivo:
+// puntaje bajo, CURP no coincidente, etc.), pasa directo al mensaje de revisión manual
+// — decisión explícita del usuario 2026-08-19: nada de reintentos automáticos, el
+// primer rechazo ya lo maneja el equipo a mano en /sadmin.
 export const Verificacion: React.FC<VerificacionProps> = ({ solicitudId, modelo, imagen, onFinalizado }) => {
   const backendUrl = import.meta.env.VITE_BACKEND_URL || 'https://movinex-backend-production.up.railway.app';
   const [estado, setEstado] = useState<Estado>("cargando");
-  const [intentos, setIntentos] = useState(0);
   const [errorMsg, setErrorMsg] = useState("");
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   // Cada sesión de Verificamex es una llamada facturada, así que crear dos por descuido
@@ -85,8 +86,6 @@ export const Verificacion: React.FC<VerificacionProps> = ({ solicitudId, modelo,
       return;
     }
 
-    setIntentos(estadoVerif.verificamexIntentos || 0);
-
     // Stripe puede devolver al cliente acá antes de que llegue su propio webhook (el
     // redirect del navegador y el webhook son dos caminos independientes, y el webhook
     // suele tardar un poco más). Sin esperar a que el pago quede confirmado,
@@ -111,8 +110,10 @@ export const Verificacion: React.FC<VerificacionProps> = ({ solicitudId, modelo,
     }
 
     if (estadoVerif.verificamexStatus === "FAILED") {
+      // Sin reintento automático: el backend ya escala a revisión manual desde el
+      // primer rechazo (ver procesarResultadoVerificamex en index.ts).
       detenerPolling();
-      setEstado((estadoVerif.verificamexIntentos || 0) >= 3 ? "revision" : "reintentar");
+      setEstado("revision");
       return;
     }
 
@@ -204,20 +205,6 @@ export const Verificacion: React.FC<VerificacionProps> = ({ solicitudId, modelo,
             </div>
           )}
 
-          {estado === "reintentar" && (
-            <div className={styles.estado}>
-              <FiInfo className={styles.infoIcon} />
-              <div className={styles.et}>No pudimos verificarte esta vez</div>
-              <div className={styles.ed}>
-                Puede ser algo tan simple como la luz o la conexión — probemos de nuevo
-                ({intentos} de 3 intentos usados).
-              </div>
-              <button className={styles.cta} onClick={reintentar} style={{ marginTop: 16 }}>
-                Intentar de nuevo
-              </button>
-            </div>
-          )}
-
           {estado === "sinRespuesta" && (
             <div className={styles.estado}>
               <FiInfo className={styles.infoIcon} />
@@ -237,9 +224,8 @@ export const Verificacion: React.FC<VerificacionProps> = ({ solicitudId, modelo,
               <FiInfo className={styles.infoIcon} />
               <div className={styles.et}>Tu solicitud está en revisión</div>
               <div className={styles.ed}>
-                No pudimos verificar tu identidad de forma automática después de varios
-                intentos. Nuestro equipo la está revisando a mano y te contactaremos por
-                WhatsApp en cuanto esté lista.
+                No pudimos verificar tu identidad de forma automática. Nuestro equipo la
+                está revisando a mano y te contactaremos por WhatsApp en cuanto esté lista.
               </div>
               <div className={styles.cerrarWrap}>
                 <p className={styles.cerrarHint}>Puedes cerrar esta ventana</p>
