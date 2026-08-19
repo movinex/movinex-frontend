@@ -7,7 +7,9 @@ import { ResumenView } from './components/sadmin/resumen-view';
 import { CreditosView } from './components/sadmin/creditos-view';
 import { CobranzaView } from './components/sadmin/cobranza-view';
 import { CatalogoView } from './components/sadmin/catalogo-view';
-import type { Phone, Solicitud } from './types';
+import { ConfiguracionView } from './components/sadmin/configuracion-view';
+import { CotizadorView } from './components/sadmin/cotizador-view';
+import type { Configuracion, Phone, Solicitud } from './types';
 
 interface DireccionInput {
   calle: string;
@@ -27,6 +29,8 @@ interface SadminDashboardProps {
   onSaveDireccion: (id: string, direccion: DireccionInput) => Promise<void>;
   onProcesarRecordatorios: () => Promise<void>;
   onGenerarLinkTarjeta: (id: string) => Promise<string>;
+  configuracion: Configuracion | null;
+  onGuardarConfiguracion: (config: Configuracion) => Promise<void>;
   phones: Phone[];
   onReloadPhones: () => void;
   adminUser: any;
@@ -34,11 +38,13 @@ interface SadminDashboardProps {
   onLogout: () => void;
   onRefrescar: () => void;
   segundosParaRefresh: number;
+  backendUrl: string;
 }
 
 export function SadminDashboard({
   solicitudes, onUpdateStatus, onCancelarSolicitud, onSaveImei, onSaveDireccion, onProcesarRecordatorios, onGenerarLinkTarjeta,
-  phones, onReloadPhones, adminUser, adminToken, onLogout, onRefrescar, segundosParaRefresh
+  configuracion, onGuardarConfiguracion,
+  phones, onReloadPhones, adminUser, adminToken, onLogout, onRefrescar, segundosParaRefresh, backendUrl
 }: SadminDashboardProps) {
   return (
     <div className="sadmin-root flex h-screen overflow-hidden">
@@ -68,7 +74,15 @@ export function SadminDashboard({
             />
             <Route
               path="catalogo"
-              element={<CatalogoView phones={phones} onReloadPhones={onReloadPhones} adminToken={adminToken} />}
+              element={<CatalogoView phones={phones} onReloadPhones={onReloadPhones} adminToken={adminToken} configuracion={configuracion} />}
+            />
+            <Route
+              path="configuracion"
+              element={<ConfiguracionView configuracion={configuracion} onGuardar={onGuardarConfiguracion} />}
+            />
+            <Route
+              path="cotizador"
+              element={<CotizadorView configuracion={configuracion} backendUrl={backendUrl} adminToken={adminToken} />}
             />
           </Routes>
         </main>

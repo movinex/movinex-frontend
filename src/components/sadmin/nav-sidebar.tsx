@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router';
-import { LayoutDashboard, CreditCard, Wallet, Smartphone, LogOut } from 'lucide-react';
+import { LayoutDashboard, CreditCard, Wallet, Calculator, Settings, Smartphone, LogOut } from 'lucide-react';
 import { cn } from '@/lib/utils';
 // Sidebar clara (igual que el mockup), así que va el logo a color — el `_blanco` que
 // usa el resto del panel no se vería sobre fondo claro.
@@ -9,7 +9,9 @@ const ENLACES = [
   { to: '/sadmin', label: 'Resumen', icon: LayoutDashboard, end: true },
   { to: '/sadmin/creditos', label: 'Créditos', icon: CreditCard, end: false },
   { to: '/sadmin/cobranza', label: 'Cobranza', icon: Wallet, end: false },
-  { to: '/sadmin/catalogo', label: 'Catálogo', icon: Smartphone, end: false }
+  { to: '/sadmin/cotizador', label: 'Cotizador', icon: Calculator, end: false },
+  { to: '/sadmin/catalogo', label: 'Catálogo', icon: Smartphone, end: false },
+  { to: '/sadmin/configuracion', label: 'Configuración', icon: Settings, end: false }
 ];
 
 interface NavSidebarProps {

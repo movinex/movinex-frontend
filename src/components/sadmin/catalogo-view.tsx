@@ -5,28 +5,26 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Input, Label, Select, Textarea } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import type { Phone } from '@/types';
+import type { Configuracion, Phone } from '@/types';
+import { calcularPagoSemanal } from '@/lib/amortizacion';
 
-// Fórmula oficial de Movinex (228% anual, cargo de Seguridad y Bloqueo $17 + IVA
-// semanal, amortización francesa). El 15% de enganche es solo la sugerencia por
-// default — el admin puede pisarlo con un mínimo distinto por celular.
-function calcularEngancheSugerido(precioBase: number): number {
+// El 15% de enganche (o lo que diga `configuracion`) es solo la sugerencia por default
+// al elegir un precio — el admin puede pisarlo con un mínimo distinto por celular, por
+// eso el pago semanal se calcula directo del monto financiado, no volviendo a derivar
+// el enganche desde el precio. La fórmula en sí (228% anual, cargo de Seguridad y
+// Bloqueo, amortización francesa) vive en un solo lugar: lib/amortizacion.ts — la
+// misma que usa el Cotizador interno.
+function calcularEngancheSugerido(precioBase: number, parametros: Configuracion): number {
   if (!precioBase || precioBase <= 0) return 0;
-  return Math.round(precioBase * 0.15 * 100) / 100;
+  return Math.round(precioBase * parametros.enganchePct);
 }
 
-function calcularSemanales(precioBase: number, enganche: number): { montoSemanal26: number; montoSemanal52: number } {
+function calcularSemanales(precioBase: number, enganche: number, parametros: Configuracion): { montoSemanal26: number; montoSemanal52: number } {
   if (!precioBase || precioBase <= 0) return { montoSemanal26: 0, montoSemanal52: 0 };
   const financiado = Math.max(precioBase - (enganche || 0), 0);
-  const tasaSemanalConIva = (2.28 / 52) * 1.16;
-  const cargoServicioConIva = 17 * 1.16;
-  const pagoBase = (semanas: number) => {
-    const factor = Math.pow(1 + tasaSemanalConIva, semanas);
-    return (financiado * tasaSemanalConIva * factor) / (factor - 1);
-  };
   return {
-    montoSemanal26: Math.round(pagoBase(26) + cargoServicioConIva),
-    montoSemanal52: Math.round(pagoBase(52) + cargoServicioConIva)
+    montoSemanal26: calcularPagoSemanal(financiado, 26, parametros),
+    montoSemanal52: calcularPagoSemanal(financiado, 52, parametros)
   };
 }
 
@@ -56,14 +54,24 @@ const FORM_VACIO = {
   precioDescuento: '', imagen: '', envioGratis: true, costoEnvio: 0, ...SPECS_VACIO
 };
 
+const CONFIG_DEFAULT: Configuracion = {
+  enganchePct: 0.15,
+  tasaAnualPct: 2.28,
+  ivaPct: 0.16,
+  cargoSemanalNombre: 'Servicio de Seguridad y Bloqueo',
+  cargoSemanalMonto: 17
+};
+
 interface CatalogoViewProps {
   phones: Phone[];
   onReloadPhones: () => void;
   adminToken: string | null;
+  configuracion: Configuracion | null;
 }
 
-export function CatalogoView({ phones, onReloadPhones, adminToken }: CatalogoViewProps) {
+export function CatalogoView({ phones, onReloadPhones, adminToken, configuracion }: CatalogoViewProps) {
   const backendUrl = import.meta.env.VITE_BACKEND_URL || 'https://movinex-backend-production.up.railway.app';
+  const parametros = configuracion || CONFIG_DEFAULT;
 
   const [form, setForm] = useState(FORM_VACIO);
   const [editando, setEditando] = useState<Phone | null>(null);
@@ -97,13 +105,13 @@ export function CatalogoView({ phones, onReloadPhones, adminToken }: CatalogoVie
   };
 
   const handlePrecioBaseChange = (valor: number) => {
-    const engancheSugerido = calcularEngancheSugerido(valor);
-    const semanales = calcularSemanales(valor, engancheSugerido);
+    const engancheSugerido = calcularEngancheSugerido(valor, parametros);
+    const semanales = calcularSemanales(valor, engancheSugerido, parametros);
     setForm((f) => ({ ...f, precioBase: valor, enganche: engancheSugerido, ...semanales }));
   };
 
   const handleEngancheChange = (valor: number) => {
-    const semanales = calcularSemanales(form.precioBase, valor);
+    const semanales = calcularSemanales(form.precioBase, valor, parametros);
     setForm((f) => ({ ...f, enganche: valor, ...semanales }));
   };
 
@@ -297,8 +305,8 @@ export function CatalogoView({ phones, onReloadPhones, adminToken }: CatalogoVie
                   <TableCell><img src={phone.imagen} alt={phone.modelo} className="size-10 rounded border object-contain" /></TableCell>
                   <TableCell className="font-medium">{phone.modelo}</TableCell>
                   <TableCell>{phone.marca}</TableCell>
-                  <TableCell className="text-right tabular-nums">${phone.precioBase.toLocaleString()}</TableCell>
-                  <TableCell className="text-right tabular-nums">${phone.enganche.toLocaleString()}</TableCell>
+                  <TableCell className="text-right tabular-nums">${phone.precioBase.toLocaleString('es-MX')}</TableCell>
+                  <TableCell className="text-right tabular-nums">${phone.enganche.toLocaleString('es-MX')}</TableCell>
                   <TableCell className="tabular-nums">${phone.montoSemanal26}/${phone.montoSemanal52}</TableCell>
                   <TableCell>{phone.envioGratis !== false ? 'Gratis' : `$${phone.costoEnvio || 0}`}</TableCell>
                   <TableCell>

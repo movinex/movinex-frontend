@@ -8,7 +8,7 @@ import { Verificacion } from './Verificacion';
 import { Admin } from './Admin';
 import { SadminLogin } from './Sadmin';
 import { BotonWhatsapp } from './BotonWhatsapp';
-import type { Phone, Solicitud } from './types';
+import type { Configuracion, Phone, Solicitud } from './types';
 import landingStyles from './Landing.module.css';
 import finalizadoStyles from './Documentos.module.css';
 import logoBlancoFinalizado from './assets/movinex_blanco.webp';
@@ -51,6 +51,7 @@ function App() {
   const [phones, setPhones] = useState<Phone[]>([]);
   const [phonesLoaded, setPhonesLoaded] = useState(false);
   const [reloadTrigger, setReloadTrigger] = useState(0);
+  const [configuracion, setConfiguracion] = useState<Configuracion | null>(null);
 
   // Sesión de Super Admin (JWT emitido por /api/admin/login), compartida entre /dashboard
   // y /sadmin — persistida en localStorage para que un refresh de página no desloguee.
@@ -198,6 +199,50 @@ function App() {
       });
   }, [reloadTrigger, backendUrl]);
 
+  // Cargar los parámetros de negocio (enganche/tasa/IVA/cargo semanal) al entrar a
+  // /sadmin — mismo gate que solicitudes, requiere sesión de admin.
+  useEffect(() => {
+    const esRutaAdmin = location.pathname === '/dashboard' || location.pathname.startsWith('/sadmin');
+    if (!(esRutaAdmin && adminToken)) return;
+
+    fetch(`${backendUrl}/api/admin/configuracion`, {
+      headers: { Authorization: `Bearer ${adminToken}` }
+    })
+      .then(res => res.json())
+      .then(data => setConfiguracion({
+        enganchePct: Number(data.enganche_pct),
+        tasaAnualPct: Number(data.tasa_anual_pct),
+        ivaPct: Number(data.iva_pct),
+        cargoSemanalNombre: data.cargo_semanal_nombre,
+        cargoSemanalMonto: Number(data.cargo_semanal_monto)
+      }))
+      .catch(err => console.error('Error al cargar la configuración:', err));
+  }, [location.pathname, adminToken, backendUrl]);
+
+  const handleGuardarConfiguracion = async (config: Configuracion) => {
+    const response = await fetch(`${backendUrl}/api/admin/configuracion`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(adminToken ? { Authorization: `Bearer ${adminToken}` } : {})
+      },
+      body: JSON.stringify({
+        enganche_pct: config.enganchePct,
+        tasa_anual_pct: config.tasaAnualPct,
+        iva_pct: config.ivaPct,
+        cargo_semanal_nombre: config.cargoSemanalNombre,
+        cargo_semanal_monto: config.cargoSemanalMonto
+      })
+    });
+
+    const res = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      throw new Error(res.error || 'No se pudo guardar la configuración.');
+    }
+
+    setConfiguracion(config);
+  };
+
   const handleCotizacionFinalizada = (data: PlanSeleccionado) => {
     setPlanSelected(data);
     navigate('/documentos');
@@ -344,6 +389,8 @@ function App() {
                 onSaveDireccion={handleSaveDireccion}
                 onProcesarRecordatorios={handleProcesarCobranza}
                 onGenerarLinkTarjeta={handleGenerarLinkTarjeta}
+                configuracion={configuracion}
+                onGuardarConfiguracion={handleGuardarConfiguracion}
                 phones={phones}
                 onReloadPhones={() => setReloadTrigger(prev => prev + 1)}
                 adminUser={adminUser}
@@ -351,6 +398,7 @@ function App() {
                 onLogout={handleLogout}
                 onRefrescar={cargarSolicitudes}
                 segundosParaRefresh={segundosParaRefresh}
+                backendUrl={backendUrl}
               />
             </Suspense>
           )

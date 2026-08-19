@@ -1,3 +1,11 @@
+export interface Configuracion {
+  enganchePct: number;
+  tasaAnualPct: number;
+  ivaPct: number;
+  cargoSemanalNombre: string;
+  cargoSemanalMonto: number;
+}
+
 export interface Phone {
   id: string;
   modelo: string;
