@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Suspense, lazy } from 'react';
 import { Routes, Route, Navigate, useNavigate, useLocation, useParams, useSearchParams } from 'react-router';
 import { Landing } from './Landing';
 import { Cotizador } from './Cotizador';
@@ -6,13 +6,18 @@ import { Documentos } from './Documentos';
 import type { ResumenSolicitud } from './Documentos';
 import { Verificacion } from './Verificacion';
 import { Admin } from './Admin';
-import { SadminPortal, SadminLogin } from './Sadmin';
+import { SadminLogin } from './Sadmin';
 import { BotonWhatsapp } from './BotonWhatsapp';
 import type { Phone, Solicitud } from './types';
 import landingStyles from './Landing.module.css';
 import finalizadoStyles from './Documentos.module.css';
 import logoBlancoFinalizado from './assets/movinex_blanco.webp';
 import { FiCheckCircle } from 'react-icons/fi';
+
+// Carga diferida a propósito: SadminDashboard importa Tailwind (sadmin.css), y si se
+// cargara de entrada ese CSS le llegaría a toda la app. Con lazy(), el chunk (y su CSS)
+// solo se pide cuando alguien ya logueado entra a /sadmin.
+const SadminDashboard = lazy(() => import('./SadminDashboard').then(m => ({ default: m.SadminDashboard })));
 
 // Mismo loader de página completa que la carga inicial de la app (Landing.tsx) — sin
 // texto, solo el spinner, para que todos los estados de carga se vean iguales.
@@ -115,7 +120,14 @@ function App() {
           labelUrl: s.label_url,
           imei: s.imei,
           reciboUrl: s.stripe_receipt_url,
-          metodoPagoEnganche: s.metodo_pago_enganche
+          metodoPagoEnganche: s.metodo_pago_enganche,
+          semanasPagadas: s.semanas_pagadas,
+          proximoCobroSemanal: s.proximo_cobro_semanal,
+          stripeSubscriptionId: s.stripe_subscription_id,
+          stripeClabeReferencia: s.stripe_clabe_referencia,
+          verificamexStatus: s.verificamex_status,
+          verificamexIntentos: s.verificamex_intentos,
+          costoEnvio: s.costo_envio != null ? Number(s.costo_envio) : undefined
         }));
         setSolicitudes(solicitudesAdaptadas);
       })
@@ -127,7 +139,7 @@ function App() {
   // Cargar solicitudes del backend al abrir /dashboard o /sadmin, y refrescar solas
   // cada 1 minuto mientras quede abierto (requiere sesión de admin).
   useEffect(() => {
-    const esRutaAdmin = location.pathname === '/dashboard' || location.pathname === '/sadmin';
+    const esRutaAdmin = location.pathname === '/dashboard' || location.pathname.startsWith('/sadmin');
     if (!(esRutaAdmin && adminToken)) return;
 
     cargarSolicitudes();
@@ -281,30 +293,49 @@ function App() {
     );
   };
 
+  const handleProcesarCobranza = async () => {
+    const response = await fetch(`${backendUrl}/api/admin/cobros-semanales/procesar`, {
+      method: 'POST',
+      headers: adminToken ? { Authorization: `Bearer ${adminToken}` } : undefined
+    });
+
+    if (!response.ok) {
+      const res = await response.json().catch(() => ({}));
+      throw new Error(res.error || 'No se pudieron enviar los recordatorios.');
+    }
+  };
+
   return (
     <>
     <BotonWhatsapp />
     <Routes>
       <Route
-        path="/sadmin"
+        path="/sadmin/*"
         element={
-          <SadminPortal
-            solicitudes={solicitudes}
-            onUpdateStatus={handleUpdateStatus}
-            onCancelarSolicitud={handleCancelarSolicitud}
-            onSaveImei={handleSaveImei}
-            onSaveDireccion={handleSaveDireccion}
-            onVolver={() => navigate('/')}
-            onVolverTienda={() => navigate('/tienda')}
-            phones={phones}
-            onReloadPhones={() => setReloadTrigger(prev => prev + 1)}
-            adminUser={adminUser}
-            adminToken={adminToken}
-            onLoginSuccess={handleLoginSuccess}
-            onLogout={handleLogout}
-            onRefrescar={cargarSolicitudes}
-            segundosParaRefresh={segundosParaRefresh}
-          />
+          !adminUser || !adminToken ? (
+            <SadminLogin
+              onLoginSuccess={handleLoginSuccess}
+              onVolver={() => navigate('/')}
+            />
+          ) : (
+            <Suspense fallback={<PageLoader />}>
+              <SadminDashboard
+                solicitudes={solicitudes}
+                onUpdateStatus={handleUpdateStatus}
+                onCancelarSolicitud={handleCancelarSolicitud}
+                onSaveImei={handleSaveImei}
+                onSaveDireccion={handleSaveDireccion}
+                onProcesarRecordatorios={handleProcesarCobranza}
+                phones={phones}
+                onReloadPhones={() => setReloadTrigger(prev => prev + 1)}
+                adminUser={adminUser}
+                adminToken={adminToken}
+                onLogout={handleLogout}
+                onRefrescar={cargarSolicitudes}
+                segundosParaRefresh={segundosParaRefresh}
+              />
+            </Suspense>
+          )
         }
       />
 

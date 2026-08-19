@@ -55,5 +55,12 @@ export interface Solicitud {
   imei?: string;
   reciboUrl?: string;
   metodoPagoEnganche?: 'card' | 'oxxo' | 'customer_balance';
+  semanasPagadas?: number;
+  proximoCobroSemanal?: string;
+  stripeSubscriptionId?: string;
+  stripeClabeReferencia?: string;
+  verificamexStatus?: 'OPEN' | 'VERIFYING' | 'FINISHED' | 'FAILED';
+  verificamexIntentos?: number;
+  costoEnvio?: number;
 }
 
