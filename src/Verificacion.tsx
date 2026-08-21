@@ -126,14 +126,6 @@ export const Verificacion: React.FC<VerificacionProps> = ({ solicitudId, modelo,
     setEstado("esperando");
   };
 
-  // Arranca una sesión nueva a pedido del cliente (botón de reintentar). Libera la
-  // guarda porque acá el pedido es explícito, no el doble efecto del montaje.
-  const reintentar = () => {
-    creandoSesionRef.current = false;
-    inicioEsperaRef.current = Date.now();
-    iniciarSesion();
-  };
-
   // Consulta el estado de la verificación. El backend, además de leer lo guardado, le
   // pregunta a Verificamex si la sesión sigue en curso — así el resultado llega aunque
   // el webhook nunca aparezca (ver GET /:id/estado-verificacion en el backend).
@@ -210,12 +202,13 @@ export const Verificacion: React.FC<VerificacionProps> = ({ solicitudId, modelo,
               <FiInfo className={styles.infoIcon} />
               <div className={styles.et}>Seguimos esperando tu verificación</div>
               <div className={styles.ed}>
-                Si ya la completaste, puede tardar un momento más en confirmarse. Si no
-                llegaste a terminarla, podés empezarla de nuevo desde acá.
+                Puede tardar unos minutos más en confirmarse — no hace falta que hagas nada.
+                Si pasa más tiempo, nuestro equipo la revisa a mano y te contactamos por
+                WhatsApp.
               </div>
-              <button className={styles.cta} onClick={reintentar} style={{ marginTop: 16 }}>
-                Empezar de nuevo
-              </button>
+              <div className={styles.cerrarWrap}>
+                <p className={styles.cerrarHint}>Puedes cerrar esta ventana</p>
+              </div>
             </div>
           )}
 
