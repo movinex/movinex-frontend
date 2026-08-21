@@ -51,6 +51,9 @@ export interface Solicitud {
   ineReverso?: string; // Base64
   selfie?: string; // Base64
   pagoConfirmado?: boolean;
+  /** Cuándo se acreditó el enganche. Null en las solicitudes anteriores al 2026-08-18,
+   *  que es cuando se agregó la columna — para esas, la fecha real está en `pagos`. */
+  pagoConfirmadoAt?: string | null;
   calle?: string;
   numeroExterior?: string;
   numeroInterior?: string;

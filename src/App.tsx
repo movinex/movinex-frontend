@@ -9,6 +9,7 @@ import { Admin } from './Admin';
 import { SadminLogin } from './Sadmin';
 import { BotonWhatsapp } from './BotonWhatsapp';
 import type { Configuracion, Phone, Solicitud } from './types';
+import type { Pago } from './lib/cartera';
 import landingStyles from './Landing.module.css';
 import finalizadoStyles from './Documentos.module.css';
 import logoBlancoFinalizado from './assets/movinex_blanco.webp';
@@ -48,6 +49,14 @@ function App() {
 
   // Estado de solicitudes compartido y persistido
   const [solicitudes, setSolicitudes] = useState<Solicitud[]>([]);
+  // Historial de cobros (tabla `pagos`). Alimenta el motor de cartera de /sadmin:
+  // antigüedad de saldos, días de mora, flujo mensual y estado de cuenta.
+  const [pagos, setPagos] = useState<Pago[]>([]);
+  // Se prenden en true una sola vez, la primera vez que cada fetch resuelve (éxito o
+  // error) — sirven para mostrar un skeleton en /sadmin mientras tanto en vez de
+  // tarjetas con montos en $0, y no vuelven a false en los refrescos de 60 s.
+  const [solicitudesCargadas, setSolicitudesCargadas] = useState(false);
+  const [pagosCargados, setPagosCargados] = useState(false);
   const [phones, setPhones] = useState<Phone[]>([]);
   const [phonesLoaded, setPhonesLoaded] = useState(false);
   const [reloadTrigger, setReloadTrigger] = useState(0);
@@ -132,13 +141,39 @@ function App() {
           verificamexResult: s.verificamex_result,
           verificamexComments: s.verificamex_comments,
           verificamexErrores: s.verificamex_errores,
-          costoEnvio: s.costo_envio != null ? Number(s.costo_envio) : undefined
+          costoEnvio: s.costo_envio != null ? Number(s.costo_envio) : undefined,
+          pagoConfirmadoAt: s.pago_confirmado_at
         }));
         setSolicitudes(solicitudesAdaptadas);
       })
       .catch(err => console.error('Error al cargar solicitudes del backend:', err))
-      .finally(() => setSegundosParaRefresh(60));
+      .finally(() => {
+        setSegundosParaRefresh(60);
+        setSolicitudesCargadas(true);
+      });
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [adminToken, backendUrl]);
+
+  // El historial de pagos va por separado de las solicitudes: /api/admin/cartera no firma
+  // URLs del bucket de KYC (a diferencia de /api/solicitudes), así que es barato pedirlo.
+  const cargarPagos = useCallback(() => {
+    if (!adminToken) return;
+    fetch(`${backendUrl}/api/admin/cartera`, { headers: { Authorization: `Bearer ${adminToken}` } })
+      .then(res => (res.ok ? res.json() : Promise.reject(new Error(`HTTP ${res.status}`))))
+      .then(data => {
+        setPagos((data.pagos || []).map((p: any) => ({
+          id: p.id,
+          solicitudId: p.solicitud_id,
+          tipo: p.tipo,
+          numeroSemana: p.numero_semana,
+          monto: Number(p.monto),
+          fecha: p.fecha,
+          metodo: p.metodo,
+          estado: p.estado
+        })));
+      })
+      .catch(err => console.error('Error al cargar el historial de pagos:', err))
+      .finally(() => setPagosCargados(true));
   }, [adminToken, backendUrl]);
 
   // Cargar solicitudes del backend al abrir /dashboard o /sadmin, y refrescar solas
@@ -148,7 +183,11 @@ function App() {
     if (!(esRutaAdmin && adminToken)) return;
 
     cargarSolicitudes();
-    const interval = setInterval(cargarSolicitudes, 60000);
+    cargarPagos();
+    const interval = setInterval(() => {
+      cargarSolicitudes();
+      cargarPagos();
+    }, 60000);
     const countdown = setInterval(() => {
       setSegundosParaRefresh(prev => (prev <= 1 ? 60 : prev - 1));
     }, 1000);
@@ -156,7 +195,7 @@ function App() {
       clearInterval(interval);
       clearInterval(countdown);
     };
-  }, [location.pathname, adminToken, cargarSolicitudes]);
+  }, [location.pathname, adminToken, cargarSolicitudes, cargarPagos]);
 
   // Cargar lista de celulares para alimentar el CRUD
   useEffect(() => {
@@ -384,6 +423,8 @@ function App() {
             <Suspense fallback={<PageLoader />}>
               <SadminDashboard
                 solicitudes={solicitudes}
+                pagos={pagos}
+                cargandoDatos={!solicitudesCargadas || !pagosCargados}
                 onUpdateStatus={handleUpdateStatus}
                 onCancelarSolicitud={handleCancelarSolicitud}
                 onSaveImei={handleSaveImei}

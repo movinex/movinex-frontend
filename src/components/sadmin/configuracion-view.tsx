@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Save, TriangleAlert, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Input, Label } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Panel, SecH } from './bloques';
 import type { Configuracion } from '@/types';
 
 interface ConfiguracionViewProps {
@@ -54,61 +53,53 @@ export function ConfiguracionView({ configuracion, onGuardar }: ConfiguracionVie
   };
 
   if (!configuracion) {
-    return (
-      <div className="mx-auto max-w-2xl">
-        <p className="text-muted-foreground">Cargando configuración…</p>
-      </div>
-    );
+    return <div className="empty">Cargando configuración…</div>;
   }
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Configuración</h1>
-        <p className="text-muted-foreground">Parámetros de negocio del crédito.</p>
+    <div className="max-w-3xl">
+      <div className="banner w mb-4">
+        <div className="bi"><TriangleAlert strokeWidth={1.8} className="size-full" /></div>
+        <div>
+          <b>Estos valores no reprecian el catálogo existente.</b> Cambiarlos solo afecta a
+          los celulares que se agreguen o reguarden en el Catálogo a partir de ahora — los
+          ya cargados conservan su enganche y pago semanal actuales hasta que alguien los
+          reguarde a mano.
+        </div>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Parámetros del crédito</CardTitle>
-          <CardDescription className="flex items-start gap-2">
-            <TriangleAlert className="mt-0.5 size-4 shrink-0 text-amber-600" />
-            <span>
-              Cambiar estos valores solo afecta a los celulares que se agreguen o
-              reguarden en el Catálogo a partir de ahora — los ya cargados conservan su
-              enganche y pago semanal actuales hasta que alguien los reguarde a mano.
-            </span>
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-1.5">
-              <Label htmlFor="enganche">% Enganche</Label>
-              <Input id="enganche" type="number" step="0.1" value={enganchePct} onChange={(e) => setEnganchePct(e.target.value)} />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="tasa">Tasa anual ordinaria (%)</Label>
-              <Input id="tasa" type="number" step="0.1" value={tasaAnualPct} onChange={(e) => setTasaAnualPct(e.target.value)} />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="iva">IVA (%)</Label>
-              <Input id="iva" type="number" step="0.1" value={ivaPct} onChange={(e) => setIvaPct(e.target.value)} />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="cargoMonto">Cargo semanal (MXN, sin IVA)</Label>
-              <Input id="cargoMonto" type="number" step="0.01" value={cargoSemanalMonto} onChange={(e) => setCargoSemanalMonto(e.target.value)} />
-            </div>
-            <div className="space-y-1.5 sm:col-span-2">
-              <Label htmlFor="cargoNombre">Nombre del cargo semanal</Label>
-              <Input id="cargoNombre" value={cargoSemanalNombre} onChange={(e) => setCargoSemanalNombre(e.target.value)} />
-            </div>
+      <SecH titulo="Parámetros del crédito" />
+      <Panel className="p-4">
+        <div className="form-grid">
+          <div className="fld">
+            <label htmlFor="enganche">% Enganche</label>
+            <input id="enganche" type="number" step="0.1" value={enganchePct} onChange={(e) => setEnganchePct(e.target.value)} />
           </div>
+          <div className="fld">
+            <label htmlFor="tasa">Tasa anual ordinaria (%)</label>
+            <input id="tasa" type="number" step="0.1" value={tasaAnualPct} onChange={(e) => setTasaAnualPct(e.target.value)} />
+          </div>
+          <div className="fld">
+            <label htmlFor="iva">IVA (%)</label>
+            <input id="iva" type="number" step="0.1" value={ivaPct} onChange={(e) => setIvaPct(e.target.value)} />
+          </div>
+          <div className="fld">
+            <label htmlFor="cargoMonto">Cargo semanal <span className="hint">(MXN, sin IVA)</span></label>
+            <input id="cargoMonto" type="number" step="0.01" value={cargoSemanalMonto} onChange={(e) => setCargoSemanalMonto(e.target.value)} />
+          </div>
+          <div className="fld" style={{ gridColumn: '1 / -1' }}>
+            <label htmlFor="cargoNombre">Nombre del cargo semanal</label>
+            <input id="cargoNombre" value={cargoSemanalNombre} onChange={(e) => setCargoSemanalNombre(e.target.value)} />
+            <span className="hint">Es el texto que ve el cliente en su cuota semanal.</span>
+          </div>
+        </div>
+        <div className="mt-4 border-t pt-4">
           <Button onClick={handleGuardar} disabled={guardando}>
             {guardando ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
             Guardar configuración
           </Button>
-        </CardContent>
-      </Card>
+        </div>
+      </Panel>
     </div>
   );
 }

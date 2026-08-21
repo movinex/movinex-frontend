@@ -1,63 +1,70 @@
 import { NavLink } from 'react-router';
-import { LayoutDashboard, CreditCard, Wallet, Calculator, Settings, Smartphone, LogOut } from 'lucide-react';
+import { ChevronLeft, LogOut } from 'lucide-react';
 import { cn } from '@/lib/utils';
-// Sidebar clara (igual que el mockup), así que va el logo a color — el `_blanco` que
-// usa el resto del panel no se vería sobre fondo claro.
+import { GRUPOS } from './vistas';
+// Sidebar clara, así que va el logo a color — el `_blanco` que usa el resto del panel no
+// se vería sobre fondo claro.
 import logoColor from '../../assets/movinex_color.svg';
-
-const ENLACES = [
-  { to: '/sadmin', label: 'Resumen', icon: LayoutDashboard, end: true },
-  { to: '/sadmin/creditos', label: 'Créditos', icon: CreditCard, end: false },
-  { to: '/sadmin/cobranza', label: 'Cobranza', icon: Wallet, end: false },
-  { to: '/sadmin/cotizador', label: 'Cotizador', icon: Calculator, end: false },
-  { to: '/sadmin/catalogo', label: 'Catálogo', icon: Smartphone, end: false },
-  { to: '/sadmin/configuracion', label: 'Configuración', icon: Settings, end: false }
-];
 
 interface NavSidebarProps {
   adminNombre?: string;
+  colapsada: boolean;
+  onToggleColapsar: () => void;
   onLogout: () => void;
 }
 
-export function NavSidebar({ adminNombre, onLogout }: NavSidebarProps) {
+export function NavSidebar({ adminNombre, colapsada, onToggleColapsar, onLogout }: NavSidebarProps) {
   return (
-    <aside className="hidden w-60 shrink-0 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground md:flex">
-      <div className="flex h-16 items-center gap-2.5 border-b border-sidebar-border px-5">
-        <img src={logoColor} alt="Movinex" className="h-5 w-auto" />
-        <div className="min-w-0">
-          <p className="text-sm font-semibold leading-none">Super Admin</p>
-          <p className="mt-1 text-xs text-sidebar-foreground/60">Panel de control</p>
-        </div>
+    <aside
+      className="hidden shrink-0 flex-col border-r bg-[var(--sidebar)] md:flex"
+      style={{ width: 'var(--sb)', transition: 'width .18s ease' }}
+    >
+      <div className={cn('flex min-h-[66px] items-center gap-3 border-b px-4', colapsada && 'justify-center px-2')}>
+        <img src={logoColor} alt="Movinex" className="h-5 w-auto shrink-0" />
+        {!colapsada && (
+          <div className="min-w-0 overflow-hidden whitespace-nowrap">
+            <p className="text-[13.5px] font-semibold leading-tight tracking-[-.2px]">Super Admin</p>
+            <p className="text-[11px] text-muted-foreground">Panel de control</p>
+          </div>
+        )}
       </div>
-      <nav className="flex flex-1 flex-col gap-1 p-3">
-        {ENLACES.map(({ to, label, icon: Icon, end }) => (
-          <NavLink
-            key={to}
-            to={to}
-            end={end}
-            className={({ isActive }) =>
-              cn(
-                'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
-                isActive
-                  ? 'bg-sidebar-accent text-sidebar-accent-foreground'
-                  : 'text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground'
-              )
-            }
-          >
-            <Icon className="size-4" />
-            {label}
-          </NavLink>
+
+      <nav className="flex-1 overflow-y-auto px-2.5 pb-5 pt-3">
+        {GRUPOS.map(({ grupo, vistas }) => (
+          <div key={grupo}>
+            <div className="nav-group-label">{grupo}</div>
+            {vistas.map(({ ruta, exacta, titulo, icono: Icono }) => (
+              <NavLink
+                key={ruta}
+                to={ruta}
+                end={exacta}
+                title={titulo}
+                className={({ isActive }) => cn('nav-item', isActive && 'on')}
+              >
+                <Icono strokeWidth={1.6} />
+                <span className="nav-label">{titulo}</span>
+              </NavLink>
+            ))}
+          </div>
         ))}
       </nav>
-      <div className="border-t border-sidebar-border p-3">
-        {adminNombre && <p className="truncate px-3 pb-2 text-xs text-sidebar-foreground/60">{adminNombre}</p>}
+
+      <div className="border-t p-2.5">
+        {adminNombre && !colapsada && (
+          <p className="truncate px-2.5 pb-2 text-[11px] text-muted-foreground">{adminNombre}</p>
+        )}
+        <button type="button" onClick={onLogout} className="collapse-btn" title="Cerrar sesión">
+          <LogOut />
+          <span className="sb-foot-txt">Salir</span>
+        </button>
         <button
           type="button"
-          onClick={onLogout}
-          className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
+          onClick={onToggleColapsar}
+          className="collapse-btn"
+          title={colapsada ? 'Expandir menú' : 'Colapsar menú'}
         >
-          <LogOut className="size-4" />
-          Salir
+          <ChevronLeft className="chev" />
+          <span className="sb-foot-txt">Colapsar</span>
         </button>
       </div>
     </aside>

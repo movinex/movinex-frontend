@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
-import { Save, Copy, Trash2 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Input, Label, Select } from '@/components/ui/input';
+import { Save, Copy, Trash2, Info } from 'lucide-react';
+import { Table, TableBody, TableCell, TableFooter, TableHeader, TableRow, TableWrap } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
+import { Panel, SecH } from './bloques';
+import { cn } from '@/lib/utils';
 import { calcularCotizacion, primerPagoSugerido } from '@/lib/amortizacion';
 import { formatoMoneda, formatoPorcentaje, formatoFecha } from '@/lib/format';
 import type { Configuracion } from '@/types';
@@ -125,204 +125,219 @@ export function CotizadorView({ configuracion, backendUrl, adminToken }: Cotizad
     }
   };
 
+  const totalesTabla = resultado
+    ? resultado.tabla.reduce(
+        (acc, f) => ({
+          interes: acc.interes + f.interes + f.ivaInteres,
+          capital: acc.capital + f.capital,
+          cargo: acc.cargo + f.cargoServicio + f.ivaCargo,
+          pago: acc.pago + f.pagoTotal
+        }),
+        { interes: 0, capital: 0, cargo: 0, pago: 0 }
+      )
+    : null;
+
   return (
-    <div className="mx-auto max-w-6xl space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Cotizador</h1>
-        <p className="text-muted-foreground">
-          Calcula el plan de pagos semanal para un celular a crédito — mismas reglas que
-          Movinex usa al vender: {(parametros.enganchePct * 100).toFixed(0)}% de enganche,{' '}
-          {(parametros.tasaAnualPct * 100).toFixed(0)}% anual sobre saldos insolutos, IVA{' '}
-          {(parametros.ivaPct * 100).toFixed(0)}% y {parametros.cargoSemanalNombre} de $
-          {parametros.cargoSemanalMonto.toFixed(0)} + IVA por semana.
-        </p>
+    <>
+      <div className="banner i mb-4">
+        <div className="bi"><Info strokeWidth={1.8} className="size-full" /></div>
+        <div>
+          Mismas reglas que Movinex usa al vender: <b>{(parametros.enganchePct * 100).toFixed(0)}%</b> de
+          enganche, <b>{(parametros.tasaAnualPct * 100).toFixed(0)}%</b> anual sobre saldos insolutos,
+          IVA <b>{(parametros.ivaPct * 100).toFixed(0)}%</b> y {parametros.cargoSemanalNombre} de{' '}
+          <b>${parametros.cargoSemanalMonto.toFixed(0)}</b> + IVA por semana.
+        </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[380px_1fr]">
-        <Card>
-          <CardHeader>
-            <CardTitle>Datos del equipo</CardTitle>
-            <CardDescription>Captura marca, modelo y precio de contado.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-1.5">
-              <Label htmlFor="marca">Marca</Label>
-              <Select id="marca" value={marca} onChange={(e) => setMarca(e.target.value)}>
-                {MARCAS.map((m) => (
-                  <option key={m} value={m}>{m}</option>
-                ))}
-              </Select>
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="modelo">Modelo</Label>
-              <Input id="modelo" value={modelo} onChange={(e) => setModelo(e.target.value)} placeholder="Galaxy A07" />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="almacenamiento">Almacenamiento / color</Label>
-              <Input id="almacenamiento" value={almacenamientoColor} onChange={(e) => setAlmacenamientoColor(e.target.value)} placeholder="64 GB / Negro" />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="precio">Precio de contado (MXN)</Label>
-              <Input id="precio" type="number" min={1} step="0.01" value={precioContado} onChange={(e) => setPrecioContado(e.target.value)} />
-            </div>
-            <div className="space-y-1.5">
-              <Label>Plazo</Label>
-              <div className="grid grid-cols-2 gap-2">
-                {([26, 52] as const).map((p) => (
-                  <Button key={p} type="button" variant={plazoSemanas === p ? 'default' : 'outline'} onClick={() => setPlazoSemanas(p)}>
-                    {p} semanas
-                  </Button>
-                ))}
+      <div className="grid gap-4 lg:grid-cols-[360px_1fr]">
+        <div>
+          <SecH titulo="Datos del equipo" />
+          <Panel className="p-4">
+            <div className="grid gap-3">
+              <div className="fld">
+                <label htmlFor="marca">Marca</label>
+                <select id="marca" value={marca} onChange={(e) => setMarca(e.target.value)}>
+                  {MARCAS.map((m) => (
+                    <option key={m} value={m}>{m}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="fld">
+                <label htmlFor="modelo">Modelo</label>
+                <input id="modelo" value={modelo} onChange={(e) => setModelo(e.target.value)} placeholder="Galaxy A07" />
+              </div>
+              <div className="fld">
+                <label htmlFor="almacenamiento">Almacenamiento / color</label>
+                <input id="almacenamiento" value={almacenamientoColor} onChange={(e) => setAlmacenamientoColor(e.target.value)} placeholder="64 GB / Negro" />
+              </div>
+              <div className="fld">
+                <label htmlFor="precio">Precio de contado (MXN)</label>
+                <input id="precio" type="number" min={1} step="0.01" value={precioContado} onChange={(e) => setPrecioContado(e.target.value)} />
+              </div>
+              <div className="fld">
+                <label>Plazo</label>
+                <div className="seg self-start">
+                  {([26, 52] as const).map((p) => (
+                    <button key={p} type="button" className={cn(plazoSemanas === p && 'on')} onClick={() => setPlazoSemanas(p)}>
+                      {p} semanas
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
-            <div className="flex flex-col gap-2 pt-2">
-              <Button onClick={handleGuardar} disabled={guardando} variant="outline">
-                <Save className="size-4" />
-                Guardar cotización
-              </Button>
+            <div className="mt-4 flex flex-col gap-2 border-t pt-4">
               <Button onClick={handleCopiarMensaje}>
                 <Copy className="size-4" />
                 Copiar mensaje para el cliente
               </Button>
+              <Button onClick={handleGuardar} disabled={guardando} variant="outline">
+                <Save className="size-4" />
+                Guardar cotización
+              </Button>
             </div>
-          </CardContent>
-        </Card>
+          </Panel>
+        </div>
 
-        <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Resultados de la cotización</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {resultado ? (
-                <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-                  <Resultado label="Enganche" valor={formatoMoneda(resultado.enganche)} />
-                  <Resultado label="Monto a financiar" valor={formatoMoneda(resultado.montoFinanciar)} />
-                  <Resultado label="Pago total semanal" valor={formatoMoneda(resultado.pagoTotalSemanal)} destacado />
-                  <Resultado label="Último pago (ajuste)" valor={formatoMoneda(resultado.ultimoPago)} />
-                  <Resultado label="Suma de pagos" valor={formatoMoneda(resultado.sumaPagos)} />
-                  <Resultado label="Total desembolsado" valor={formatoMoneda(resultado.totalDesembolsado)} />
-                  <Resultado label="Costo del financiamiento" valor={formatoMoneda(resultado.costoFinanciamiento)} />
-                  <Resultado
-                    label="Costo anual efectivo (ref.)"
-                    valor={resultado.costoAnualEfectivoRef !== null ? formatoPorcentaje(resultado.costoAnualEfectivoRef) : 'n/d'}
-                  />
-                </div>
-              ) : (
-                <p className="text-sm text-muted-foreground">Captura un precio de contado mayor a 0.</p>
-              )}
-              <p className="mt-4 text-xs text-muted-foreground">
-                El costo anual efectivo es una referencia interna para comparar escenarios — no es el CAT publicado (ese debe calcularse con la metodología Banxico).
-              </p>
-            </CardContent>
-          </Card>
+        <div>
+          <SecH titulo="Resultado" nota={resultado ? `${plazoSemanas} pagos semanales` : undefined} />
+          {resultado ? (
+            <div className="calcbox">
+              <div className="calcrow"><span>Precio de contado</span><b>{formatoMoneda(precio)}</b></div>
+              <div className="calcrow"><span>Enganche</span><b>{formatoMoneda(resultado.enganche)}</b></div>
+              <div className="calcrow"><span>Monto a financiar</span><b>{formatoMoneda(resultado.montoFinanciar)}</b></div>
+              <div className="calcrow big">
+                <span>{plazoSemanas} pagos semanales de</span>
+                <b>{formatoMoneda(resultado.pagoTotalSemanal)}</b>
+              </div>
+              <div className="calcrow mut"><span>Último pago (ajuste)</span><b>{formatoMoneda(resultado.ultimoPago)}</b></div>
+              <div className="calcrow"><span>Suma de pagos</span><b>{formatoMoneda(resultado.sumaPagos)}</b></div>
+              <div className="calcrow"><span>Total desembolsado</span><b>{formatoMoneda(resultado.totalDesembolsado)}</b></div>
+              <div className="calcrow"><span>Costo del financiamiento</span><b>{formatoMoneda(resultado.costoFinanciamiento)}</b></div>
+              <div className="calcrow mut">
+                <span>Costo anual efectivo (referencia interna, no es el CAT de Banxico)</span>
+                <b>{resultado.costoAnualEfectivoRef !== null ? formatoPorcentaje(resultado.costoAnualEfectivoRef) : 'n/d'}</b>
+              </div>
+            </div>
+          ) : (
+            <Panel><div className="empty">Captura un precio de contado mayor a 0.</div></Panel>
+          )}
 
           {comparativo && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Comparativo de plazos</CardTitle>
-                <CardDescription>Mismo equipo, 26 vs. 52 semanas.</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Plazo</TableHead>
-                      <TableHead className="text-right">Pago semanal</TableHead>
-                      <TableHead className="text-right">Enganche</TableHead>
-                      <TableHead className="text-right">Total desembolsado</TableHead>
-                      <TableHead className="text-right">Costo del crédito</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {comparativo.map((r, i) => (
-                      <TableRow key={r.tabla.length} className={plazoSemanas === (i === 0 ? 26 : 52) ? 'bg-accent/40' : ''}>
-                        <TableCell className="font-medium">{i === 0 ? 26 : 52} semanas</TableCell>
-                        <TableCell className="text-right tabular-nums">{formatoMoneda(r.pagoTotalSemanal)}</TableCell>
-                        <TableCell className="text-right tabular-nums">{formatoMoneda(r.enganche)}</TableCell>
-                        <TableCell className="text-right tabular-nums">{formatoMoneda(r.totalDesembolsado)}</TableCell>
-                        <TableCell className="text-right tabular-nums">{formatoMoneda(r.costoFinanciamiento)}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
+            <>
+              <SecH titulo="Comparativo de plazos" nota="Mismo equipo, 26 vs. 52 semanas" />
+              <div className="opt-grid">
+                {comparativo.map((r, i) => {
+                  const plazo = i === 0 ? 26 : 52;
+                  return (
+                    <button
+                      key={plazo}
+                      type="button"
+                      className={cn('opt', plazoSemanas === plazo && 'on')}
+                      onClick={() => setPlazoSemanas(plazo as 26 | 52)}
+                    >
+                      <h4><span className="rd" />{plazo} semanas</h4>
+                      <div className="big">{formatoMoneda(r.pagoTotalSemanal)}<span className="text-[13px] font-medium text-muted-foreground">/sem</span></div>
+                      <div className="sm">
+                        Enganche {formatoMoneda(r.enganche)} · Total desembolsado {formatoMoneda(r.totalDesembolsado)}<br />
+                        Costo del crédito {formatoMoneda(r.costoFinanciamiento)}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </>
           )}
         </div>
       </div>
 
-      {resultado && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Tabla de amortización — {plazoSemanas} semanas</CardTitle>
-          </CardHeader>
-          <CardContent className="max-h-[420px] overflow-y-auto">
+      {resultado && totalesTabla && (
+        <>
+          <SecH titulo={`Tabla de amortización — ${plazoSemanas} semanas`} />
+          <TableWrap maxHeight="420px">
             <Table>
-              <TableHeader className="sticky top-0 bg-card">
+              <TableHeader>
                 <TableRow>
-                  <TableHead>Periodo</TableHead>
-                  <TableHead>Fecha</TableHead>
-                  <TableHead className="text-right">Saldo inicial</TableHead>
-                  <TableHead className="text-right">Interés + IVA</TableHead>
-                  <TableHead className="text-right">Capital</TableHead>
-                  <TableHead className="text-right">{parametros.cargoSemanalNombre} + IVA</TableHead>
-                  <TableHead className="text-right">Pago total</TableHead>
-                  <TableHead className="text-right">Saldo final</TableHead>
+                  <th className="num">#</th>
+                  <th>Fecha</th>
+                  <th className="num">Saldo inicial</th>
+                  <th className="num">Interés + IVA</th>
+                  <th className="num">Capital</th>
+                  <th className="num">{parametros.cargoSemanalNombre} + IVA</th>
+                  <th className="num">Pago total</th>
+                  <th className="num">Saldo final</th>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {resultado.tabla.map((f) => (
                   <TableRow key={f.numeroPeriodo}>
-                    <TableCell className="font-medium">{f.numeroPeriodo}</TableCell>
-                    <TableCell>{formatoFecha(f.fecha)}</TableCell>
-                    <TableCell className="text-right tabular-nums">{formatoMoneda(f.saldoInicial)}</TableCell>
-                    <TableCell className="text-right tabular-nums">{formatoMoneda(f.interes + f.ivaInteres)}</TableCell>
-                    <TableCell className="text-right tabular-nums">{formatoMoneda(f.capital)}</TableCell>
-                    <TableCell className="text-right tabular-nums">{formatoMoneda(f.cargoServicio + f.ivaCargo)}</TableCell>
-                    <TableCell className="text-right font-semibold tabular-nums">{formatoMoneda(f.pagoTotal)}</TableCell>
-                    <TableCell className="text-right tabular-nums">{formatoMoneda(f.saldoFinal)}</TableCell>
+                    <TableCell className="num font-semibold">{f.numeroPeriodo}</TableCell>
+                    <TableCell className="mono">{formatoFecha(f.fecha)}</TableCell>
+                    <TableCell className="num">{formatoMoneda(f.saldoInicial)}</TableCell>
+                    <TableCell className="num">{formatoMoneda(f.interes + f.ivaInteres)}</TableCell>
+                    <TableCell className="num">{formatoMoneda(f.capital)}</TableCell>
+                    <TableCell className="num">{formatoMoneda(f.cargoServicio + f.ivaCargo)}</TableCell>
+                    <TableCell className="num font-semibold">{formatoMoneda(f.pagoTotal)}</TableCell>
+                    <TableCell className="num">{formatoMoneda(f.saldoFinal)}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+              <TableFooter>
+                <TableRow>
+                  <TableCell colSpan={3}>{resultado.tabla.length} pagos</TableCell>
+                  <TableCell className="num">{formatoMoneda(totalesTabla.interes)}</TableCell>
+                  <TableCell className="num">{formatoMoneda(totalesTabla.capital)}</TableCell>
+                  <TableCell className="num">{formatoMoneda(totalesTabla.cargo)}</TableCell>
+                  <TableCell className="num">{formatoMoneda(totalesTabla.pago)}</TableCell>
+                  <TableCell />
+                </TableRow>
+              </TableFooter>
+            </Table>
+          </TableWrap>
+        </>
+      )}
+
+      {recientes.length > 0 && (
+        <>
+          <SecH titulo="Cotizaciones recientes" nota={`${recientes.length} guardadas`} />
+          <TableWrap maxHeight="320px">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <th>Equipo</th>
+                  <th className="num">Contado</th>
+                  <th className="num">Plazo</th>
+                  <th className="num">Enganche</th>
+                  <th className="num">Semanal</th>
+                  <th />
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {recientes.map((c) => (
+                  <TableRow key={c.id}>
+                    <TableCell>
+                      <div className="cell-2">
+                        <b>{c.marca} {c.modelo}</b>
+                        <small>{c.almacenamiento_color || formatoFecha(c.created_at)}</small>
+                      </div>
+                    </TableCell>
+                    <TableCell className="num">{formatoMoneda(Number(c.precio_contado))}</TableCell>
+                    <TableCell className="num">{c.plazo_semanas} sem</TableCell>
+                    <TableCell className="num">{formatoMoneda(Number(c.enganche))}</TableCell>
+                    <TableCell className="num font-semibold">{formatoMoneda(Number(c.pago_semanal))}</TableCell>
+                    <TableCell>
+                      <div className="flex justify-end">
+                        <Button size="icon" variant="ghost" onClick={() => handleEliminar(c.id)} aria-label="Eliminar cotización">
+                          <Trash2 className="size-4 text-muted-foreground" />
+                        </Button>
+                      </div>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
-          </CardContent>
-        </Card>
+          </TableWrap>
+        </>
       )}
-
-      {recientes.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Cotizaciones recientes</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="divide-y">
-              {recientes.map((c) => (
-                <div key={c.id} className="flex items-center justify-between gap-4 py-2.5 text-sm">
-                  <div className="min-w-0">
-                    <p className="truncate font-medium">{c.marca} {c.modelo}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {formatoMoneda(Number(c.precio_contado))} · {c.plazo_semanas} semanas · {formatoMoneda(Number(c.pago_semanal))}/sem
-                    </p>
-                  </div>
-                  <Button size="icon" variant="ghost" onClick={() => handleEliminar(c.id)}>
-                    <Trash2 className="size-4 text-muted-foreground" />
-                  </Button>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-    </div>
-  );
-}
-
-function Resultado({ label, valor, destacado }: { label: string; valor: string; destacado?: boolean }) {
-  return (
-    <div>
-      <p className="text-xs text-muted-foreground">{label}</p>
-      <p className={destacado ? 'text-xl font-semibold text-primary' : 'text-base font-medium'}>{valor}</p>
-    </div>
+    </>
   );
 }

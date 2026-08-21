@@ -1,14 +1,14 @@
 import { useEffect, useState, type ReactNode } from 'react';
-import { ArrowLeft, Check, X, Link as LinkIcon, AlertTriangle, RefreshCw } from 'lucide-react';
+import { ArrowLeft, Check, X, Link as LinkIcon, AlertTriangle, Download, Search } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa';
 import { toast } from 'sonner';
-import { Card, CardContent } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Input, Select, Label } from '@/components/ui/input';
+import { Table, TableBody, TableCell, TableFooter, TableHeader, TableRow, TableWrap, SortHead } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { EstadoBadge } from './estado-badge';
-import { formatoFechaHora } from '@/lib/format';
+import { EstadoBadge } from './pill';
+import { useOrden } from './use-orden';
+import { formatoFechaHora, formatoMoneda } from '@/lib/format';
 import { getMetodoPagoLabel } from '@/lib/solicitudes';
+import { descargar, nombreArchivo, toCSV } from '@/lib/csv';
 import type { Solicitud } from '@/types';
 
 type EstatusSolicitud = Solicitud['estatus'];
@@ -18,6 +18,19 @@ const ESTATUS_OPCIONES: Array<'Todos' | EstatusSolicitud> = [
   'Todos', 'Iniciada', 'Lista para pago', 'Verificando identidad', 'Pendiente',
   'Aprobado', 'Preparando paquete', 'Pendiente de envío', 'Enviado', 'Entregado', 'Rechazado', 'Cancelada'
 ];
+
+// Fuera del componente: si se armara en cada render, `ordenar` cambiaría de identidad
+// todo el tiempo.
+const ACCESORES: Record<string, (s: Solicitud) => string | number | null | undefined> = {
+  cliente: (s) => s.cliente,
+  contacto: (s) => s.celular,
+  modelo: (s) => s.modelo,
+  enganche: (s) => Number(s.enganche || 0),
+  pagoSemanal: (s) => Number(s.pagoSemanal || 0),
+  fecha: (s) => new Date(s.fecha).getTime(),
+  estatus: (s) => s.estatus
+};
+const CAMPOS_TEXTO = ['cliente', 'contacto', 'modelo', 'estatus'];
 
 interface DireccionInput {
   calle: string;
@@ -35,12 +48,10 @@ interface CreditosViewProps {
   onCancelarSolicitud: (id: string) => Promise<void>;
   onSaveImei: (id: string, imei: string) => Promise<void>;
   onSaveDireccion: (id: string, direccion: DireccionInput) => Promise<void>;
-  onRefrescar: () => void;
-  segundosParaRefresh: number;
 }
 
 export function CreditosView({
-  solicitudes, onUpdateStatus, onCancelarSolicitud, onSaveImei, onSaveDireccion, onRefrescar, segundosParaRefresh
+  solicitudes, onUpdateStatus, onCancelarSolicitud, onSaveImei, onSaveDireccion
 }: CreditosViewProps) {
   const [seleccionada, setSeleccionada] = useState<Solicitud | null>(null);
 
@@ -57,6 +68,8 @@ export function CreditosView({
   const [filtroHasta, setFiltroHasta] = useState<string>(filtrosGuardados.hasta || '');
   const [busqueda, setBusqueda] = useState<string>(filtrosGuardados.busqueda || '');
 
+  const orden = useOrden<Solicitud>(ACCESORES, { inicial: 'fecha', dirInicial: -1, texto: CAMPOS_TEXTO });
+
   useEffect(() => {
     localStorage.setItem(FILTROS_STORAGE_KEY, JSON.stringify({ estatus: filtroEstatus, desde: filtroDesde, hasta: filtroHasta, busqueda }));
   }, [filtroEstatus, filtroDesde, filtroHasta, busqueda]);
@@ -68,20 +81,22 @@ export function CreditosView({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [solicitudes]);
 
-  const solicitudesFiltradas = solicitudes.filter((s) => {
-    if (filtroEstatus !== 'Todos' && s.estatus !== filtroEstatus) return false;
-    if (filtroDesde || filtroHasta) {
-      const fecha = new Date(s.fecha);
-      if (filtroDesde && fecha < new Date(`${filtroDesde}T00:00:00`)) return false;
-      if (filtroHasta && fecha > new Date(`${filtroHasta}T23:59:59.999`)) return false;
-    }
-    if (busqueda.trim()) {
-      const q = busqueda.trim().toLowerCase();
-      const campos = [s.cliente, s.celular, s.email, s.modelo, s.curp, s.id];
-      if (!campos.some((c) => (c || '').toLowerCase().includes(q))) return false;
-    }
-    return true;
-  });
+  const solicitudesFiltradas = orden.ordenar(
+    solicitudes.filter((s) => {
+      if (filtroEstatus !== 'Todos' && s.estatus !== filtroEstatus) return false;
+      if (filtroDesde || filtroHasta) {
+        const fecha = new Date(s.fecha);
+        if (filtroDesde && fecha < new Date(`${filtroDesde}T00:00:00`)) return false;
+        if (filtroHasta && fecha > new Date(`${filtroHasta}T23:59:59.999`)) return false;
+      }
+      if (busqueda.trim()) {
+        const q = busqueda.trim().toLowerCase();
+        const campos = [s.cliente, s.celular, s.email, s.modelo, s.curp, s.id];
+        if (!campos.some((c) => (c || '').toLowerCase().includes(q))) return false;
+      }
+      return true;
+    })
+  );
 
   const hayFiltrosActivos = filtroEstatus !== 'Todos' || Boolean(filtroDesde) || Boolean(filtroHasta) || Boolean(busqueda.trim());
   const limpiarFiltros = () => {
@@ -89,6 +104,26 @@ export function CreditosView({
     setFiltroDesde('');
     setFiltroHasta('');
     setBusqueda('');
+  };
+
+  const totales = solicitudesFiltradas.reduce(
+    (acc, s) => ({ enganche: acc.enganche + Number(s.enganche || 0), semanal: acc.semanal + Number(s.pagoSemanal || 0) }),
+    { enganche: 0, semanal: 0 }
+  );
+
+  const exportar = () => {
+    descargar(
+      toCSV([
+        ['Cliente', 'CURP', 'Teléfono', 'Correo', 'Equipo', 'Semanas', 'Enganche', 'Pago semanal', 'Fecha', 'Estatus', 'IMEI', 'Rastreo'],
+        ...solicitudesFiltradas.map((s) => [
+          s.cliente, s.curp || '', s.celular, s.email, s.modelo, s.semanas,
+          Number(s.enganche || 0), Number(s.pagoSemanal || 0),
+          formatoFechaHora(s.fecha), s.estatus, s.imei || '', s.trackingNumber || ''
+        ])
+      ]),
+      nombreArchivo('creditos')
+    );
+    toast.success(`${solicitudesFiltradas.length} solicitud(es) exportadas a CSV.`);
   };
 
   if (seleccionada) {
@@ -105,104 +140,107 @@ export function CreditosView({
   }
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Créditos</h1>
-          <p className="text-muted-foreground">
-            {solicitudesFiltradas.length} de {solicitudes.length} solicitud(es)
-          </p>
-        </div>
-        <Button variant="outline" size="sm" onClick={onRefrescar}>
-          <RefreshCw className="size-4" />
-          Refrescar ({segundosParaRefresh}s)
-        </Button>
-      </div>
-
-      <div className="flex flex-wrap items-end gap-3">
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="f-busqueda">Buscar</Label>
-          <Input
-            id="f-busqueda"
-            className="w-64"
+    <>
+      {/* Barra de herramientas en una sola fila de 32 px, en vez de cuatro campos
+          apilados con su label arriba: gana casi el alto de una fila de tabla. */}
+      <div className="mb-3 flex flex-wrap items-center gap-2.5 rounded-[var(--radius)] border bg-card p-3 shadow-[var(--sh)]">
+        <div className="srch">
+          <Search strokeWidth={1.8} />
+          <input
             value={busqueda}
             onChange={(e) => setBusqueda(e.target.value)}
             placeholder="Nombre, teléfono, correo, CURP…"
+            aria-label="Buscar solicitudes"
           />
         </div>
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="f-estatus">Estatus</Label>
-          <Select id="f-estatus" className="w-48" value={filtroEstatus} onChange={(e) => setFiltroEstatus(e.target.value as any)}>
-            {ESTATUS_OPCIONES.map((est) => (
-              <option key={est} value={est}>{est}</option>
-            ))}
-          </Select>
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="f-desde">Desde</Label>
-          <Input id="f-desde" type="date" className="w-40" value={filtroDesde} max={filtroHasta || undefined} onChange={(e) => setFiltroDesde(e.target.value)} />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="f-hasta">Hasta</Label>
-          <Input id="f-hasta" type="date" className="w-40" value={filtroHasta} min={filtroDesde || undefined} onChange={(e) => setFiltroHasta(e.target.value)} />
-        </div>
+        <select className="ctl" value={filtroEstatus} onChange={(e) => setFiltroEstatus(e.target.value as typeof filtroEstatus)} aria-label="Filtrar por estatus">
+          {ESTATUS_OPCIONES.map((est) => (
+            <option key={est} value={est}>{est === 'Todos' ? 'Todos los estatus' : est}</option>
+          ))}
+        </select>
+        <input type="date" className="ctl" value={filtroDesde} max={filtroHasta || undefined} onChange={(e) => setFiltroDesde(e.target.value)} aria-label="Desde" />
+        <input type="date" className="ctl" value={filtroHasta} min={filtroDesde || undefined} onChange={(e) => setFiltroHasta(e.target.value)} aria-label="Hasta" />
         {hayFiltrosActivos && (
-          <Button variant="ghost" size="sm" onClick={limpiarFiltros}>Limpiar filtros</Button>
+          <button type="button" className="ctl" onClick={limpiarFiltros}>Limpiar</button>
         )}
+        <span className="flex-1" />
+        <span className="chip">
+          <b>{solicitudesFiltradas.length}</b> de {solicitudes.length} solicitudes
+        </span>
+        <button type="button" className="ctl" onClick={exportar} disabled={solicitudesFiltradas.length === 0}>
+          <Download strokeWidth={1.7} />
+          Exportar CSV
+        </button>
       </div>
 
-      <Card>
-        <CardContent className="p-0">
-          <Table>
-            <TableHeader>
+      <TableWrap>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <SortHead campo="cliente" activo={orden.campo} dir={orden.dir} onSort={orden.alternar}>Cliente</SortHead>
+              <SortHead campo="contacto" activo={orden.campo} dir={orden.dir} onSort={orden.alternar}>Contacto</SortHead>
+              <SortHead campo="modelo" activo={orden.campo} dir={orden.dir} onSort={orden.alternar}>Equipo</SortHead>
+              <SortHead campo="enganche" activo={orden.campo} dir={orden.dir} onSort={orden.alternar} num>Enganche</SortHead>
+              <SortHead campo="pagoSemanal" activo={orden.campo} dir={orden.dir} onSort={orden.alternar} num>Semanal</SortHead>
+              <SortHead campo="fecha" activo={orden.campo} dir={orden.dir} onSort={orden.alternar}>Fecha</SortHead>
+              <SortHead campo="estatus" activo={orden.campo} dir={orden.dir} onSort={orden.alternar}>Estatus</SortHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {solicitudesFiltradas.length === 0 && (
               <TableRow>
-                <TableHead>Cliente</TableHead>
-                <TableHead>Contacto</TableHead>
-                <TableHead>Equipo</TableHead>
-                <TableHead className="text-right">Enganche</TableHead>
-                <TableHead className="text-right">Semanal</TableHead>
-                <TableHead>Fecha</TableHead>
-                <TableHead>Estatus</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {solicitudesFiltradas.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={7} className="py-10 text-center text-muted-foreground">
+                <TableCell colSpan={7}>
+                  <div className="empty">
                     {hayFiltrosActivos ? 'Ninguna solicitud coincide con estos filtros.' : 'Todavía no hay solicitudes registradas.'}
-                  </TableCell>
-                </TableRow>
-              )}
-              {solicitudesFiltradas.map((s) => (
-                <TableRow key={s.id} className="cursor-pointer" onClick={() => setSeleccionada(s)}>
-                  <TableCell>
-                    <div className="flex items-center gap-2 font-medium">
+                  </div>
+                </TableCell>
+              </TableRow>
+            )}
+            {solicitudesFiltradas.map((s) => (
+              <TableRow key={s.id} className="clk" onClick={() => setSeleccionada(s)}>
+                <TableCell>
+                  <div className="cell-2">
+                    <b className="flex items-center gap-1.5">
                       {s.pagoConfirmado && !s.calle && (
-                        <span className="size-2 shrink-0 rounded-full bg-[color:var(--status-warning)]" title="Pago confirmado, falta la dirección de envío" />
+                        <span className="size-2 shrink-0 rounded-full bg-[var(--warn)]" title="Pago confirmado, falta la dirección de envío" />
                       )}
                       {s.cliente}
-                    </div>
-                    {s.curp && <p className="text-xs text-muted-foreground">{s.curp}</p>}
-                  </TableCell>
-                  <TableCell>
-                    <p className="text-sm text-muted-foreground">{s.celular}</p>
-                    {s.email && <p className="text-sm text-muted-foreground">{s.email}</p>}
-                  </TableCell>
-                  <TableCell>
-                    <p>{s.modelo}</p>
-                    <p className="text-xs text-muted-foreground">{s.semanas} semanas</p>
-                  </TableCell>
-                  <TableCell className="text-right tabular-nums">${Number(s.enganche).toLocaleString()}</TableCell>
-                  <TableCell className="text-right tabular-nums">${Number(s.pagoSemanal).toLocaleString()}</TableCell>
-                  <TableCell className="text-sm text-muted-foreground">{formatoFechaHora(s.fecha)}</TableCell>
-                  <TableCell><EstadoBadge estatus={s.estatus} /></TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-    </div>
+                    </b>
+                    <small className="mono">{s.curp || 'sin CURP'}</small>
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div className="cell-2">
+                    <span className="mono">{s.celular}</span>
+                    <small>{s.email || 'sin correo'}</small>
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div className="cell-2">
+                    <span>{s.modelo}</span>
+                    <small>{s.semanas} semanas</small>
+                  </div>
+                </TableCell>
+                <TableCell className="num">{formatoMoneda(Number(s.enganche))}</TableCell>
+                <TableCell className="num">{formatoMoneda(Number(s.pagoSemanal))}</TableCell>
+                <TableCell className="mono">{formatoFechaHora(s.fecha)}</TableCell>
+                <TableCell><EstadoBadge estatus={s.estatus} /></TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+          {solicitudesFiltradas.length > 0 && (
+            <TableFooter>
+              <TableRow>
+                <TableCell colSpan={3}>{solicitudesFiltradas.length} solicitudes</TableCell>
+                <TableCell className="num">{formatoMoneda(totales.enganche)}</TableCell>
+                <TableCell className="num">{formatoMoneda(totales.semanal)}</TableCell>
+                <TableCell colSpan={2} />
+              </TableRow>
+            </TableFooter>
+          )}
+        </Table>
+      </TableWrap>
+    </>
   );
 }
 
@@ -218,7 +256,7 @@ function getAccionPendiente(s: Solicitud): { mensaje: string; link: string } | n
     return { mensaje: 'Pago confirmado — falta que el cliente complete la verificación de identidad en vivo', link: `${origin}/verificacion?solicitud=${s.id}&modelo=${encodeURIComponent(s.modelo)}` };
   }
   if (s.estatus === 'Pendiente') {
-    return { mensaje: 'La verificación de identidad no pasó automática tras varios intentos — revisala y aprobá o rechazá manualmente', link: '' };
+    return { mensaje: 'La verificación de identidad no pasó automática — revisala y aprobá o rechazá manualmente', link: '' };
   }
   return null;
 }
@@ -303,16 +341,16 @@ function DetalleCredito({ solicitud, onVolver, onUpdateStatus, onCancelarSolicit
   const metodoPago = getMetodoPagoLabel(solicitud.metodoPagoEnganche);
 
   return (
-    <div className="mx-auto max-w-4xl space-y-5">
-      <Button variant="ghost" size="sm" onClick={onVolver}>
-        <ArrowLeft className="size-4" />
+    <div className="max-w-4xl">
+      <button type="button" className="ctl mb-3" onClick={onVolver}>
+        <ArrowLeft strokeWidth={1.7} />
         Volver al listado
-      </Button>
+      </button>
 
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight">{solicitud.cliente}</h1>
-          <p className="text-sm text-muted-foreground">ID: {solicitud.id}</p>
+          <h2 className="text-[17px] font-semibold tracking-[-.3px]">{solicitud.cliente}</h2>
+          <p className="mono text-[11.5px] text-muted-foreground">ID: {solicitud.id}</p>
         </div>
         <div className="flex items-center gap-2">
           {solicitud.estatus === 'Preparando paquete' && (
@@ -335,18 +373,18 @@ function DetalleCredito({ solicitud, onVolver, onUpdateStatus, onCancelarSolicit
       </div>
 
       {accion && (
-        <div className="flex flex-wrap items-center gap-2 rounded-lg border border-[color:var(--status-warning)]/40 bg-[color:var(--status-warning)]/10 px-4 py-3 text-sm">
-          <AlertTriangle className="size-4 shrink-0 text-[color:var(--status-warning)]" />
+        <div className="banner w mb-4 flex-wrap items-center">
+          <div className="bi"><AlertTriangle strokeWidth={1.8} className="size-full" /></div>
           <span>{accion.mensaje}</span>
           {!solicitud.calle && !mostrarFormDireccion && (
-            <button type="button" className="font-semibold text-primary underline" onClick={() => setMostrarFormDireccion(true)}>
+            <button type="button" className="font-semibold underline" onClick={() => setMostrarFormDireccion(true)}>
               Cargarla manualmente
             </button>
           )}
           {accion.link && (
             <button
               type="button"
-              className="inline-flex items-center gap-1 font-semibold text-primary underline"
+              className="inline-flex items-center gap-1 font-semibold underline"
               onClick={() => {
                 navigator.clipboard.writeText(accion.link);
                 setLinkCopiado(true);
@@ -359,13 +397,14 @@ function DetalleCredito({ solicitud, onVolver, onUpdateStatus, onCancelarSolicit
         </div>
       )}
 
-      <Card>
-        <CardContent className="grid grid-cols-2 gap-x-6 gap-y-4 pt-6 sm:grid-cols-3">
-          <Campo label="CURP" valor={solicitud.curp || '—'} />
+      <div className="sec-h"><h2>Solicitud</h2><div className="rule" /></div>
+      <div className="rounded-[var(--radius)] border bg-card p-4 shadow-[var(--sh)]">
+        <div className="grid grid-cols-2 gap-x-6 gap-y-3.5 sm:grid-cols-3">
+          <Campo label="CURP" valor={<span className="mono">{solicitud.curp || '—'}</span>} />
           <Campo
             label="WhatsApp"
             valor={
-              <a href={`https://wa.me/52${solicitud.celular}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-primary hover:underline">
+              <a href={`https://wa.me/52${solicitud.celular}`} target="_blank" rel="noopener noreferrer" className="mono inline-flex items-center gap-1.5 text-primary hover:underline">
                 <FaWhatsapp className="text-[#25D366]" /> {solicitud.celular}
               </a>
             }
@@ -374,142 +413,146 @@ function DetalleCredito({ solicitud, onVolver, onUpdateStatus, onCancelarSolicit
           <Campo label="Fecha de solicitud" valor={formatoFechaHora(solicitud.fecha)} />
           <Campo label="Equipo" valor={solicitud.modelo} />
           <Campo label="Plazo" valor={`${solicitud.semanas} semanas`} />
-          <Campo label="Enganche" valor={<span className="font-semibold text-primary">${Number(solicitud.enganche).toLocaleString()}</span>} />
-          <Campo label="Cuota semanal" valor={`$${Number(solicitud.pagoSemanal).toLocaleString()}`} />
+          <Campo label="Enganche" valor={<span className="font-semibold text-primary">{formatoMoneda(Number(solicitud.enganche))}</span>} />
+          <Campo label="Cuota semanal" valor={formatoMoneda(Number(solicitud.pagoSemanal))} />
           <Campo
             label="Progreso de pago"
             valor={solicitud.pagoConfirmado ? `${solicitud.semanasPagadas ?? 0} de ${solicitud.semanas} semanas` : '—'}
           />
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
-      <Card>
-        <CardContent className="space-y-4 pt-6">
-          <SectionTitle>Pago y verificación</SectionTitle>
-          <div className="grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-3">
+      <div className="sec-h"><h2>Pago y verificación</h2><div className="rule" /></div>
+      <div className="space-y-4 rounded-[var(--radius)] border bg-card p-4 shadow-[var(--sh)]">
+        <div className="grid grid-cols-2 gap-x-6 gap-y-3.5 sm:grid-cols-3">
+          <Campo
+            label="Pago del enganche"
+            valor={
+              solicitud.pagoConfirmado
+                ? <span className="inline-flex items-center gap-1 font-semibold text-[var(--good-ink)]"><Check className="size-3.5" /> Confirmado</span>
+                : <span className="font-semibold text-[var(--warn-ink)]">Pendiente</span>
+            }
+          />
+          {metodoPago && <Campo label="Método de pago" valor={metodoPago} />}
+          {solicitud.verificamexStatus && (
             <Campo
-              label="Pago del enganche"
+              label="Verificación Verificamex"
+              valor={`${solicitud.verificamexStatus}${solicitud.verificamexIntentos ? ` (intento ${solicitud.verificamexIntentos})` : ''}`}
+            />
+          )}
+          {typeof solicitud.verificamexResult === 'number' && (
+            <Campo
+              label="Puntaje de verificación"
               valor={
-                <span className={solicitud.pagoConfirmado ? 'inline-flex items-center gap-1 font-semibold text-[color:var(--status-good)]' : 'font-semibold text-[color:var(--status-warning)]'}>
-                  {solicitud.pagoConfirmado ? (<><Check className="size-3.5" /> Confirmado</>) : 'Pendiente'}
+                <span className={solicitud.verificamexResult >= 70 ? 'font-semibold text-[var(--good-ink)]' : 'font-semibold text-[var(--warn-ink)]'}>
+                  {solicitud.verificamexResult}/100
                 </span>
               }
             />
-            {metodoPago && <Campo label="Método de pago" valor={metodoPago} />}
-            {solicitud.verificamexStatus && (
-              <Campo label="Verificación Verificamex" valor={`${solicitud.verificamexStatus}${solicitud.verificamexIntentos ? ` (intento ${solicitud.verificamexIntentos} de 3)` : ''}`} />
-            )}
-            {typeof solicitud.verificamexResult === 'number' && (
-              <Campo
-                label="Puntaje de verificación"
-                valor={
-                  <span className={solicitud.verificamexResult >= 70 ? 'font-semibold text-[color:var(--status-good)]' : 'font-semibold text-[color:var(--status-warning)]'}>
-                    {solicitud.verificamexResult}/100
-                  </span>
-                }
-              />
-            )}
-            {solicitud.trackingNumber && <Campo label="Número de rastreo" valor={solicitud.trackingNumber} />}
-            {solicitud.labelUrl && (
-              <Campo label="Guía de envío" valor={<a href={solicitud.labelUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Ver guía</a>} />
-            )}
-            {solicitud.reciboUrl && (
-              <Campo label="Comprobante" valor={<a href={solicitud.reciboUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Ver recibo de Stripe</a>} />
-            )}
-          </div>
-
-          {solicitud.verificamexErrores && solicitud.verificamexErrores.length > 0 ? (
-            <div className="space-y-1.5 rounded-lg border bg-muted/30 p-3 text-sm">
-              <p className="font-medium text-foreground">Detalle de la verificación</p>
-              {solicitud.verificamexErrores.map((err, i) => (
-                <div key={i} className="flex items-start gap-2 text-muted-foreground">
-                  {err.Result ? (
-                    <Check className="mt-0.5 size-4 shrink-0 text-[color:var(--status-good)]" />
-                  ) : (
-                    <X className="mt-0.5 size-4 shrink-0 text-[color:var(--status-critical)]" />
-                  )}
-                  <span>
-                    <span className="font-medium text-foreground">{err.Name || err.Category}: </span>
-                    {err.Output || err.Message}
-                  </span>
-                </div>
-              ))}
-            </div>
-          ) : solicitud.verificamexComments && (
-            <div className="rounded-lg border bg-muted/30 p-3 text-sm text-muted-foreground">
-              <span className="font-medium text-foreground">Detalle de Verificamex: </span>
-              {solicitud.verificamexComments}
-            </div>
           )}
-
-          {solicitud.calle && !mostrarFormDireccion && (
-            <Campo
-              label="Dirección de envío"
-              valor={`${solicitud.calle} ${solicitud.numeroExterior}${solicitud.numeroInterior ? ` Int. ${solicitud.numeroInterior}` : ''}, ${solicitud.colonia}, ${solicitud.alcaldiaMunicipio}, ${solicitud.estado}, CP ${solicitud.codigoPostal}`}
-            />
+          {solicitud.trackingNumber && <Campo label="Número de rastreo" valor={<span className="mono">{solicitud.trackingNumber}</span>} />}
+          {solicitud.labelUrl && (
+            <Campo label="Guía de envío" valor={<a href={solicitud.labelUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Ver guía</a>} />
           )}
-
-          {mostrarFormDireccion && (
-            <div className="grid grid-cols-2 gap-3 rounded-lg border bg-muted/30 p-4">
-              <Input className="col-span-2" placeholder="Calle (sin número ni referencias, máx. 45)" maxLength={45} value={direccionForm.calle} onChange={(e) => setDireccionForm((f) => ({ ...f, calle: e.target.value.slice(0, 45) }))} />
-              <Input placeholder="No. exterior" value={direccionForm.numeroExterior} onChange={(e) => setDireccionForm((f) => ({ ...f, numeroExterior: e.target.value }))} />
-              <Input placeholder="No. interior (opcional)" value={direccionForm.numeroInterior} onChange={(e) => setDireccionForm((f) => ({ ...f, numeroInterior: e.target.value }))} />
-              <Input placeholder="Colonia" value={direccionForm.colonia} onChange={(e) => setDireccionForm((f) => ({ ...f, colonia: e.target.value }))} />
-              <Input placeholder="Alcaldía / Municipio" value={direccionForm.alcaldiaMunicipio} onChange={(e) => setDireccionForm((f) => ({ ...f, alcaldiaMunicipio: e.target.value }))} />
-              <Input placeholder="Estado" value={direccionForm.estado} onChange={(e) => setDireccionForm((f) => ({ ...f, estado: e.target.value }))} />
-              <Input placeholder="Código postal" value={direccionForm.codigoPostal} onChange={(e) => setDireccionForm((f) => ({ ...f, codigoPostal: e.target.value }))} />
-              <div className="col-span-2 flex gap-2">
-                <Button size="sm" disabled={guardandoDireccion} onClick={handleGuardarDireccion}>
-                  {guardandoDireccion ? 'Guardando...' : 'Guardar dirección y generar guía'}
-                </Button>
-                <Button size="sm" variant="ghost" onClick={() => setMostrarFormDireccion(false)}>Cancelar</Button>
-              </div>
-            </div>
+          {solicitud.reciboUrl && (
+            <Campo label="Comprobante" valor={<a href={solicitud.reciboUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Ver recibo de Stripe</a>} />
           )}
+        </div>
 
-          {solicitud.pagoConfirmado && (
-            <div className="space-y-1.5">
-              <Label>IMEI del celular {solicitud.estatus !== 'Enviado' && '(obligatorio antes de marcar como Enviado)'}</Label>
-              <div className="flex gap-2">
-                <Input
-                  className="max-w-xs"
-                  placeholder="15 dígitos"
-                  value={imeiInput}
-                  maxLength={15}
-                  inputMode="numeric"
-                  disabled={solicitud.estatus === 'Enviado'}
-                  onChange={(e) => setImeiInput(e.target.value.replace(/\D/g, '').slice(0, 15))}
-                />
-                {solicitud.estatus !== 'Enviado' && (
-                  <Button size="sm" disabled={guardandoImei || imeiInput.trim().length !== 15 || imeiInput.trim() === (solicitud.imei || '')} onClick={handleGuardarImei}>
-                    {guardandoImei ? 'Guardando...' : solicitud.imei ? 'Actualizar' : 'Guardar'}
-                  </Button>
+        {solicitud.verificamexErrores && solicitud.verificamexErrores.length > 0 ? (
+          <div className="space-y-1.5 rounded-lg border bg-[var(--sunk)] p-3 text-[12.8px]">
+            <p className="font-semibold">Detalle de la verificación</p>
+            {solicitud.verificamexErrores.map((err, i) => (
+              <div key={i} className="flex items-start gap-2 text-[var(--ink-2)]">
+                {err.Result ? (
+                  <Check className="mt-0.5 size-4 shrink-0 text-[var(--good-ink)]" />
+                ) : (
+                  <X className="mt-0.5 size-4 shrink-0 text-[var(--crit-ink)]" />
                 )}
+                <span>
+                  <span className="font-semibold text-foreground">{err.Name || err.Category}: </span>
+                  {err.Output || err.Message}
+                </span>
               </div>
-            </div>
-          )}
+            ))}
+          </div>
+        ) : solicitud.verificamexComments && (
+          <div className="rounded-lg border bg-[var(--sunk)] p-3 text-[12.8px] text-[var(--ink-2)]">
+            <span className="font-semibold text-foreground">Detalle de Verificamex: </span>
+            {solicitud.verificamexComments}
+          </div>
+        )}
 
-          {solicitud.estatus === 'Pendiente' && (
-            <div className="flex gap-2 border-t pt-4">
-              <Button onClick={() => handleResolver('Aprobado')}>Aprobar solicitud</Button>
-              <Button variant="destructive" onClick={() => handleResolver('Rechazado')}>Rechazar crédito</Button>
+        {solicitud.calle && !mostrarFormDireccion && (
+          <Campo
+            label="Dirección de envío"
+            valor={`${solicitud.calle} ${solicitud.numeroExterior}${solicitud.numeroInterior ? ` Int. ${solicitud.numeroInterior}` : ''}, ${solicitud.colonia}, ${solicitud.alcaldiaMunicipio}, ${solicitud.estado}, CP ${solicitud.codigoPostal}`}
+          />
+        )}
+
+        {mostrarFormDireccion && (
+          <div className="rounded-lg border bg-[var(--sunk)] p-4">
+            <div className="form-grid">
+              <div className="fld" style={{ gridColumn: '1 / -1' }}>
+                <label htmlFor="d-calle">Calle <span className="hint">(sin número ni referencias, máx. 45)</span></label>
+                <input id="d-calle" maxLength={45} value={direccionForm.calle} onChange={(e) => setDireccionForm((f) => ({ ...f, calle: e.target.value.slice(0, 45) }))} />
+              </div>
+              <div className="fld"><label htmlFor="d-ext">No. exterior</label><input id="d-ext" value={direccionForm.numeroExterior} onChange={(e) => setDireccionForm((f) => ({ ...f, numeroExterior: e.target.value }))} /></div>
+              <div className="fld"><label htmlFor="d-int">No. interior <span className="hint">(opcional)</span></label><input id="d-int" value={direccionForm.numeroInterior} onChange={(e) => setDireccionForm((f) => ({ ...f, numeroInterior: e.target.value }))} /></div>
+              <div className="fld"><label htmlFor="d-col">Colonia</label><input id="d-col" value={direccionForm.colonia} onChange={(e) => setDireccionForm((f) => ({ ...f, colonia: e.target.value }))} /></div>
+              <div className="fld"><label htmlFor="d-alc">Alcaldía / Municipio</label><input id="d-alc" value={direccionForm.alcaldiaMunicipio} onChange={(e) => setDireccionForm((f) => ({ ...f, alcaldiaMunicipio: e.target.value }))} /></div>
+              <div className="fld"><label htmlFor="d-edo">Estado</label><input id="d-edo" value={direccionForm.estado} onChange={(e) => setDireccionForm((f) => ({ ...f, estado: e.target.value }))} /></div>
+              <div className="fld"><label htmlFor="d-cp">Código postal</label><input id="d-cp" value={direccionForm.codigoPostal} onChange={(e) => setDireccionForm((f) => ({ ...f, codigoPostal: e.target.value }))} /></div>
             </div>
-          )}
-        </CardContent>
-      </Card>
+            <div className="mt-3 flex gap-2">
+              <Button size="sm" disabled={guardandoDireccion} onClick={handleGuardarDireccion}>
+                {guardandoDireccion ? 'Guardando...' : 'Guardar dirección y generar guía'}
+              </Button>
+              <button type="button" className="ctl" onClick={() => setMostrarFormDireccion(false)}>Cancelar</button>
+            </div>
+          </div>
+        )}
+
+        {solicitud.pagoConfirmado && (
+          <div className="fld max-w-xs">
+            <label htmlFor="imei">
+              IMEI del celular {solicitud.estatus !== 'Enviado' && <span className="hint">(obligatorio antes de marcar como Enviado)</span>}
+            </label>
+            <div className="flex gap-2">
+              <input
+                id="imei"
+                placeholder="15 dígitos"
+                value={imeiInput}
+                maxLength={15}
+                inputMode="numeric"
+                disabled={solicitud.estatus === 'Enviado'}
+                onChange={(e) => setImeiInput(e.target.value.replace(/\D/g, '').slice(0, 15))}
+              />
+              {solicitud.estatus !== 'Enviado' && (
+                <Button size="sm" disabled={guardandoImei || imeiInput.trim().length !== 15 || imeiInput.trim() === (solicitud.imei || '')} onClick={handleGuardarImei}>
+                  {guardandoImei ? 'Guardando...' : solicitud.imei ? 'Actualizar' : 'Guardar'}
+                </Button>
+              )}
+            </div>
+          </div>
+        )}
+
+        {solicitud.estatus === 'Pendiente' && (
+          <div className="flex gap-2 border-t pt-4">
+            <Button onClick={() => handleResolver('Aprobado')}>Aprobar solicitud</Button>
+            <Button variant="destructive" onClick={() => handleResolver('Rechazado')}>Rechazar crédito</Button>
+          </div>
+        )}
+      </div>
     </div>
   );
-}
-
-function SectionTitle({ children }: { children: ReactNode }) {
-  return <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">{children}</h2>;
 }
 
 function Campo({ label, valor }: { label: string; valor: ReactNode }) {
   return (
     <div className="flex flex-col gap-0.5">
-      <span className="text-xs text-muted-foreground">{label}</span>
-      <span className="text-sm font-medium">{valor}</span>
+      <span className="text-[11px] font-semibold uppercase tracking-[.04em] text-muted-foreground">{label}</span>
+      <span className="text-[13px] font-medium">{valor}</span>
     </div>
   );
 }

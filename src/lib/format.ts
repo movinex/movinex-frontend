@@ -2,6 +2,14 @@ export function formatoMoneda(valor: number): string {
   return valor.toLocaleString('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 });
 }
 
+/** Versión compacta para celdas angostas: $54K, $1.2M. Sin decimales bajo mil. */
+export function formatoMonedaCorta(valor: number): string {
+  const abs = Math.abs(valor);
+  if (abs >= 1_000_000) return `$${(valor / 1_000_000).toLocaleString('es-MX', { maximumFractionDigits: 1 })}M`;
+  if (abs >= 1_000) return `$${Math.round(valor / 1_000)}K`;
+  return formatoMoneda(valor);
+}
+
 export function formatoMonedaCentavos(valor: number): string {
   return valor.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' });
 }

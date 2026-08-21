@@ -1,10 +1,11 @@
 import { useState, type ChangeEvent, type FormEvent, type ReactNode } from 'react';
-import { Plus, Upload, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Upload, Pencil, Trash2, Search } from 'lucide-react';
 import { toast } from 'sonner';
-import { Card, CardContent } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Input, Label, Select, Textarea } from '@/components/ui/input';
+import { Table, TableBody, TableCell, TableHeader, TableRow, TableWrap, SortHead } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
+import { Panel, SecH } from './bloques';
+import { useOrden } from './use-orden';
+import { formatoMoneda } from '@/lib/format';
 import type { Configuracion, Phone } from '@/types';
 import { calcularPagoSemanal } from '@/lib/amortizacion';
 
@@ -54,6 +55,16 @@ const FORM_VACIO = {
   precioDescuento: '', imagen: '', envioGratis: true, costoEnvio: 0, ...SPECS_VACIO
 };
 
+const ACCESORES: Record<string, (p: Phone) => string | number | null | undefined> = {
+  modelo: (p) => p.modelo,
+  marca: (p) => p.marca,
+  precioBase: (p) => p.precioBase,
+  enganche: (p) => p.enganche,
+  montoSemanal26: (p) => p.montoSemanal26,
+  envio: (p) => (p.envioGratis !== false ? 0 : p.costoEnvio || 0)
+};
+const CAMPOS_TEXTO = ['modelo', 'marca'];
+
 const CONFIG_DEFAULT: Configuracion = {
   enganchePct: 0.15,
   tasaAnualPct: 2.28,
@@ -78,8 +89,16 @@ export function CatalogoView({ phones, onReloadPhones, adminToken, configuracion
   const [creando, setCreando] = useState(false);
   const [guardando, setGuardando] = useState(false);
   const [subiendo, setSubiendo] = useState(false);
+  const [q, setQ] = useState('');
 
+  const orden = useOrden<Phone>(ACCESORES, { inicial: 'modelo', dirInicial: 1, texto: CAMPOS_TEXTO });
   const mostrarForm = creando || editando !== null;
+
+  const filtrados = orden.ordenar(
+    q.trim()
+      ? phones.filter((p) => [p.modelo, p.marca, p.id].some((c) => (c || '').toLowerCase().includes(q.trim().toLowerCase())))
+      : phones
+  );
 
   const resetForm = () => {
     setForm(FORM_VACIO);
@@ -195,76 +214,74 @@ export function CatalogoView({ phones, onReloadPhones, adminToken, configuracion
 
   if (mostrarForm) {
     return (
-      <div className="mx-auto max-w-4xl space-y-5">
-        <h1 className="text-2xl font-semibold tracking-tight">{creando ? 'Agregar nuevo celular' : `Editar: ${form.modelo}`}</h1>
-        <form onSubmit={handleGuardar} className="space-y-6">
-          <Card>
-            <CardContent className="grid grid-cols-2 gap-4 pt-6">
+      <div className="max-w-4xl">
+        <form onSubmit={handleGuardar}>
+          <SecH titulo={creando ? 'Agregar nuevo celular' : `Editar: ${form.modelo}`} />
+          <Panel className="p-4">
+            <div className="form-grid">
               <Campo label="ID único">
-                <Input placeholder="ej. samsung-s24" value={form.id} disabled={!creando} required onChange={(e) => setForm((f) => ({ ...f, id: e.target.value }))} />
+                <input placeholder="ej. samsung-s24" value={form.id} disabled={!creando} required onChange={(e) => setForm((f) => ({ ...f, id: e.target.value }))} />
               </Campo>
               <Campo label="Marca">
-                <Input placeholder="ej. Samsung" value={form.marca} required onChange={(e) => setForm((f) => ({ ...f, marca: e.target.value }))} />
+                <input placeholder="ej. Samsung" value={form.marca} required onChange={(e) => setForm((f) => ({ ...f, marca: e.target.value }))} />
               </Campo>
               <Campo label="Modelo">
-                <Input placeholder="ej. Galaxy S24 Ultra" value={form.modelo} required onChange={(e) => setForm((f) => ({ ...f, modelo: e.target.value }))} />
+                <input placeholder="ej. Galaxy S24 Ultra" value={form.modelo} required onChange={(e) => setForm((f) => ({ ...f, modelo: e.target.value }))} />
               </Campo>
               <Campo label="Precio base (MXN)">
-                <Input type="number" value={form.precioBase} required onChange={(e) => handlePrecioBaseChange(Number(e.target.value))} />
+                <input type="number" value={form.precioBase} required onChange={(e) => handlePrecioBaseChange(Number(e.target.value))} />
               </Campo>
-              <Campo label="Enganche (MXN)">
-                <Input type="number" value={form.enganche} required title="Sugerido: 15% del precio base." onChange={(e) => handleEngancheChange(Number(e.target.value))} />
+              <Campo label="Enganche (MXN)" hint="Sugerido: el % de enganche de Configuración.">
+                <input type="number" value={form.enganche} required onChange={(e) => handleEngancheChange(Number(e.target.value))} />
               </Campo>
-              <Campo label="Precio con descuento (opcional)">
-                <Input type="number" placeholder="Vacío si no hay oferta" value={form.precioDescuento} onChange={(e) => setForm((f) => ({ ...f, precioDescuento: e.target.value }))} />
+              <Campo label="Precio con descuento" hint="Vacío si no hay oferta.">
+                <input type="number" value={form.precioDescuento} onChange={(e) => setForm((f) => ({ ...f, precioDescuento: e.target.value }))} />
               </Campo>
-              <Campo label="Semanal · 26 semanas">
-                <Input type="number" value={form.montoSemanal26} disabled />
+              <Campo label="Semanal · 26 semanas" hint="Se calcula solo.">
+                <input type="number" value={form.montoSemanal26} disabled />
               </Campo>
-              <Campo label="Semanal · 52 semanas">
-                <Input type="number" value={form.montoSemanal52} disabled />
+              <Campo label="Semanal · 52 semanas" hint="Se calcula solo.">
+                <input type="number" value={form.montoSemanal52} disabled />
               </Campo>
-              <div className="col-span-2 flex flex-col gap-1.5">
-                <Label>Imagen del celular</Label>
-                <div className="flex items-center gap-3">
-                  <input id="file-upload" type="file" accept="image/*" className="hidden" onChange={handleImagen} />
-                  <Label htmlFor="file-upload" className="inline-flex cursor-pointer items-center gap-1.5 rounded-md border bg-secondary px-3 py-2 text-xs font-semibold">
-                    <Upload className="size-3.5" /> {subiendo ? 'Subiendo...' : 'Cargar imagen'}
-                  </Label>
-                  <Input className="flex-1" placeholder="O ingresa la URL manualmente" value={form.imagen} required onChange={(e) => setForm((f) => ({ ...f, imagen: e.target.value }))} />
-                  {form.imagen && <img src={form.imagen} alt="preview" className="size-10 rounded border object-contain" />}
-                </div>
-              </div>
               <Campo label="¿Envío gratis?">
-                <Select value={form.envioGratis ? 'si' : 'no'} onChange={(e) => setForm((f) => ({ ...f, envioGratis: e.target.value === 'si' }))}>
+                <select value={form.envioGratis ? 'si' : 'no'} onChange={(e) => setForm((f) => ({ ...f, envioGratis: e.target.value === 'si' }))}>
                   <option value="si">Sí, envío gratis</option>
                   <option value="no">Con costo adicional</option>
-                </Select>
+                </select>
               </Campo>
               {!form.envioGratis && (
-                <Campo label="Costo de envío ($ MXN)">
-                  <Input type="number" required value={form.costoEnvio} onChange={(e) => setForm((f) => ({ ...f, costoEnvio: Number(e.target.value) }))} />
+                <Campo label="Costo de envío (MXN)">
+                  <input type="number" required value={form.costoEnvio} onChange={(e) => setForm((f) => ({ ...f, costoEnvio: Number(e.target.value) }))} />
                 </Campo>
               )}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="space-y-4 pt-6">
-              <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Ficha técnica</h2>
-              <div className="grid grid-cols-2 gap-4">
-                {CAMPOS_SPECS.map(({ key, label, placeholder }) => (
-                  <Campo key={key} label={label}>
-                    <Textarea rows={1} placeholder={placeholder} value={form[key]} onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.value }))} />
-                  </Campo>
-                ))}
+              <div className="fld" style={{ gridColumn: '1 / -1' }}>
+                <label htmlFor="img-url">Imagen del celular</label>
+                <div className="flex items-center gap-2.5">
+                  <input id="file-upload" type="file" accept="image/*" className="hidden" onChange={handleImagen} />
+                  <label htmlFor="file-upload" className="ctl shrink-0">
+                    <Upload strokeWidth={1.7} /> {subiendo ? 'Subiendo...' : 'Cargar imagen'}
+                  </label>
+                  <input id="img-url" className="flex-1" placeholder="O ingresa la URL manualmente" value={form.imagen} required onChange={(e) => setForm((f) => ({ ...f, imagen: e.target.value }))} />
+                  {form.imagen && <img src={form.imagen} alt="Vista previa" className="size-9 shrink-0 rounded border object-contain" />}
+                </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </Panel>
 
-          <div className="flex gap-2">
+          <SecH titulo="Ficha técnica" nota="Se muestra en la vista rápida del catálogo público" />
+          <Panel className="p-4">
+            <div className="form-grid">
+              {CAMPOS_SPECS.map(({ key, label, placeholder }) => (
+                <Campo key={key} label={label}>
+                  <input placeholder={placeholder} value={form[key]} onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.value }))} />
+                </Campo>
+              ))}
+            </div>
+          </Panel>
+
+          <div className="mt-4 flex gap-2">
             <Button type="submit" disabled={guardando}>{guardando ? 'Guardando...' : 'Guardar celular'}</Button>
-            <Button type="button" variant="ghost" onClick={resetForm}>Cancelar</Button>
+            <button type="button" className="ctl" onClick={resetForm}>Cancelar</button>
           </div>
         </form>
       </div>
@@ -272,68 +289,85 @@ export function CatalogoView({ phones, onReloadPhones, adminToken, configuracion
   }
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Catálogo</h1>
-          <p className="text-muted-foreground">Equipos disponibles en la tienda.</p>
+    <>
+      <div className="mb-3 flex flex-wrap items-center gap-2.5 rounded-[var(--radius)] border bg-card p-3 shadow-[var(--sh)]">
+        <div className="srch">
+          <Search strokeWidth={1.8} />
+          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Modelo, marca o ID…" aria-label="Buscar en el catálogo" />
         </div>
-        <Button onClick={() => { resetForm(); setCreando(true); }}>
+        <span className="flex-1" />
+        <span className="chip"><b>{filtrados.length}</b> de {phones.length} equipos</span>
+        <Button size="sm" onClick={() => { resetForm(); setCreando(true); }}>
           <Plus className="size-4" />
           Nuevo celular
         </Button>
       </div>
 
-      <Card>
-        <CardContent className="p-0">
-          <Table>
-            <TableHeader>
+      <TableWrap>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <th />
+              <SortHead campo="modelo" activo={orden.campo} dir={orden.dir} onSort={orden.alternar}>Modelo</SortHead>
+              <SortHead campo="marca" activo={orden.campo} dir={orden.dir} onSort={orden.alternar}>Marca</SortHead>
+              <SortHead campo="precioBase" activo={orden.campo} dir={orden.dir} onSort={orden.alternar} num>Precio base</SortHead>
+              <SortHead campo="enganche" activo={orden.campo} dir={orden.dir} onSort={orden.alternar} num>Enganche</SortHead>
+              <SortHead campo="montoSemanal26" activo={orden.campo} dir={orden.dir} onSort={orden.alternar} num>Semanal 26 / 52</SortHead>
+              <SortHead campo="envio" activo={orden.campo} dir={orden.dir} onSort={orden.alternar}>Envío</SortHead>
+              <th />
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {filtrados.length === 0 && (
               <TableRow>
-                <TableHead>Imagen</TableHead>
-                <TableHead>Modelo</TableHead>
-                <TableHead>Marca</TableHead>
-                <TableHead className="text-right">Precio base</TableHead>
-                <TableHead className="text-right">Enganche</TableHead>
-                <TableHead>Semanal (26/52)</TableHead>
-                <TableHead>Envío</TableHead>
-                <TableHead />
+                <TableCell colSpan={8}>
+                  <div className="empty">{q.trim() ? 'Ningún equipo coincide con la búsqueda.' : 'El catálogo está vacío.'}</div>
+                </TableCell>
               </TableRow>
-            </TableHeader>
-            <TableBody>
-              {phones.map((phone) => (
-                <TableRow key={phone.id}>
-                  <TableCell><img src={phone.imagen} alt={phone.modelo} className="size-10 rounded border object-contain" /></TableCell>
-                  <TableCell className="font-medium">{phone.modelo}</TableCell>
-                  <TableCell>{phone.marca}</TableCell>
-                  <TableCell className="text-right tabular-nums">${phone.precioBase.toLocaleString('es-MX')}</TableCell>
-                  <TableCell className="text-right tabular-nums">${phone.enganche.toLocaleString('es-MX')}</TableCell>
-                  <TableCell className="tabular-nums">${phone.montoSemanal26}/${phone.montoSemanal52}</TableCell>
-                  <TableCell>{phone.envioGratis !== false ? 'Gratis' : `$${phone.costoEnvio || 0}`}</TableCell>
-                  <TableCell>
-                    <div className="flex justify-end gap-1">
-                      <Button size="icon" variant="ghost" onClick={() => handleEditar(phone)} aria-label="Editar">
-                        <Pencil className="size-4" />
-                      </Button>
-                      <Button size="icon" variant="ghost" onClick={() => handleEliminar(phone.id)} aria-label="Eliminar">
-                        <Trash2 className="size-4 text-[color:var(--status-critical)]" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-    </div>
+            )}
+            {filtrados.map((phone) => (
+              <TableRow key={phone.id}>
+                <TableCell><img src={phone.imagen} alt="" className="size-8 rounded border object-contain" /></TableCell>
+                <TableCell>
+                  <div className="cell-2">
+                    <b>{phone.modelo}</b>
+                    <small className="mono">{phone.id}</small>
+                  </div>
+                </TableCell>
+                <TableCell>{phone.marca}</TableCell>
+                <TableCell className="num">{formatoMoneda(phone.precioBase)}</TableCell>
+                <TableCell className="num">{formatoMoneda(phone.enganche)}</TableCell>
+                <TableCell className="num">{formatoMoneda(phone.montoSemanal26)} / {formatoMoneda(phone.montoSemanal52)}</TableCell>
+                <TableCell>
+                  {phone.envioGratis !== false
+                    ? <span className="tag g">Gratis</span>
+                    : <span className="mono">{formatoMoneda(phone.costoEnvio || 0)}</span>}
+                </TableCell>
+                <TableCell>
+                  <div className="flex justify-end gap-1">
+                    <Button size="icon" variant="ghost" onClick={() => handleEditar(phone)} aria-label={`Editar ${phone.modelo}`}>
+                      <Pencil className="size-4" />
+                    </Button>
+                    <Button size="icon" variant="ghost" onClick={() => handleEliminar(phone.id)} aria-label={`Eliminar ${phone.modelo}`}>
+                      <Trash2 className="size-4 text-[var(--crit-ink)]" />
+                    </Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableWrap>
+    </>
   );
 }
 
-function Campo({ label, children }: { label: string; children: ReactNode }) {
+function Campo({ label, hint, children }: { label: string; hint?: string; children: ReactNode }) {
   return (
-    <div className="flex flex-col gap-1.5">
-      <Label>{label}</Label>
+    <div className="fld">
+      <label>{label}</label>
       {children}
+      {hint && <span className="hint">{hint}</span>}
     </div>
   );
 }
