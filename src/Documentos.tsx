@@ -53,7 +53,7 @@ interface DocumentosProps {
 
 const RESEND_COOLDOWN_S = 32;
 
-type Paso = "celular" | "codigo" | "datos" | "direccion" | "codigo2" | "pago";
+type Paso = "celular" | "codigo" | "datos" | "direccion" | "codigo2" | "pago" | "bloqueado";
 
 const pasoInicialDesdeResumen = (r: ResumenSolicitud): Paso => {
   if (r.estatus === "Lista para pago") return "pago";
@@ -325,7 +325,16 @@ export const Documentos: React.FC<DocumentosProps> = ({ planData, onVolver, resu
         body: JSON.stringify({ aceptaTerminos: true }),
       });
       const res = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(res.error || "No se pudo confirmar. Intenta de nuevo.");
+      if (!response.ok) {
+        // Bloqueo de "un CURP = un crédito activo": pantalla propia, no el error
+        // genérico — el mensaje del backend ya es claro, pero el cliente necesita más
+        // contexto que un renglón rojo entre el formulario.
+        if (response.status === 409 && res.motivo === "curp_con_credito_activo") {
+          setPaso("bloqueado");
+          return;
+        }
+        throw new Error(res.error || "No se pudo confirmar. Intenta de nuevo.");
+      }
       setPaso("pago");
     } catch (error: any) {
       setErrorGuardado(error.message || "No se pudo confirmar. Intenta de nuevo.");
@@ -757,6 +766,17 @@ export const Documentos: React.FC<DocumentosProps> = ({ planData, onVolver, resu
               <button className={styles.cta} onClick={handleIniciarPago} disabled={iniciandoPago || !solicitudId} style={{ marginTop: 16 }}>
                 {iniciandoPago ? "Preparando pago..." : "Pagar enganche →"}
               </button>
+            </div>
+          )}
+
+          {paso === "bloqueado" && (
+            <div className={styles.estado}>
+              <div className={styles.tituloWrap}>
+                <p className={styles.titulo}>Ya tenés un crédito activo con nosotros</p>
+              </div>
+              <div className={styles.ed}>
+                Este CURP ya tiene un crédito de Movinex en curso, así que no podemos abrir uno nuevo. Cuando termines de pagarlo vas a poder pedir otro equipo con el mismo CURP.
+              </div>
             </div>
           )}
         </div>
