@@ -643,7 +643,10 @@ function DetalleCredito({ solicitud, onVolver, onUpdateStatus, onCancelarSolicit
                     {!m.exito && <span className="inline-flex items-center gap-1 font-semibold text-[var(--crit-ink)]"><X className="size-3" /> Falló</span>}
                   </div>
                   <span className="mono text-[11.5px] text-muted-foreground">{formatoFechaHora(m.creado_en)} · {m.celular}</span>
-                  {m.detalle && <p className="mt-0.5 text-[12px] text-[var(--crit-ink)]">{m.detalle}</p>}
+                  {/* El detalle solo importa como motivo de un envío fallido — en un
+                      mensaje exitoso (incluidos los reconstruidos por backfill) es una
+                      nota interna, no algo para alarmar al admin con texto en rojo. */}
+                  {!m.exito && m.detalle && <p className="mt-0.5 text-[12px] text-[var(--crit-ink)]">{m.detalle}</p>}
                 </div>
               </li>
             ))}
