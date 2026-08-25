@@ -129,7 +129,11 @@ export const Documentos: React.FC<DocumentosProps> = ({ planData, onVolver, resu
       const response = await fetch(`${backendUrl}/api/otp/enviar`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ celular }),
+        // El 2do OTP (paso "codigo2") se manda con la solicitud ya creada — mandar el id
+        // acá es lo que deja que el mensaje quede asociado a ella en el historial de
+        // /sadmin, en vez de perderse sin dueño (el 1er OTP, antes de que exista la
+        // solicitud, sigue mandando solicitudId vacío y se vincula solo al crearla).
+        body: JSON.stringify({ celular, solicitudId: solicitudId || undefined }),
       });
       if (!response.ok) {
         const res = await response.json();

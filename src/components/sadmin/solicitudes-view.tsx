@@ -386,7 +386,7 @@ function DetalleCredito({ solicitud, onVolver, onUpdateStatus, onCancelarSolicit
   const metodoPago = getMetodoPagoLabel(solicitud.metodoPagoEnganche);
 
   return (
-    <div className="max-w-4xl">
+    <div className="max-w-4xl mx-auto">
       <button type="button" className="ctl mb-3" onClick={onVolver}>
         <ArrowLeft strokeWidth={1.7} />
         Volver al listado
