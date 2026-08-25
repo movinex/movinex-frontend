@@ -8,7 +8,7 @@ import { Verificacion } from './Verificacion';
 import { Admin } from './Admin';
 import { SadminLogin } from './Sadmin';
 import { BotonWhatsapp } from './BotonWhatsapp';
-import type { Configuracion, Phone, Solicitud } from './types';
+import type { Configuracion, Phone, Rechazo, Solicitud } from './types';
 import type { Pago } from './lib/cartera';
 import landingStyles from './Landing.module.css';
 import finalizadoStyles from './Documentos.module.css';
@@ -52,11 +52,15 @@ function App() {
   // Historial de cobros (tabla `pagos`). Alimenta el motor de cartera de /sadmin:
   // antigüedad de saldos, días de mora, flujo mensual y estado de cuenta.
   const [pagos, setPagos] = useState<Pago[]>([]);
+  // Historial de intentos bloqueados por CURP-ya-con-crédito-activo (tabla `rechazos`).
+  // Alimenta la vista de Rechazos de /sadmin.
+  const [rechazos, setRechazos] = useState<Rechazo[]>([]);
   // Se prenden en true una sola vez, la primera vez que cada fetch resuelve (éxito o
   // error) — sirven para mostrar un skeleton en /sadmin mientras tanto en vez de
   // tarjetas con montos en $0, y no vuelven a false en los refrescos de 60 s.
   const [solicitudesCargadas, setSolicitudesCargadas] = useState(false);
   const [pagosCargados, setPagosCargados] = useState(false);
+  const [rechazosCargados, setRechazosCargados] = useState(false);
   const [phones, setPhones] = useState<Phone[]>([]);
   const [phonesLoaded, setPhonesLoaded] = useState(false);
   const [reloadTrigger, setReloadTrigger] = useState(0);
@@ -176,6 +180,26 @@ function App() {
       .finally(() => setPagosCargados(true));
   }, [adminToken, backendUrl]);
 
+  const cargarRechazos = useCallback(() => {
+    if (!adminToken) return;
+    fetch(`${backendUrl}/api/admin/rechazos`, { headers: { Authorization: `Bearer ${adminToken}` } })
+      .then(res => (res.ok ? res.json() : Promise.reject(new Error(`HTTP ${res.status}`))))
+      .then(data => {
+        setRechazos((data.rechazos || []).map((r: any) => ({
+          id: r.id,
+          solicitudId: r.solicitud_id,
+          curp: r.curp,
+          motivo: r.motivo,
+          detalle: r.detalle,
+          creditoId: r.credito_id,
+          creditoSolicitudId: r.credito?.solicitud_id ?? null,
+          creadoAt: r.creado_at
+        })));
+      })
+      .catch(err => console.error('Error al cargar el historial de rechazos:', err))
+      .finally(() => setRechazosCargados(true));
+  }, [adminToken, backendUrl]);
+
   // Cargar solicitudes del backend al abrir /dashboard o /sadmin, y refrescar solas
   // cada 1 minuto mientras quede abierto (requiere sesión de admin).
   useEffect(() => {
@@ -184,9 +208,11 @@ function App() {
 
     cargarSolicitudes();
     cargarPagos();
+    cargarRechazos();
     const interval = setInterval(() => {
       cargarSolicitudes();
       cargarPagos();
+      cargarRechazos();
     }, 60000);
     const countdown = setInterval(() => {
       setSegundosParaRefresh(prev => (prev <= 1 ? 60 : prev - 1));
@@ -195,7 +221,7 @@ function App() {
       clearInterval(interval);
       clearInterval(countdown);
     };
-  }, [location.pathname, adminToken, cargarSolicitudes, cargarPagos]);
+  }, [location.pathname, adminToken, cargarSolicitudes, cargarPagos, cargarRechazos]);
 
   // Cargar lista de celulares para alimentar el CRUD
   useEffect(() => {
@@ -343,6 +369,24 @@ function App() {
     setSolicitudes(prev => prev.map(s => (s.id === id ? { ...s, imei } : s)));
   };
 
+  const handleSaveCelular = async (id: string, celular: string) => {
+    const response = await fetch(`${backendUrl}/api/solicitudes/${id}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(adminToken ? { Authorization: `Bearer ${adminToken}` } : {})
+      },
+      body: JSON.stringify({ celular })
+    });
+
+    if (!response.ok) {
+      const res = await response.json().catch(() => ({}));
+      throw new Error(res.error || 'No se pudo guardar el celular.');
+    }
+
+    setSolicitudes(prev => prev.map(s => (s.id === id ? { ...s, celular } : s)));
+  };
+
   const handleSaveDireccion = async (id: string, direccion: {
     calle: string;
     numeroExterior: string;
@@ -424,11 +468,13 @@ function App() {
               <SadminDashboard
                 solicitudes={solicitudes}
                 pagos={pagos}
-                cargandoDatos={!solicitudesCargadas || !pagosCargados}
+                rechazos={rechazos}
+                cargandoDatos={!solicitudesCargadas || !pagosCargados || !rechazosCargados}
                 onUpdateStatus={handleUpdateStatus}
                 onCancelarSolicitud={handleCancelarSolicitud}
                 onSaveImei={handleSaveImei}
                 onSaveDireccion={handleSaveDireccion}
+                onSaveCelular={handleSaveCelular}
                 onProcesarRecordatorios={handleProcesarCobranza}
                 onGenerarLinkTarjeta={handleGenerarLinkTarjeta}
                 configuracion={configuracion}

@@ -10,18 +10,55 @@ import { PiCookieBold } from "react-icons/pi";
 const LANDING_SUBPAGES = ["movinex", "tienda", "privacidad", "terminos", "cookies", "envios"] as const;
 type LandingPage = "inicio" | (typeof LANDING_SUBPAGES)[number];
 
+// Preguntas frecuentes de la portada: contenido visible (no palabras escondidas) que de
+// paso captura las búsquedas largas — "¿checan buró?", "¿qué necesito?", etc. — que el
+// título y la descripción no alcanzan a cubrir. Alimenta el <section> de abajo y su
+// FAQPage JSON-LD, para que Google pueda mostrarlas como resultado enriquecido.
+const FAQ_INICIO: { pregunta: string; respuesta: string }[] = [
+  {
+    pregunta: "¿Necesito buró de crédito o tarjeta para comprar en Movinex?",
+    respuesta:
+      "No. En Movinex no checamos tu historial en buró de crédito ni pedimos tarjeta de crédito ni aval. Solo necesitamos tu INE vigente y un número de WhatsApp para darte una respuesta en minutos.",
+  },
+  {
+    pregunta: "¿Qué necesito para solicitar un celular a crédito?",
+    respuesta:
+      "Solo tu INE vigente, un WhatsApp donde te podamos contactar y el enganche del equipo que elijas (generalmente el 15% del precio). Todo el trámite se hace desde tu celular, sin ir a ninguna sucursal.",
+  },
+  {
+    pregunta: "¿Cómo son los pagos?",
+    respuesta:
+      "Pagas un enganche inicial y después cuotas semanales fijas durante el plazo que elijas (por ejemplo 26 o 52 semanas). El monto de cada pago no cambia durante todo el plazo, así sabes exactamente cuánto vas a pagar cada semana.",
+  },
+  {
+    pregunta: "¿A dónde hacen envíos?",
+    respuesta:
+      "Enviamos a domicilio a todo México, en la mayoría de los casos sin costo. Tu equipo llega directo a la puerta de tu casa una vez que confirmamos tu identidad.",
+  },
+  {
+    pregunta: "¿Qué pasa si no pago una semana?",
+    respuesta:
+      "Te avisamos por WhatsApp antes de cada cobro y también si se nos complica cobrarte. No cobramos intereses moratorios extra por un atraso, pero si se acumula podemos suspender el servicio del equipo hasta que te pongas al corriente.",
+  },
+  {
+    pregunta: "¿Puedo pedir un segundo celular si ya tengo un crédito activo?",
+    respuesta:
+      "No mientras tengas un crédito en curso: cada CURP puede tener un solo crédito activo a la vez. En cuanto terminas de pagar tu plan, tu CURP queda libre y puedes solicitar otro equipo.",
+  },
+];
+
 // Título y descripción únicos por página: evita que Google indexe todas las
 // rutas con el mismo <title>/<meta description> (los estáticos de index.html).
 const PAGE_META: Record<LandingPage, { title: string; description: string }> = {
   inicio: {
-    title: "Movinex | Celulares a pagos semanales sin buró ni tarjeta de crédito",
+    title: "Movinex | Celulares a Crédito Semanal Sin Buró, Sin Aval Ni Tarjeta",
     description:
-      "Estrena celular en México pagando semanalmente, sin checar buró de crédito, sin tarjeta y sin aval. Solo tu INE y WhatsApp: aprobación en minutos y envío a domicilio a todo el país.",
+      "Estrena celular en México a pagos semanales chiquitos, sin checar buró de crédito, sin tarjeta y sin aval. Olvídate de las mensualidades: con tu INE y WhatsApp, aprobación en minutos y envío a domicilio a todo el país.",
   },
   tienda: {
-    title: "Catálogo de Celulares a Crédito Semanal | Movinex",
+    title: "Catálogo de Celulares Nuevos a Crédito Sin Buró | Movinex",
     description:
-      "Elige tu celular nuevo y llévatelo hoy con solo el 15% de enganche. iPhone, Samsung y más a pagos semanales, sin buró de crédito ni tarjeta.",
+      "Elige tu celular nuevo y llévatelo hoy con solo el 15% de enganche, pagando semana a semana con pagos chiquitos. iPhone, Samsung y más a crédito sin checar buró, sin tarjeta y solo con tu INE.",
   },
   movinex: {
     title: "Quiénes Somos | Movinex",
@@ -493,6 +530,33 @@ export const Landing: React.FC<LandingProps> = ({
               </div>
             </div>
           </section>
+
+          {/* PREGUNTAS FRECUENTES */}
+          <section className={styles.faq}>
+            <h2 className={styles.faqTitle}>Preguntas frecuentes</h2>
+            <div className={styles.faqList}>
+              {FAQ_INICIO.map((item) => (
+                <details className={styles.faqItem} key={item.pregunta}>
+                  <summary className={styles.faqPregunta}>{item.pregunta}</summary>
+                  <p className={styles.faqRespuesta}>{item.respuesta}</p>
+                </details>
+              ))}
+            </div>
+          </section>
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify({
+                "@context": "https://schema.org",
+                "@type": "FAQPage",
+                mainEntity: FAQ_INICIO.map((item) => ({
+                  "@type": "Question",
+                  name: item.pregunta,
+                  acceptedAnswer: { "@type": "Answer", text: item.respuesta },
+                })),
+              }),
+            }}
+          />
         </>
       )}
 

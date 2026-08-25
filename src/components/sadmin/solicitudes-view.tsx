@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react';
-import { ArrowLeft, Check, X, Link as LinkIcon, AlertTriangle, Download, Search } from 'lucide-react';
+import { ArrowLeft, Check, X, Link as LinkIcon, AlertTriangle, Download, Search, Pencil, MessageSquare } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa';
 import { toast } from 'sonner';
 import { Table, TableBody, TableCell, TableFooter, TableHeader, TableRow, TableWrap, SortHead } from '@/components/ui/table';
@@ -9,7 +9,7 @@ import { useOrden } from './use-orden';
 import { formatoFechaHora, formatoMoneda } from '@/lib/format';
 import { getMetodoPagoLabel } from '@/lib/solicitudes';
 import { descargar, nombreArchivo, toCSV } from '@/lib/csv';
-import type { Solicitud } from '@/types';
+import type { MensajeWhatsapp, Solicitud } from '@/types';
 
 type EstatusSolicitud = Solicitud['estatus'];
 
@@ -42,17 +42,20 @@ interface DireccionInput {
   codigoPostal: string;
 }
 
-interface CreditosViewProps {
+interface SolicitudesViewProps {
   solicitudes: Solicitud[];
   onUpdateStatus: (id: string, nuevoEstatus: EstatusSolicitud) => Promise<void>;
   onCancelarSolicitud: (id: string) => Promise<void>;
   onSaveImei: (id: string, imei: string) => Promise<void>;
   onSaveDireccion: (id: string, direccion: DireccionInput) => Promise<void>;
+  onSaveCelular: (id: string, celular: string) => Promise<void>;
+  backendUrl: string;
+  adminToken: string | null;
 }
 
-export function CreditosView({
-  solicitudes, onUpdateStatus, onCancelarSolicitud, onSaveImei, onSaveDireccion
-}: CreditosViewProps) {
+export function SolicitudesView({
+  solicitudes, onUpdateStatus, onCancelarSolicitud, onSaveImei, onSaveDireccion, onSaveCelular, backendUrl, adminToken
+}: SolicitudesViewProps) {
   const [seleccionada, setSeleccionada] = useState<Solicitud | null>(null);
 
   const filtrosGuardados = (() => {
@@ -121,7 +124,7 @@ export function CreditosView({
           formatoFechaHora(s.fecha), s.estatus, s.imei || '', s.trackingNumber || ''
         ])
       ]),
-      nombreArchivo('creditos')
+      nombreArchivo('solicitudes')
     );
     toast.success(`${solicitudesFiltradas.length} solicitud(es) exportadas a CSV.`);
   };
@@ -135,6 +138,9 @@ export function CreditosView({
         onCancelarSolicitud={onCancelarSolicitud}
         onSaveImei={onSaveImei}
         onSaveDireccion={onSaveDireccion}
+        onSaveCelular={onSaveCelular}
+        backendUrl={backendUrl}
+        adminToken={adminToken}
       />
     );
   }
@@ -264,13 +270,16 @@ function getAccionPendiente(s: Solicitud): { mensaje: string; link: string } | n
 interface DetalleCreditoProps {
   solicitud: Solicitud;
   onVolver: () => void;
-  onUpdateStatus: CreditosViewProps['onUpdateStatus'];
-  onCancelarSolicitud: CreditosViewProps['onCancelarSolicitud'];
-  onSaveImei: CreditosViewProps['onSaveImei'];
-  onSaveDireccion: CreditosViewProps['onSaveDireccion'];
+  onUpdateStatus: SolicitudesViewProps['onUpdateStatus'];
+  onCancelarSolicitud: SolicitudesViewProps['onCancelarSolicitud'];
+  onSaveImei: SolicitudesViewProps['onSaveImei'];
+  onSaveDireccion: SolicitudesViewProps['onSaveDireccion'];
+  onSaveCelular: SolicitudesViewProps['onSaveCelular'];
+  backendUrl: string;
+  adminToken: string | null;
 }
 
-function DetalleCredito({ solicitud, onVolver, onUpdateStatus, onCancelarSolicitud, onSaveImei, onSaveDireccion }: DetalleCreditoProps) {
+function DetalleCredito({ solicitud, onVolver, onUpdateStatus, onCancelarSolicitud, onSaveImei, onSaveDireccion, onSaveCelular, backendUrl, adminToken }: DetalleCreditoProps) {
   const [avanzando, setAvanzando] = useState(false);
   const [imeiInput, setImeiInput] = useState(solicitud.imei || '');
   const [guardandoImei, setGuardandoImei] = useState(false);
@@ -281,6 +290,11 @@ function DetalleCredito({ solicitud, onVolver, onUpdateStatus, onCancelarSolicit
   });
   const [guardandoDireccion, setGuardandoDireccion] = useState(false);
   const [linkCopiado, setLinkCopiado] = useState(false);
+  const [editandoCelular, setEditandoCelular] = useState(false);
+  const [celularInput, setCelularInput] = useState(solicitud.celular);
+  const [guardandoCelular, setGuardandoCelular] = useState(false);
+  const [mensajes, setMensajes] = useState<MensajeWhatsapp[] | null>(null);
+  const [cargandoMensajes, setCargandoMensajes] = useState(false);
 
   const handleResolver = async (nuevoEstatus: EstatusSolicitud) => {
     setAvanzando(true);
@@ -318,6 +332,37 @@ function DetalleCredito({ solicitud, onVolver, onUpdateStatus, onCancelarSolicit
       setGuardandoImei(false);
     }
   };
+
+  const handleGuardarCelular = async () => {
+    const digitos = celularInput.replace(/\D/g, '');
+    if (digitos.length !== 10) {
+      toast.error('El celular debe tener 10 dígitos.');
+      return;
+    }
+    setGuardandoCelular(true);
+    try {
+      await onSaveCelular(solicitud.id, digitos);
+      toast.success('Celular actualizado. Las próximas alertas se mandan a este número.');
+      setEditandoCelular(false);
+    } catch (error: any) {
+      toast.error(error.message || 'No se pudo guardar el celular.');
+    } finally {
+      setGuardandoCelular(false);
+    }
+  };
+
+  useEffect(() => {
+    let cancelado = false;
+    setCargandoMensajes(true);
+    fetch(`${backendUrl}/api/admin/solicitudes/${solicitud.id}/mensajes`, {
+      headers: adminToken ? { Authorization: `Bearer ${adminToken}` } : undefined
+    })
+      .then((res) => (res.ok ? res.json() : Promise.reject(new Error('No se pudo cargar el historial de mensajes.'))))
+      .then((data) => { if (!cancelado) setMensajes(data); })
+      .catch(() => { if (!cancelado) setMensajes([]); })
+      .finally(() => { if (!cancelado) setCargandoMensajes(false); });
+    return () => { cancelado = true; };
+  }, [solicitud.id, backendUrl, adminToken]);
 
   const handleGuardarDireccion = async () => {
     const { calle, numeroExterior, colonia, alcaldiaMunicipio, estado, codigoPostal } = direccionForm;
@@ -404,9 +449,42 @@ function DetalleCredito({ solicitud, onVolver, onUpdateStatus, onCancelarSolicit
           <Campo
             label="WhatsApp"
             valor={
-              <a href={`https://wa.me/52${solicitud.celular}`} target="_blank" rel="noopener noreferrer" className="mono inline-flex items-center gap-1.5 text-primary hover:underline">
-                <FaWhatsapp className="text-[#25D366]" /> {solicitud.celular}
-              </a>
+              editandoCelular ? (
+                <div className="flex items-center gap-1.5">
+                  <input
+                    className="mono w-[110px]"
+                    value={celularInput}
+                    maxLength={10}
+                    inputMode="numeric"
+                    autoFocus
+                    onChange={(e) => setCelularInput(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                  />
+                  <Button size="sm" disabled={guardandoCelular || celularInput.length !== 10} onClick={handleGuardarCelular}>
+                    {guardandoCelular ? '...' : 'Guardar'}
+                  </Button>
+                  <button
+                    type="button"
+                    className="text-muted-foreground hover:underline"
+                    onClick={() => { setEditandoCelular(false); setCelularInput(solicitud.celular); }}
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              ) : (
+                <span className="inline-flex items-center gap-1.5">
+                  <a href={`https://wa.me/52${solicitud.celular}`} target="_blank" rel="noopener noreferrer" className="mono inline-flex items-center gap-1.5 text-primary hover:underline">
+                    <FaWhatsapp className="text-[#25D366]" /> {solicitud.celular}
+                  </a>
+                  <button
+                    type="button"
+                    title="Cambiar el número al que le llegan las alertas"
+                    className="text-muted-foreground hover:text-foreground"
+                    onClick={() => setEditandoCelular(true)}
+                  >
+                    <Pencil className="size-3.5" />
+                  </button>
+                </span>
+              )
             }
           />
           <Campo label="Correo" valor={solicitud.email} />
@@ -542,6 +620,34 @@ function DetalleCredito({ solicitud, onVolver, onUpdateStatus, onCancelarSolicit
             <Button onClick={() => handleResolver('Aprobado')}>Aprobar solicitud</Button>
             <Button variant="destructive" onClick={() => handleResolver('Rechazado')}>Rechazar crédito</Button>
           </div>
+        )}
+      </div>
+
+      <div className="sec-h"><h2>Mensajes enviados</h2><div className="rule" /></div>
+      <div className="rounded-[var(--radius)] border bg-card p-4 shadow-[var(--sh)]">
+        {/* Nuestro propio registro (mensajes_whatsapp): Meta no expone ningún endpoint
+            para consultar mensajes ya enviados, la Cloud API es solo-envío. */}
+        {cargandoMensajes ? (
+          <div className="empty">Cargando mensajes…</div>
+        ) : !mensajes || mensajes.length === 0 ? (
+          <div className="empty">Todavía no se le mandó ningún WhatsApp a esta solicitud.</div>
+        ) : (
+          <ul className="space-y-2">
+            {mensajes.map((m) => (
+              <li key={m.id} className="flex items-start gap-2.5 border-b pb-2 text-[13px] last:border-b-0 last:pb-0">
+                <MessageSquare strokeWidth={1.7} className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+                <div className="flex-1">
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <span className="font-semibold">{m.tipo}</span>
+                    {m.mock && <span className="chip text-[10.5px]">simulado</span>}
+                    {!m.exito && <span className="inline-flex items-center gap-1 font-semibold text-[var(--crit-ink)]"><X className="size-3" /> Falló</span>}
+                  </div>
+                  <span className="mono text-[11.5px] text-muted-foreground">{formatoFechaHora(m.creado_en)} · {m.celular}</span>
+                  {m.detalle && <p className="mt-0.5 text-[12px] text-[var(--crit-ink)]">{m.detalle}</p>}
+                </div>
+              </li>
+            ))}
+          </ul>
         )}
       </div>
     </div>

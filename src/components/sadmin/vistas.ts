@@ -1,4 +1,4 @@
-import { LayoutDashboard, CreditCard, Wallet, Calculator, Settings, Smartphone, CalendarDays, FileText } from 'lucide-react';
+import { LayoutDashboard, CreditCard, Wallet, Calculator, Settings, Smartphone, CalendarDays, FileText, UserX, BadgeCheck, Ban } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
 /**
@@ -37,9 +37,9 @@ export const GRUPOS: GrupoVistas[] = [
     grupo: 'Operación',
     vistas: [
       {
-        ruta: '/sadmin/creditos',
-        titulo: 'Créditos',
-        subtitulo: 'Las solicitudes, una por una',
+        ruta: '/sadmin/solicitudes',
+        titulo: 'Solicitudes',
+        subtitulo: 'El embudo completo, una por una',
         icono: CreditCard
       },
       {
@@ -49,10 +49,10 @@ export const GRUPOS: GrupoVistas[] = [
         icono: Wallet
       },
       {
-        ruta: '/sadmin/estado-cuenta',
-        titulo: 'Estado de cuenta',
-        subtitulo: 'Ficha completa de un crédito, lista para imprimir o mandar',
-        icono: FileText
+        ruta: '/sadmin/deudores',
+        titulo: 'Deudores',
+        subtitulo: 'Créditos activos con 2 o más cuotas vencidas',
+        icono: UserX
       }
     ]
   },
@@ -64,6 +64,29 @@ export const GRUPOS: GrupoVistas[] = [
         titulo: 'Calendario y flujo',
         subtitulo: 'Cuánto entra cada mes y cuánto quedó sin cobrar',
         icono: CalendarDays
+      }
+    ]
+  },
+  {
+    grupo: 'Registros',
+    vistas: [
+      {
+        ruta: '/sadmin/liquidados',
+        titulo: 'Liquidados',
+        subtitulo: 'Créditos terminados — el CURP ya quedó libre',
+        icono: BadgeCheck
+      },
+      {
+        ruta: '/sadmin/rechazos',
+        titulo: 'Rechazos',
+        subtitulo: 'Intentos bloqueados por CURP con crédito activo',
+        icono: Ban
+      },
+      {
+        ruta: '/sadmin/estado-cuenta',
+        titulo: 'Estado de cuenta',
+        subtitulo: 'Ficha completa de un crédito, lista para imprimir o mandar',
+        icono: FileText
       }
     ]
   },

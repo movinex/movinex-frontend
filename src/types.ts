@@ -35,6 +35,17 @@ export interface Phone {
   specsDimensionesPeso?: string;
 }
 
+export interface MensajeWhatsapp {
+  id: string;
+  solicitud_id: string;
+  celular: string;
+  tipo: string;
+  exito: boolean;
+  mock: boolean;
+  detalle?: string | null;
+  creado_en: string;
+}
+
 export interface Solicitud {
   id: string;
   cliente: string;
@@ -77,5 +88,20 @@ export interface Solicitud {
   verificamexComments?: string | null;
   verificamexErrores?: Array<{ Name?: string; Category?: string; Result?: boolean; Output?: string; Message?: string }> | null;
   costoEnvio?: number;
+}
+
+/** Un intento bloqueado porque el CURP ya tenía un crédito activo — ver lib/cartera.ts
+ *  y la vista de Rechazos de /sadmin. */
+export interface Rechazo {
+  id: string;
+  solicitudId: string | null;
+  curp: string;
+  motivo: string;
+  detalle: string | null;
+  creditoId: string | null;
+  /** Solicitud dueña del crédito que causó el bloqueo (no la solicitud rechazada) —
+   *  para linkear directo a su estado de cuenta. */
+  creditoSolicitudId: string | null;
+  creadoAt: string;
 }
 

@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Routes, Route } from 'react-router';
+import { Routes, Route, Navigate } from 'react-router';
 import './sadmin.css';
 import { cn } from './lib/utils';
 import { NavSidebar } from './components/sadmin/nav-sidebar';
@@ -7,15 +7,18 @@ import { MobileNav } from './components/sadmin/mobile-nav';
 import { Topbar } from './components/sadmin/topbar';
 import { Toaster } from './components/ui/sonner';
 import { ResumenView } from './components/sadmin/resumen-view';
-import { CreditosView } from './components/sadmin/creditos-view';
+import { SolicitudesView } from './components/sadmin/solicitudes-view';
 import { CobranzaView } from './components/sadmin/cobranza-view';
+import { DeudoresView } from './components/sadmin/deudores-view';
+import { LiquidadosView } from './components/sadmin/liquidados-view';
+import { RechazosView } from './components/sadmin/rechazos-view';
 import { CatalogoView } from './components/sadmin/catalogo-view';
 import { ConfiguracionView } from './components/sadmin/configuracion-view';
 import { CotizadorView } from './components/sadmin/cotizador-view';
 import { CalendarioView } from './components/sadmin/calendario-view';
 import { EstadoCuentaView } from './components/sadmin/estado-cuenta-view';
 import { DashboardSkeleton } from './components/sadmin/dashboard-skeleton';
-import type { Configuracion, Phone, Solicitud } from './types';
+import type { Configuracion, Phone, Rechazo, Solicitud } from './types';
 import { construirCartera, type Pago } from './lib/cartera';
 
 const SIDEBAR_KEY = 'movinex_sadmin_sidebar_colapsada';
@@ -33,11 +36,13 @@ interface DireccionInput {
 interface SadminDashboardProps {
   solicitudes: Solicitud[];
   pagos: Pago[];
+  rechazos: Rechazo[];
   cargandoDatos: boolean;
   onUpdateStatus: (id: string, nuevoEstatus: Solicitud['estatus']) => Promise<void>;
   onCancelarSolicitud: (id: string) => Promise<void>;
   onSaveImei: (id: string, imei: string) => Promise<void>;
   onSaveDireccion: (id: string, direccion: DireccionInput) => Promise<void>;
+  onSaveCelular: (id: string, celular: string) => Promise<void>;
   onProcesarRecordatorios: () => Promise<void>;
   onGenerarLinkTarjeta: (id: string) => Promise<string>;
   configuracion: Configuracion | null;
@@ -53,7 +58,7 @@ interface SadminDashboardProps {
 }
 
 export function SadminDashboard({
-  solicitudes, pagos, cargandoDatos, onUpdateStatus, onCancelarSolicitud, onSaveImei, onSaveDireccion, onProcesarRecordatorios, onGenerarLinkTarjeta,
+  solicitudes, pagos, rechazos, cargandoDatos, onUpdateStatus, onCancelarSolicitud, onSaveImei, onSaveDireccion, onSaveCelular, onProcesarRecordatorios, onGenerarLinkTarjeta,
   configuracion, onGuardarConfiguracion,
   phones, onReloadPhones, adminUser, adminToken, onLogout, onRefrescar, segundosParaRefresh, backendUrl
 }: SadminDashboardProps) {
@@ -92,22 +97,30 @@ export function SadminDashboard({
             <Routes>
               <Route index element={<ResumenView cartera={cartera} />} />
               <Route
-                path="creditos"
+                path="solicitudes"
                 element={
-                  <CreditosView
+                  <SolicitudesView
                     solicitudes={solicitudes}
                     onUpdateStatus={onUpdateStatus}
                     onCancelarSolicitud={onCancelarSolicitud}
                     onSaveImei={onSaveImei}
                     onSaveDireccion={onSaveDireccion}
+                    onSaveCelular={onSaveCelular}
+                    backendUrl={backendUrl}
+                    adminToken={adminToken}
                   />
                 }
               />
+              {/* Créditos → Solicitudes, 2026-08-24. Redirige los links guardados. */}
+              <Route path="creditos" element={<Navigate to="/sadmin/solicitudes" replace />} />
               <Route
                 path="cobranza"
                 element={<CobranzaView cartera={cartera} onProcesarRecordatorios={onProcesarRecordatorios} onGenerarLinkTarjeta={onGenerarLinkTarjeta} />}
               />
+              <Route path="deudores" element={<DeudoresView cartera={cartera} />} />
               <Route path="calendario" element={<CalendarioView cartera={cartera} />} />
+              <Route path="liquidados" element={<LiquidadosView cartera={cartera} />} />
+              <Route path="rechazos" element={<RechazosView rechazos={rechazos} solicitudes={solicitudes} />} />
               <Route path="estado-cuenta" element={<EstadoCuentaView cartera={cartera} />} />
               <Route path="estado-cuenta/:id" element={<EstadoCuentaView cartera={cartera} />} />
               <Route

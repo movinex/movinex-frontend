@@ -527,6 +527,75 @@
   margin: 0;
 }
 
+/* ========================== */
+/* PREGUNTAS FRECUENTES       */
+/* ========================== */
+.faq {
+  background-color: #ffffff;
+  padding: 80px 96px 120px;
+  max-width: 900px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+.faqTitle {
+  font-family: 'Inter', sans-serif;
+  font-weight: 800;
+  font-size: 40px;
+  color: #0b1b3a;
+  text-align: center;
+  margin: 0;
+}
+
+.faqList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.faqItem {
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 20px 24px;
+}
+
+.faqItem[open] {
+  background-color: #f8f8f9;
+}
+
+.faqPregunta {
+  cursor: pointer;
+  list-style: none;
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  color: #0b1b3a;
+}
+
+.faqPregunta::-webkit-details-marker {
+  display: none;
+}
+
+.faqPregunta::after {
+  content: '+';
+  float: right;
+  font-weight: 400;
+  color: #246aeb;
+}
+
+.faqItem[open] .faqPregunta::after {
+  content: '–';
+}
+
+.faqRespuesta {
+  margin: 14px 0 0;
+  font-size: 15px;
+  line-height: 1.55;
+  color: #050d1d;
+}
+
 /* ================================ */
 /* FOOTER                           */
 /* ================================ */
@@ -1413,6 +1482,15 @@
   .porQueGrid {
     flex-direction: column;
     max-width: 420px;
+  }
+  .faq {
+    padding: 56px 24px 64px;
+  }
+  .faqTitle {
+    font-size: 28px;
+  }
+  .faqItem {
+    padding: 16px 18px;
   }
   .footer {
     padding: 48px 24px 32px;
