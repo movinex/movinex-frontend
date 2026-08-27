@@ -1007,7 +1007,7 @@
 }
 
 /* ================================ */
-/* EYEBROW                          */
+/* EYEBROW (todavía usado en LegalContent)          */
 /* ================================ */
 .eyebrow {
   font-size: 12px;
@@ -1019,242 +1019,174 @@
 }
 
 /* ================================ */
-/* TIENDA (SHOP PAGE)               */
+/* TIENDA (CATÁLOGO) — Figma         */
 /* ================================ */
-.tienda {
-  max-width: 1200px;
-  margin: 80px auto;
-  padding: 0 24px;
-}
-
-.sectionTitle {
-  font-size: 36px;
-  font-weight: 800;
-  text-align: center;
-  color: #0F172A;
-  margin-bottom: 16px;
-  letter-spacing: -0.02em;
-}
-
-.sectionSubtitle {
-  text-align: center;
-  color: #64748B;
-  margin-bottom: 48px;
-  font-size: 16px;
-}
-
-.shopHeader {
-  text-align: center;
-  max-width: 800px;
-  margin: 0 auto 40px auto;
-  padding: 0 24px;
-  animation: fadeIn 0.4s ease-out;
-}
-
-.shopHeader h2 {
-  font-size: 40px;
-  font-weight: 800;
-  color: #0B1B3C;
-  margin: 12px 0 16px 0;
-  letter-spacing: -0.02em;
-}
-
-.catalogo {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 24px;
-}
-
-.productCard {
+.headerSolido {
   background-color: #ffffff;
-  border-radius: 20px;
-  border: 1px solid #E2E8F0;
+  backdrop-filter: none;
+  border-radius: 0;
+}
+
+.tiendaFigma {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 80px 96px 104px;
+  display: flex;
+  flex-direction: column;
+  gap: 72px;
+}
+
+.tiendaTitulo {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+  text-align: center;
+}
+
+.tiendaTitulo h1 {
+  font-family: 'Inter', sans-serif;
+  font-weight: 800;
+  font-size: 60px;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: #0b1b3a;
+  margin: 0;
+}
+
+.tiendaTitulo p {
+  font-size: 18px;
+  color: #050d1d;
+  margin: 0;
+}
+
+.tiendaGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.tiendaCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.tiendaCardImgWrap {
+  width: 100%;
+  aspect-ratio: 403 / 480;
+  border-radius: 40px;
   overflow: hidden;
-  cursor: pointer;
-  transition: all 0.25s ease;
-  position: relative;
-  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.01);
-  display: flex;
-  flex-direction: column;
+  background: #f2f2f3;
+}
+
+.tiendaCardImgWrap img {
+  width: 100%;
   height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
-.productCard:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 16px 36px rgba(15, 23, 42, 0.06);
-  border-color: #2B6BE4;
-}
-
-.imgWrap {
-  background-color: #F8FAFC;
-  padding: 40px;
+.tiendaCardDots {
   display: flex;
-  justify-content: center;
-  align-items: center;
-  border-bottom: 1px solid #E2E8F0;
-  position: relative;
-  height: 220px;
+  gap: 6px;
 }
 
-.imgWrap img {
-  max-height: 100%;
-  width: auto;
-  object-fit: contain;
-  transition: transform 0.25s ease;
-}
-
-.productCard:hover .imgWrap img {
-  transform: scale(1.04);
-}
-
-.engancheBadge {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  background-color: #DC2626;
-  color: #ffffff;
-  width: 70px;
-  height: 70px;
+.tiendaCardDot {
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
+  border: none;
+  background: rgba(11, 27, 58, 0.2);
+  padding: 0;
+  cursor: pointer;
+}
+
+.tiendaCardDotActiva {
+  background: #246aeb;
+}
+
+.tiendaCardInfo {
   display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
-  box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3);
-  z-index: 5;
-  animation: pulse 2s infinite;
+  gap: 10px;
+  text-align: center;
 }
 
-@keyframes pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-  100% { transform: scale(1); }
-}
-
-.engancheBadge span {
-  font-size: 9px;
-  text-transform: uppercase;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-}
-
-.engancheBadge strong {
-  font-size: 11px;
+.tiendaCardInfo h3 {
+  font-family: 'Inter', sans-serif;
   font-weight: 800;
+  font-size: 28px;
+  color: #0b1b3a;
+  margin: 0;
 }
 
-.prodInfo {
-  padding: 24px;
+.tiendaCardPrecio {
   display: flex;
   flex-direction: column;
-  flex-grow: 1;
+  gap: 2px;
 }
 
-.brand {
-  font-size: 11px;
-  font-weight: 800;
-  text-transform: uppercase;
-  color: #2B6BE4;
-  letter-spacing: 0.1em;
-}
-
-.prodInfo h3 {
-  font-size: 19px;
-  font-weight: 800;
-  margin: 6px 0 16px;
-  color: #0F172A;
-}
-
-.priceInfo {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 20px;
-  border-top: 1px solid #F1F5F9;
-  padding-top: 16px;
-}
-
-.semanal span, .enganche span {
-  display: block;
-  font-size: 11px;
-  color: #64748B;
+.tiendaCardDesde {
   font-weight: 600;
-  margin-bottom: 2px;
+  font-size: 14px;
+  color: #246aeb;
+  margin: 0;
 }
 
-.semanal strong {
-  font-size: 20px;
-  color: #2B6BE4;
-  font-weight: 800;
+.tiendaCardEnganche {
+  font-size: 14px;
+  color: #050d1d;
+  margin: 0;
 }
 
-.enganche strong {
-  font-size: 20px;
-  color: #0F172A;
-  font-weight: 800;
+.tiendaCardBotones {
+  display: flex;
+  gap: 6px;
+  width: 100%;
 }
 
-.cotizarBtn {
-  /* Es un <Link> (un <a> real, para que Google pueda rastrear las páginas de
-     producto), no un <button>: hay que replicar a mano lo que el navegador ya
-     le daba al botón — display block, texto centrado, sin subrayado y
-     box-sizing para que width:100% conviva con el padding. */
-  display: block;
-  box-sizing: border-box;
+.tiendaCardBtnDetalles {
+  flex: 1;
+  background: #ffffff;
+  border: 1px solid rgba(11, 27, 58, 0.1);
+  border-radius: 12px;
+  padding: 12px 24px;
+  font-weight: 600;
+  font-size: 16px;
+  color: rgba(11, 27, 58, 0.7);
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.tiendaCardBtnDetalles:hover {
+  border-color: rgba(11, 27, 58, 0.3);
+}
+
+.tiendaCardBtnSolicitar {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   text-align: center;
   text-decoration: none;
-  width: 100%;
-  background-color: #0F172A;
-  color: #ffffff;
-  border: none;
-  padding: 14px;
+  background: #246aeb;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 6px 20px rgba(21, 65, 147, 0.4);
   border-radius: 12px;
-  font-weight: 700;
-  font-size: 15px;
-  cursor: pointer;
-  transition: background-color 0.2s;
-  margin-top: auto;
+  padding: 12px 24px;
+  font-weight: 600;
+  font-size: 16px;
+  color: #ffffff;
+  font-family: 'Inter', sans-serif;
+  transition: transform 0.2s ease;
 }
 
-.productCard:hover .cotizarBtn {
-  background: linear-gradient(135deg, #2B6BE4, #0E7490);
-}
-
-/* ================================ */
-/* QUICK VIEW OVERLAY               */
-/* ================================ */
-.quickViewOverlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(11, 27, 60, 0.4);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  opacity: 0;
-  transition: opacity 0.25s ease;
-  z-index: 2;
-}
-
-.productCard:hover .quickViewOverlay {
-  opacity: 1;
-}
-
-.quickViewOverlay span {
-  background-color: #ffffff;
-  color: #0B1B3C;
-  padding: 10px 20px;
-  border-radius: 30px;
-  font-weight: 700;
-  font-size: 14px;
-  box-shadow: 0 6px 16px rgba(11, 27, 60, 0.15);
-  transform: translateY(10px);
-  transition: transform 0.25s ease;
-}
-
-.productCard:hover .quickViewOverlay span {
-  transform: translateY(0);
+.tiendaCardBtnSolicitar:hover {
+  transform: translateY(-1px);
 }
 
 /* ================================ */
@@ -1817,6 +1749,21 @@
   .mobileMenuBtn {
     display: flex;
   }
+  .tiendaFigma {
+    padding: 48px 24px 32px;
+    gap: 28px;
+  }
+  .tiendaTitulo h1 {
+    font-size: 44px;
+    letter-spacing: -0.02em;
+  }
+  .tiendaTitulo p {
+    font-size: 14px;
+  }
+  .tiendaGrid {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
   .hero {
     flex-direction: column;
     padding: 128px 24px 60px;
@@ -2097,10 +2044,6 @@
   .marcaItem {
     width: 45%;
     height: 90px;
-  }
-  .catalogo {
-    grid-template-columns: 1fr; /* Single column on very small viewports */
-    padding: 0 8px;
   }
   .footerContent {
     grid-template-columns: 1fr;

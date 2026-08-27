@@ -240,6 +240,7 @@ function App() {
           totalPagar52: Number(p.monto_semanal_52) * 52 + Number(p.enganche),
           precioDescuento: p.precio_descuento != null ? Number(p.precio_descuento) : undefined,
           imagen: p.imagen_url || p.imagen || '',
+          imagenes: Array.isArray(p.imagenes) ? p.imagenes : [],
           envioGratis: p.envio_gratis !== false,
           costoEnvio: Number(p.costo_envio || 0),
           specsPantalla: p.specs_pantalla || '',

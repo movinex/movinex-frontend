@@ -150,6 +150,65 @@ import imgQsHero from "./assets/quienes-hero.webp";
 import imgQsHeroMovil from "./assets/quienes-hero-movil.webp";
 import imgQsComoFunciona from "./assets/quienes-como-funciona.webp";
 
+// Catálogo (Tienda) — 3 fotos por celular para el mini-carrusel de cada
+// tarjeta (Figma trae una anotación: "el botón activo cambia cuando el
+// usuario cambia la imagen"). Ya vienen compuestas por la diseñadora con el
+// fondo degradado incluido, listas para usar tal cual — no hace falta
+// replicar el degradado ni el recorte a mano.
+import catE151 from "./assets/cat-e15-1.webp";
+import catE152 from "./assets/cat-e15-2.webp";
+import catE153 from "./assets/cat-e15-3.webp";
+import catA171 from "./assets/cat-a17-1.webp";
+import catA172 from "./assets/cat-a17-2.webp";
+import catA173 from "./assets/cat-a17-3.webp";
+import catTabA111 from "./assets/cat-taba11-1.webp";
+import catTabA112 from "./assets/cat-taba11-2.webp";
+import catTabA113 from "./assets/cat-taba11-3.webp";
+import catG351 from "./assets/cat-g35-1.webp";
+import catG352 from "./assets/cat-g35-2.webp";
+import catG353 from "./assets/cat-g35-3.webp";
+import catG061 from "./assets/cat-g06-1.webp";
+import catG062 from "./assets/cat-g06-2.webp";
+import catG063 from "./assets/cat-g06-3.webp";
+import catG151 from "./assets/cat-g15-1.webp";
+import catG152 from "./assets/cat-g15-2.webp";
+import catG153 from "./assets/cat-g15-3.webp";
+import catA071 from "./assets/cat-a07-1.webp";
+import catA072 from "./assets/cat-a07-2.webp";
+import catA073 from "./assets/cat-a07-3.webp";
+import catHonor1 from "./assets/cat-honor-1.webp";
+import catHonor2 from "./assets/cat-honor-2.webp";
+import catHonor3 from "./assets/cat-honor-3.webp";
+
+// Fallback local mientras se completa el backfill a Supabase (ver `phone.imagenes`
+// más abajo, que tiene prioridad). Orden fijo [lateral, frente, lateral] — la de
+// frente siempre en el medio.
+const CATALOGO_FOTOS: Record<string, string[]> = {
+  "Motorola E15": [catE153, catE151, catE152],
+  samsunga17: [catA171, catA172, catA173],
+  "Samsung A11 tab": [catTabA111, catTabA112, catTabA113],
+  "Motorola g35": [catG351, catG352, catG353],
+  Motorolag06: [catG061, catG062, catG063],
+  Motorolag15: [catG151, catG153, catG152],
+  "samsung-a07": [catA071, catA072, catA073],
+  "HONOR Play10": [catHonor1, catHonor2, catHonor3],
+};
+
+// Nombre de vitrina prolijo — la base tiene marca/modelo con mayúsculas y
+// espacios inconsistentes (p. ej. modelo "SAMSUNG A07" repitiendo la marca,
+// o "Play10" sin espacio), así que para el catálogo se muestra este nombre
+// fijo en vez de concatenar marca+modelo a lo bruto.
+const CATALOGO_NOMBRES: Record<string, string> = {
+  "Motorola E15": "Motorola E15",
+  samsunga17: "Samsung A17",
+  "Samsung A11 tab": "Samsung Tab A11",
+  "Motorola g35": "Motorola G35",
+  Motorolag06: "Motorola G06",
+  Motorolag15: "Motorola G15",
+  "samsung-a07": "Samsung A07",
+  "HONOR Play10": "Honor Play 10",
+};
+
 interface LandingProps {
   onSelectPhone: (phone: Phone) => void;
   onNavigateAdmin: () => void;
@@ -171,6 +230,10 @@ export const Landing: React.FC<LandingProps> = ({
     null,
   );
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  // Índice de la foto activa del mini-carrusel de cada tarjeta del catálogo,
+  // por id de celular — sin entrada acá, se usa el índice del medio (la foto
+  // de frente), no el 0.
+  const [carruselTienda, setCarruselTienda] = useState<Record<string, number>>({});
 
   // Prevent TS6133 unused prop error while Backoffice is commented
   ((_x: any) => {})(onNavigateAdmin);
@@ -291,6 +354,7 @@ export const Landing: React.FC<LandingProps> = ({
             ahorro26: 0,
             precioDescuento: p.precio_descuento != null ? Number(p.precio_descuento) : undefined,
             imagen: p.imagen_url || p.imagen || '',
+            imagenes: Array.isArray(p.imagenes) ? p.imagenes : [],
             envioGratis: p.envio_gratis !== false,
             costoEnvio: Number(p.costo_envio || 0),
             specsPantalla: p.specs_pantalla || '',
@@ -458,8 +522,10 @@ export const Landing: React.FC<LandingProps> = ({
         </div>
       )}
 
-      {/* HEADER */}
-      <header className={styles.header}>
+      {/* HEADER — en Tienda es blanco sólido (sin el efecto vidrio), así lo
+          marca el Figma del catálogo, seguramente porque las tarjetas de
+          colores debajo se verían muy cargadas a través del blur. */}
+      <header className={`${styles.header} ${page === "tienda" ? styles.headerSolido : ""}`}>
         <div className={styles.headerContent}>
           <img
             src={logoColor}
@@ -819,20 +885,16 @@ export const Landing: React.FC<LandingProps> = ({
         </>
       )}
 
-      {/* ===================== TIENDA ===================== */}
+      {/* ===================== TIENDA (Catálogo) ===================== */}
       {page === "tienda" && (
-        <section className={styles.tienda} style={{ marginTop: "40px" }}>
-          <div className={styles.shopHeader}>
-            <span className={styles.eyebrow}>CATÁLOGO COMPLETO</span>
-            <h1 className={styles.sectionTitle}>Nuestra Tienda</h1>
-            <p className={styles.sectionSubtitle}>
-              Los mejores celulares con financiamiento a tu medida. Estrena hoy
-              mismo con 15% de enganche.
-            </p>
+        <section className={styles.tiendaFigma}>
+          <div className={styles.tiendaTitulo}>
+            <h1>Elige tu próximo celular</h1>
+            <p>Escoge tu celular de nuestro catálogo y nosotros te lo enviamos a casa</p>
           </div>
-          <div className={styles.catalogo}>
+          <div className={styles.tiendaGrid}>
             {loading
-              ? Array.from({ length: 4 }).map((_, idx) => (
+              ? Array.from({ length: 6 }).map((_, idx) => (
                   <div key={`skeleton-${idx}`} className={styles.skeletonCard}>
                     <div className={styles.skeletonImg}></div>
                     <div className={styles.skeletonText}></div>
@@ -840,52 +902,69 @@ export const Landing: React.FC<LandingProps> = ({
                     <div className={styles.skeletonButton}></div>
                   </div>
                 ))
-              : phones.map((phone, idx) => (
-                  <div
-                    key={phone.id}
-                    className={styles.productCard}
-                    onClick={() => handleQuickView(phone)}
-                  >
-                    <div className={styles.imgWrap}>
-                      <img src={phone.imagen} alt={phone.modelo} />
-                      {idx === 0 && (
-                        <div className={styles.engancheBadge}>
-                          <span>Enganche</span>
-                          <strong>Mínimo</strong>
+              : phones.map((phone) => {
+                  const fotos =
+                    phone.imagenes && phone.imagenes.length > 0
+                      ? phone.imagenes
+                      : CATALOGO_FOTOS[phone.id] || (phone.imagen ? [phone.imagen] : []);
+                  // La foto de frente vive en el medio del array — arranca ahí, no en la 0.
+                  const activaDefault = Math.floor((fotos.length - 1) / 2);
+                  const activa = carruselTienda[phone.id] ?? activaDefault;
+                  const nombre = CATALOGO_NOMBRES[phone.id] || `${(phone.marca || "").trim()} ${phone.modelo}`.trim();
+                  return (
+                    <div className={styles.tiendaCard} key={phone.id}>
+                      <div className={styles.tiendaCardImgWrap}>
+                        {fotos[activa] && <img src={fotos[activa]} alt={nombre} />}
+                      </div>
+                      {fotos.length > 1 && (
+                        <div className={styles.tiendaCardDots}>
+                          {fotos.map((_, i) => (
+                            <button
+                              key={i}
+                              type="button"
+                              className={`${styles.tiendaCardDot} ${i === activa ? styles.tiendaCardDotActiva : ""}`}
+                              onClick={() =>
+                                setCarruselTienda((prev) => ({ ...prev, [phone.id]: i }))
+                              }
+                              aria-label={`Ver foto ${i + 1} de ${nombre}`}
+                            />
+                          ))}
                         </div>
                       )}
-                      <div className={styles.quickViewOverlay}>
-                        <span>Vista Rápida</span>
-                      </div>
-                    </div>
-                    <div className={styles.prodInfo}>
-                      <span className={styles.brand}>{phone.marca}</span>
-                      <h3>{phone.modelo}</h3>
-                      <div className={styles.priceInfo}>
-                        <div className={styles.semanal}>
-                          <span>Desde</span>
-                          <strong>${phone.montoSemanal52}/sem</strong>
-                        </div>
-                        <div className={styles.enganche}>
-                          <span>Enganche</span>
-                          <strong>${phone.enganche}</strong>
+                      <div className={styles.tiendaCardInfo}>
+                        <h3>{nombre}</h3>
+                        <div className={styles.tiendaCardPrecio}>
+                          <p className={styles.tiendaCardDesde}>
+                            Desde ${phone.montoSemanal52}/sem
+                          </p>
+                          <p className={styles.tiendaCardEnganche}>
+                            Enganche ${phone.enganche}
+                          </p>
                         </div>
                       </div>
-                      {/* <Link> y no <button>: renderiza un <a href> real, que es la
-                          única forma de que Google descubra las páginas de cada
-                          celular (antes eran huérfanas). La navegación sigue siendo
-                          del lado del cliente, y /cotizar/:id ya sabe reconstruir el
-                          teléfono desde la URL, así que no hace falta onSelectPhone. */}
-                      <Link
-                        to={`/cotizar/${phone.id}`}
-                        className={styles.cotizarBtn}
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        Cotizar Ahora
-                      </Link>
+                      <div className={styles.tiendaCardBotones}>
+                        <button
+                          type="button"
+                          className={styles.tiendaCardBtnDetalles}
+                          onClick={() => handleQuickView(phone)}
+                        >
+                          Detalles
+                        </button>
+                        {/* <Link> y no <button>: renderiza un <a href> real, que es la
+                            única forma de que Google descubra las páginas de cada
+                            celular (antes eran huérfanas). La navegación sigue siendo
+                            del lado del cliente, y /cotizar/:id ya sabe reconstruir el
+                            teléfono desde la URL, así que no hace falta onSelectPhone. */}
+                        <Link
+                          to={`/cotizar/${phone.id}`}
+                          className={styles.tiendaCardBtnSolicitar}
+                        >
+                          Solicitar crédito
+                        </Link>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
           </div>
         </section>
       )}

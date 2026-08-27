@@ -19,6 +19,10 @@ export interface Phone {
   ahorro26?: number;
   precioDescuento?: number;
   imagen: string;
+  // Fotos del mini-carrusel de la Tienda, en orden fijo: [lateral, frente, lateral].
+  // La de frente va siempre en el medio (índice 1). Puede venir vacío en celulares
+  // que todavía no se cargaron con el sadmin nuevo.
+  imagenes?: string[];
   envioGratis?: boolean;
   costoEnvio?: number;
   specsPantalla?: string;

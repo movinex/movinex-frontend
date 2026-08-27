@@ -52,8 +52,11 @@ const SPECS_VACIO = {
 
 const FORM_VACIO = {
   id: '', modelo: '', marca: '', precioBase: 0, enganche: 0, montoSemanal26: 0, montoSemanal52: 0,
-  precioDescuento: '', imagen: '', envioGratis: true, costoEnvio: 0, ...SPECS_VACIO
+  precioDescuento: '', imagen: '', imagenes: ['', '', ''] as string[], envioGratis: true, costoEnvio: 0, ...SPECS_VACIO
 };
+
+// Etiquetas del mini-carrusel de la Tienda — la de frente va siempre en el medio.
+const SLOTS_CARRUSEL = ['Lateral 1', 'De frente (se muestra primero)', 'Lateral 2'];
 
 const ACCESORES: Record<string, (p: Phone) => string | number | null | undefined> = {
   modelo: (p) => p.modelo,
@@ -113,6 +116,7 @@ export function CatalogoView({ phones, onReloadPhones, adminToken, configuracion
       id: phone.id, modelo: phone.modelo, marca: phone.marca, precioBase: phone.precioBase,
       enganche: phone.enganche, montoSemanal26: phone.montoSemanal26, montoSemanal52: phone.montoSemanal52,
       precioDescuento: phone.precioDescuento ? String(phone.precioDescuento) : '', imagen: phone.imagen,
+      imagenes: [0, 1, 2].map((i) => phone.imagenes?.[i] || ''),
       envioGratis: phone.envioGratis !== false, costoEnvio: phone.costoEnvio || 0,
       specsPantalla: phone.specsPantalla || '', specsProcesador: phone.specsProcesador || '',
       specsRamAlmacenamiento: phone.specsRamAlmacenamiento || '', specsMicrosd: phone.specsMicrosd || '',
@@ -134,7 +138,9 @@ export function CatalogoView({ phones, onReloadPhones, adminToken, configuracion
     setForm((f) => ({ ...f, enganche: valor, ...semanales }));
   };
 
-  const handleImagen = async (e: ChangeEvent<HTMLInputElement>) => {
+  // `slot` undefined = la imagen de portada (`form.imagen`); un número = la posición
+  // en el mini-carrusel de la Tienda (`form.imagenes[slot]`).
+  const handleImagen = async (e: ChangeEvent<HTMLInputElement>, slot?: number) => {
     const file = e.target.files?.[0];
     if (!file) return;
     setSubiendo(true);
@@ -152,7 +158,11 @@ export function CatalogoView({ phones, onReloadPhones, adminToken, configuracion
       });
       const res = await response.json();
       if (!response.ok) throw new Error(res.error || 'No se pudo subir la imagen.');
-      setForm((f) => ({ ...f, imagen: res.url }));
+      if (slot === undefined) {
+        setForm((f) => ({ ...f, imagen: res.url }));
+      } else {
+        setForm((f) => ({ ...f, imagenes: f.imagenes.map((u, i) => (i === slot ? res.url : u)) }));
+      }
     } catch (err: any) {
       toast.error(err.message || 'No se pudo subir la imagen.');
     } finally {
@@ -167,6 +177,7 @@ export function CatalogoView({ phones, onReloadPhones, adminToken, configuracion
       id: form.id, modelo: form.modelo, marca: form.marca, precio_base: form.precioBase, enganche: form.enganche,
       monto_semanal_26: form.montoSemanal26, monto_semanal_52: form.montoSemanal52,
       precio_descuento: form.precioDescuento === '' ? null : Number(form.precioDescuento), imagen: form.imagen,
+      imagenes: form.imagenes.filter((u) => u),
       envio_gratis: form.envioGratis, costo_envio: form.envioGratis ? 0 : form.costoEnvio,
       specs_pantalla: form.specsPantalla, specs_procesador: form.specsProcesador,
       specs_ram_almacenamiento: form.specsRamAlmacenamiento, specs_microsd: form.specsMicrosd,
@@ -265,6 +276,29 @@ export function CatalogoView({ phones, onReloadPhones, adminToken, configuracion
                   {form.imagen && <img src={form.imagen} alt="Vista previa" className="size-9 shrink-0 rounded border object-contain" />}
                 </div>
               </div>
+            </div>
+          </Panel>
+
+          <SecH titulo="Fotos de la Tienda" nota="Las 3 fotos del carrusel de la tarjeta del catálogo público. La de frente va en el medio: es la que se ve primero." />
+          <Panel className="p-4">
+            <div className="form-grid">
+              {SLOTS_CARRUSEL.map((label, i) => (
+                <Campo key={i} label={label}>
+                  <div className="flex items-center gap-2.5">
+                    <input id={`file-upload-${i}`} type="file" accept="image/*" className="hidden" onChange={(e) => handleImagen(e, i)} />
+                    <label htmlFor={`file-upload-${i}`} className="ctl shrink-0">
+                      <Upload strokeWidth={1.7} /> {subiendo ? 'Subiendo...' : 'Cargar'}
+                    </label>
+                    <input
+                      className="flex-1"
+                      placeholder="O ingresa la URL manualmente"
+                      value={form.imagenes[i] || ''}
+                      onChange={(e) => setForm((f) => ({ ...f, imagenes: f.imagenes.map((u, idx) => (idx === i ? e.target.value : u)) }))}
+                    />
+                    {form.imagenes[i] && <img src={form.imagenes[i]} alt="Vista previa" className="size-9 shrink-0 rounded border object-contain" />}
+                  </div>
+                </Campo>
+              ))}
             </div>
           </Panel>
 
