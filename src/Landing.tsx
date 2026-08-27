@@ -23,22 +23,22 @@ const FAQ_INICIO: { pregunta: string; respuesta: string }[] = [
   {
     pregunta: "¿Qué necesito para poder pedir mi celular?",
     respuesta:
-      "Solo tu INE vigente, un WhatsApp donde te podamos contactar y el enganche del equipo que elijas (generalmente el 15% del precio). Todo el trámite se hace desde tu celular, sin ir a ninguna sucursal.",
+      "Solo tu número de WhatsApp y tu INE vigente. Nada de comprobantes de ingresos, ni cartas laborales o papeleo extra.",
   },
   {
     pregunta: "¿Cuánto tengo que dar de enganche?",
     respuesta:
-      "El enganche depende del equipo, pero en la mayoría de los casos es el 15% del precio del celular. Lo ves reflejado antes de confirmar tu pedido, sin sorpresas.",
+      "El enganche es el 15% del valor del celular que elijas. Es el único pago que necesitas para asegurar tu equipo.",
   },
   {
     pregunta: "¿Cada cuánto pago y por cuánto tiempo?",
     respuesta:
-      "Pagas cuotas semanales fijas durante el plazo que elijas: 26 o 52 semanas. El monto de cada pago no cambia durante todo el plazo, así sabes exactamente cuánto vas a pagar cada semana.",
+      "Pagas cada semana, y tú eliges si prefieres terminar en 26 o 52 semanas. Desde el primer momento sabes exactamente cuánto vas a pagar cada semana y cuándo terminas.",
   },
   {
     pregunta: "¿Hay algún cobro extra?",
     respuesta:
-      "No. Lo que ves al cotizar es lo que pagas: enganche más tu cuota semanal. No cobramos comisiones ocultas ni intereses moratorios extra si te atrasas.",
+      "No. Lo que ves al elegir tu plan es lo que pagas, sin sorpresas ni cargos adicionales.",
   },
   {
     pregunta: "¿Qué pasa si no puedo pagar una semana?",
@@ -47,29 +47,27 @@ const FAQ_INICIO: { pregunta: string; respuesta: string }[] = [
   },
   {
     pregunta: "¿Los celulares son nuevos?",
-    respuesta:
-      "Sí, todos nuestros equipos son nuevos, sellados de fábrica y con garantía del fabricante.",
+    respuesta: "Sí, todos nuestros celulares son nuevos y están sellados.",
   },
   {
     pregunta: "¿En cuánto tiempo me llega el celular después de pedirlo?",
     respuesta:
-      "En cuanto confirmamos tu identidad y tu pago inicial, preparamos tu equipo para envío. La mayoría de los pedidos llega en un plazo de 2 a 5 días hábiles, dependiendo de tu ubicación.",
+      "Después de realizar el pago de tu enganche te enviaremos tu número de guía. Tu celular puede llegar de 3 a 5 días hábiles.",
   },
   {
     pregunta: "¿Envían a cualquier parte de México?",
-    respuesta:
-      "Sí, enviamos a domicilio a todo el país, en la mayoría de los casos sin costo de envío.",
+    respuesta: "Sí, hacemos envío a domicilio a todo el país.",
   },
   {
     pregunta: "¿Es seguro dar mis datos?",
     respuesta:
-      "Sí. Tus datos se manejan bajo nuestro Aviso de Privacidad, con cifrado en tránsito y en reposo, y solo se usan para verificar tu identidad y darte seguimiento a tu crédito. Nunca los compartimos con fines distintos a los autorizados por ti.",
+      "Sí es seguro, tus datos estarán encriptados de extremo a extremo.",
   },
   {
     pregunta:
       "¿Los celulares vienen liberados para usarlos con cualquier compañía?",
     respuesta:
-      "Sí, los equipos vienen liberados de fábrica y funcionan con la SIM de cualquier compañía telefónica en México.",
+      "Sí. Todos los equipos que financiamos vienen liberados de fábrica, por lo que puedes usarlos con la compañía telefónica de tu preferencia (Telcel, AT&T, Movistar, etc.).",
   },
 ];
 
