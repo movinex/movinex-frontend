@@ -16,34 +16,60 @@ type LandingPage = "inicio" | (typeof LANDING_SUBPAGES)[number];
 // FAQPage JSON-LD, para que Google pueda mostrarlas como resultado enriquecido.
 const FAQ_INICIO: { pregunta: string; respuesta: string }[] = [
   {
-    pregunta: "¿Necesito buró de crédito o tarjeta para comprar en Movinex?",
+    pregunta: "¿Necesito tener buen historial crediticio para calificar?",
     respuesta:
-      "No. En Movinex no checamos tu historial en buró de crédito ni pedimos tarjeta de crédito ni aval. Solo necesitamos tu INE vigente y un número de WhatsApp para darte una respuesta en minutos.",
+      "No. En Movinex no consultamos tu historial en buró de crédito. Solo necesitamos tu INE vigente y un número de WhatsApp para darte una respuesta en minutos.",
   },
   {
-    pregunta: "¿Qué necesito para solicitar un celular a crédito?",
+    pregunta: "¿Qué necesito para poder pedir mi celular?",
     respuesta:
       "Solo tu INE vigente, un WhatsApp donde te podamos contactar y el enganche del equipo que elijas (generalmente el 15% del precio). Todo el trámite se hace desde tu celular, sin ir a ninguna sucursal.",
   },
   {
-    pregunta: "¿Cómo son los pagos?",
+    pregunta: "¿Cuánto tengo que dar de enganche?",
     respuesta:
-      "Pagas un enganche inicial y después cuotas semanales fijas durante el plazo que elijas (por ejemplo 26 o 52 semanas). El monto de cada pago no cambia durante todo el plazo, así sabes exactamente cuánto vas a pagar cada semana.",
+      "El enganche depende del equipo, pero en la mayoría de los casos es el 15% del precio del celular. Lo ves reflejado antes de confirmar tu pedido, sin sorpresas.",
   },
   {
-    pregunta: "¿A dónde hacen envíos?",
+    pregunta: "¿Cada cuánto pago y por cuánto tiempo?",
     respuesta:
-      "Enviamos a domicilio a todo México, en la mayoría de los casos sin costo. Tu equipo llega directo a la puerta de tu casa una vez que confirmamos tu identidad.",
+      "Pagas cuotas semanales fijas durante el plazo que elijas: 26 o 52 semanas. El monto de cada pago no cambia durante todo el plazo, así sabes exactamente cuánto vas a pagar cada semana.",
   },
   {
-    pregunta: "¿Qué pasa si no pago una semana?",
+    pregunta: "¿Hay algún cobro extra?",
+    respuesta:
+      "No. Lo que ves al cotizar es lo que pagas: enganche más tu cuota semanal. No cobramos comisiones ocultas ni intereses moratorios extra si te atrasas.",
+  },
+  {
+    pregunta: "¿Qué pasa si no puedo pagar una semana?",
     respuesta:
       "Te avisamos por WhatsApp antes de cada cobro y también si se nos complica cobrarte. No cobramos intereses moratorios extra por un atraso, pero si se acumula podemos suspender el servicio del equipo hasta que te pongas al corriente.",
   },
   {
-    pregunta: "¿Puedo pedir un segundo celular si ya tengo un crédito activo?",
+    pregunta: "¿Los celulares son nuevos?",
     respuesta:
-      "No mientras tengas un crédito en curso: cada CURP puede tener un solo crédito activo a la vez. En cuanto terminas de pagar tu plan, tu CURP queda libre y puedes solicitar otro equipo.",
+      "Sí, todos nuestros equipos son nuevos, sellados de fábrica y con garantía del fabricante.",
+  },
+  {
+    pregunta: "¿En cuánto tiempo me llega el celular después de pedirlo?",
+    respuesta:
+      "En cuanto confirmamos tu identidad y tu pago inicial, preparamos tu equipo para envío. La mayoría de los pedidos llega en un plazo de 2 a 5 días hábiles, dependiendo de tu ubicación.",
+  },
+  {
+    pregunta: "¿Envían a cualquier parte de México?",
+    respuesta:
+      "Sí, enviamos a domicilio a todo el país, en la mayoría de los casos sin costo de envío.",
+  },
+  {
+    pregunta: "¿Es seguro dar mis datos?",
+    respuesta:
+      "Sí. Tus datos se manejan bajo nuestro Aviso de Privacidad, con cifrado en tránsito y en reposo, y solo se usan para verificar tu identidad y darte seguimiento a tu crédito. Nunca los compartimos con fines distintos a los autorizados por ti.",
+  },
+  {
+    pregunta:
+      "¿Los celulares vienen liberados para usarlos con cualquier compañía?",
+    respuesta:
+      "Sí, los equipos vienen liberados de fábrica y funcionan con la SIM de cualquier compañía telefónica en México.",
   },
 ];
 
@@ -83,11 +109,21 @@ const PAGE_META: Record<LandingPage, { title: string; description: string }> = {
   },
 };
 
-// Hero (video en loop, entregado por la diseñadora)
+// Hero (video en loop, entregado por la diseñadora — actualizado con el
+// diseño "Pagina Inicial" de Figma, nodo 708:9046, agosto 2026)
 import heroVideo from "./assets/hero-video.mp4";
 
-// "Cómo funciona" — imagen del paso activo (Figma)
-import imgComoFunciona from "./assets/figma-carrusel-paso2.webp";
+// "Cómo funciona" — una imagen distinta por cada paso del carrusel (así lo
+// marca la anotación de desarrollo de Figma: "La imagen a la derecha cambia
+// dependiendo del elemento activo"), con su versión para el frame móvil.
+import imgPasoElQueTuElijas from "./assets/carrusel-el-que-tu-elijas.webp";
+import imgPasoElQueTuElijasMovil from "./assets/carrusel-el-que-tu-elijas-movil.webp";
+import imgPasoSinFilas from "./assets/carrusel-sin-filas.webp";
+import imgPasoSinFilasMovil from "./assets/carrusel-sin-filas-movil.webp";
+import imgPasoPagaCadaSemana from "./assets/carrusel-paga-cada-semana.webp";
+import imgPasoPagaCadaSemanaMovil from "./assets/carrusel-paga-cada-semana-movil.webp";
+import imgPasoDondeTuElijas from "./assets/carrusel-donde-tu-elijas.webp";
+import imgPasoDondeTuElijasMovil from "./assets/carrusel-donde-tu-elijas-movil.webp";
 
 // "Por qué Movinex" — imágenes de las 3 tarjetas (Figma)
 import imgPorQue1 from "./assets/figma-card1.webp";
@@ -98,17 +134,16 @@ import imgPorQue3 from "./assets/figma-card3.webp";
 import logoMoviMono from "./assets/logo-movi-mono.svg";
 import logoNexMono from "./assets/logo-nex-mono.svg";
 
-// Brand logos (imágenes nuevas del usuario)
-import marca1 from "./assets/marca1.webp";
-import marca2 from "./assets/marca2.webp";
-import marca3 from "./assets/marca3.webp";
-import marca4 from "./assets/marca4.webp";
-import marca5 from "./assets/marca5.webp";
+// Logos de marcas para la banda "Las marcas que ya conoces" (versión mono
+// blanca, exportada de Figma — reemplazan los logos a color anteriores)
+import logoSamsung from "./assets/figma-logo-samsung.svg";
+import logoXiaomi from "./assets/figma-logo-xiaomi.svg";
+import logoHonor from "./assets/figma-logo-honor.svg";
+import logoMotorola from "./assets/figma-logo-motorola.svg";
+import logoMarca5 from "./assets/figma-logo-5.svg";
 
 // Payment methods
 import logoColor from "./assets/movinex_color.webp";
-import speiLogo from "./assets/spei.webp";
-import oxxoLogo from "./assets/Oxxo_Logo.svg.webp";
 
 interface LandingProps {
   onSelectPhone: (phone: Phone) => void;
@@ -145,20 +180,28 @@ export const Landing: React.FC<LandingProps> = ({
       titulo: "El que tú elijas",
       descripcion:
         "Elige el celular que quieras de nuestro catálogo y llévatelo con tan solo el 15% de enganche.",
+      imagenDesktop: imgPasoElQueTuElijas,
+      imagenMovil: imgPasoElQueTuElijasMovil,
     },
     {
       titulo: "Sin filas ni papeleos",
       descripcion:
-        "Obtén tu aprobación en minutos, solo con tu INE y WhatsApp. Cero papeleo, cero complicaciones.",
+        "Obtén tu cupo en minutos, solo con tu INE y WhatsApp. Cero papeleo, cero complicaciones.",
+      imagenDesktop: imgPasoSinFilas,
+      imagenMovil: imgPasoSinFilasMovil,
     },
     {
       titulo: "Paga cada semana",
       descripcion: "Elige tu plazo: 26 o 52 pagos semanales. Sin sorpresas.",
+      imagenDesktop: imgPasoPagaCadaSemana,
+      imagenMovil: imgPasoPagaCadaSemanaMovil,
     },
     {
       titulo: "Donde tú elijas",
       descripcion:
         "Sin filas ni esperas. Pide en línea y recíbelo en la puerta de tu casa.",
+      imagenDesktop: imgPasoDondeTuElijas,
+      imagenMovil: imgPasoDondeTuElijasMovil,
     },
   ];
   const PASO_DURACION_MS = 5000;
@@ -176,6 +219,7 @@ export const Landing: React.FC<LandingProps> = ({
 
   const [phones, setPhones] = useState<Phone[]>([]);
   const [loading, setLoading] = useState(true);
+  const ultimoCelular = phones[0];
 
   // Smooth scroll to top when page changes
   useEffect(() => {
@@ -185,9 +229,11 @@ export const Landing: React.FC<LandingProps> = ({
     });
   }, [page]);
 
-  // Cargar catálogo de celulares desde el backend
+  // Cargar catálogo de celulares desde el backend. También se pide en
+  // "inicio", porque el banner "Último Celular" muestra el primero del
+  // catálogo (el backend ya lo devuelve ordenado por updated_at desc).
   useEffect(() => {
-    if (page === "tienda") {
+    if (page === "tienda" || page === "inicio") {
       setLoading(true);
       const backendUrl = import.meta.env.VITE_BACKEND_URL || 'https://movinex-backend-production.up.railway.app';
       fetch(`${backendUrl}/api/celulares`)
@@ -253,7 +299,7 @@ export const Landing: React.FC<LandingProps> = ({
     // List of initial images that need to be preloaded
     const criticalUrls = [
       logoColor,
-      imgComoFunciona,
+      imgPasoSinFilas,
       imgPorQue1,
       imgPorQue2,
       imgPorQue3,
@@ -321,7 +367,7 @@ export const Landing: React.FC<LandingProps> = ({
               Quienes Somos
             </Link>
             <Link to="/tienda" className={styles.ctaCotizar}>
-              Cotiza aquí
+              <span className={styles.ctaCotizarDot}>•</span> Cotiza aquí
             </Link>
             {showAdminButton && (
               <button onClick={onNavigateAdmin} className={styles.adminBtn}>
@@ -403,14 +449,16 @@ export const Landing: React.FC<LandingProps> = ({
         <>
           {/* HERO */}
           <section className={styles.hero}>
+            <div className={styles.heroBlob} aria-hidden="true" />
             <div className={styles.heroLeft}>
               <div className={styles.heroTextBlock}>
                 <h1 className={styles.heroTitle}>
-                  El celular que necesitas, a tu ritmo
+                  El celular que necesitas, <span>a tu ritmo</span>
                 </h1>
                 <p className={styles.heroSubtitle}>
-                  Sin trámites burocráticos ni tarjeta de crédito. Tú eliges el
-                  equipo, nosotros lo enviamos a tu puerta.
+                  Sin trámites burocráticos ni tarjeta de crédito.
+                  <br />
+                  Elige tu equipo y recíbelo en tu puerta.
                 </p>
               </div>
               <Link to="/tienda" className={styles.ctaPrimary}>
@@ -431,8 +479,13 @@ export const Landing: React.FC<LandingProps> = ({
 
           {/* MARCAS VENDIDAS */}
           <section className={styles.marcasVendidas}>
+            <div className={styles.marcasBandBg} aria-hidden="true" />
             <div className={styles.marcasHeading}>
-              <h2>Las marcas que ya conoces</h2>
+              <h2>
+                Las marcas que
+                <br className={styles.marcasHeadingBreak} />
+                <span> ya conoces</span>
+              </h2>
               <p>
                 Equipos originales de las marcas que confías, listos para
                 trabajar y conectarte.
@@ -440,13 +493,22 @@ export const Landing: React.FC<LandingProps> = ({
             </div>
             <div className={styles.marquee}>
               <div className={styles.marqueeTrack}>
-                {[marca1, marca2, marca3, marca4, marca5, marca1, marca2, marca3, marca4, marca5].map(
-                  (logo, idx) => (
-                    <div className={styles.marqueeItem} key={idx}>
-                      <img src={logo} alt="" />
-                    </div>
-                  ),
-                )}
+                {[
+                  logoSamsung,
+                  logoXiaomi,
+                  logoHonor,
+                  logoMotorola,
+                  logoMarca5,
+                  logoSamsung,
+                  logoXiaomi,
+                  logoHonor,
+                  logoMotorola,
+                  logoMarca5,
+                ].map((logo, idx) => (
+                  <div className={styles.marqueeItem} key={idx}>
+                    <img src={logo} alt="" />
+                  </div>
+                ))}
               </div>
             </div>
           </section>
@@ -454,7 +516,7 @@ export const Landing: React.FC<LandingProps> = ({
           {/* CÓMO FUNCIONA */}
           <section className={styles.comoFunciona}>
             <h2 className={styles.comoFuncionaTitle}>
-              Sin esperas,
+              <span>Sin esperas,</span>
               <br />
               sin trámites, sin filas.
             </h2>
@@ -482,38 +544,54 @@ export const Landing: React.FC<LandingProps> = ({
                   ))}
                 </div>
                 <Link to="/tienda" className={styles.ctaPrimary}>
-                  Solicita tú cupo
+                  Solicita tú crédito
                 </Link>
               </div>
               <div className={styles.comoFuncionaImgWrap}>
-                <img src={imgComoFunciona} alt="Cómo funciona Movinex" />
+                <img
+                  src={pasos[pasoActivo].imagenDesktop}
+                  alt={pasos[pasoActivo].titulo}
+                  className={styles.comoFuncionaImgDesktop}
+                />
+                <img
+                  src={pasos[pasoActivo].imagenMovil}
+                  alt={pasos[pasoActivo].titulo}
+                  className={styles.comoFuncionaImgMovil}
+                />
               </div>
             </div>
           </section>
 
           {/* POR QUÉ MOVINEX */}
           <section className={styles.porQueMovinex}>
-            <h2 className={styles.porQueTitle}>Aprobación en minutos</h2>
+            <div className={styles.porQueBlob} aria-hidden="true" />
+            <h2 className={styles.porQueTitle}>
+              Aprobación <span>en minutos</span>
+            </h2>
             <div className={styles.porQueGrid}>
               <div className={styles.porQueCard}>
                 <div className={styles.porQueImgWrap}>
                   <img src={imgPorQue1} alt="Con nosotros si calificas" />
                 </div>
-                <h3>Con nosotros si calificas</h3>
-                <p className={styles.porQueDesc}>
-                  Olvídate del papeleo, aquí es sin historial bancario, sin
-                  tarjetas, sin aval.
-                </p>
+                <div className={styles.porQueTextWrap}>
+                  <h3>Con nosotros si calificas</h3>
+                  <p className={styles.porQueDesc}>
+                    Olvídate del papeleo, aquí es sin historial bancario, sin
+                    tarjetas, sin aval.
+                  </p>
+                </div>
               </div>
               <div className={styles.porQueCard}>
                 <div className={styles.porQueImgWrap}>
                   <img src={imgPorQue2} alt="Números claros desde el día uno" />
                 </div>
-                <h3>Números claros desde el día uno</h3>
-                <p className={styles.porQueDesc}>
-                  Lo que ves es lo que pagas. Sin cobros extra y si te
-                  atrasas, no te cobramos de más.
-                </p>
+                <div className={styles.porQueTextWrap}>
+                  <h3>Números claros desde el día uno</h3>
+                  <p className={styles.porQueDesc}>
+                    Lo que ves es lo que pagas. Sin cobros extra y si te
+                    atrasas, no te cobramos de más.
+                  </p>
+                </div>
               </div>
               <div className={styles.porQueCard}>
                 <div className={styles.porQueImgWrap}>
@@ -522,25 +600,73 @@ export const Landing: React.FC<LandingProps> = ({
                     alt="Te lo enviamos directo a tu puerta"
                   />
                 </div>
-                <h3>Te lo enviamos directo a tu puerta</h3>
-                <p className={styles.porQueDesc}>
-                  Nada de filas ni de perder el tiempo en tiendas físicas. Tú
-                  lo pides, nosotros lo enviamos.
-                </p>
+                <div className={styles.porQueTextWrap}>
+                  <h3>Te lo enviamos directo a tu puerta</h3>
+                  <p className={styles.porQueDesc}>
+                    Nada de filas ni de perder el tiempo en tiendas físicas. Tú
+                    lo pides, nosotros lo enviamos.
+                  </p>
+                </div>
               </div>
             </div>
           </section>
 
+          {/* BANNER PROMOCIONAL — el último celular agregado al catálogo */}
+          {ultimoCelular && (
+            <section className={styles.bannerPromo}>
+              <div className={styles.bannerPromoCard}>
+                <div className={styles.bannerPromoInfo}>
+                  <span className={styles.bannerPromoTag}>
+                    <span className={styles.bannerPromoDot}>•</span> Último
+                    Celular
+                  </span>
+                  <div>
+                    <p className={styles.bannerPromoModelo}>
+                      {ultimoCelular.marca} {ultimoCelular.modelo}
+                    </p>
+                    <Link
+                      to={`/cotizar/${ultimoCelular.id}`}
+                      className={styles.bannerPromoBtn}
+                    >
+                      Desde ${ultimoCelular.montoSemanal52}/Sem
+                    </Link>
+                  </div>
+                </div>
+                <div className={styles.bannerPromoImgWrap}>
+                  <img
+                    src={ultimoCelular.imagen}
+                    alt={`${ultimoCelular.marca} ${ultimoCelular.modelo}`}
+                  />
+                </div>
+              </div>
+            </section>
+          )}
+
           {/* PREGUNTAS FRECUENTES */}
           <section className={styles.faq}>
+            <div className={styles.faqBlob1} aria-hidden="true" />
+            <div className={styles.faqBlob2} aria-hidden="true" />
             <h2 className={styles.faqTitle}>Preguntas frecuentes</h2>
-            <div className={styles.faqList}>
+            <div className={styles.faqCard}>
               {FAQ_INICIO.map((item) => (
                 <details className={styles.faqItem} key={item.pregunta}>
-                  <summary className={styles.faqPregunta}>{item.pregunta}</summary>
+                  <summary className={styles.faqPregunta}>
+                    <span>{item.pregunta}</span>
+                  </summary>
                   <p className={styles.faqRespuesta}>{item.respuesta}</p>
                 </details>
               ))}
+            </div>
+            <div className={styles.faqCta}>
+              <p>¿Necesitas Asesoría?</p>
+              <a
+                href="https://wa.me/525555028744?text=Hola%20Movinex,%20tengo%20una%20duda"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <FaWhatsapp size={18} />
+                Habla con nosotros
+              </a>
             </div>
           </section>
           <script
@@ -850,7 +976,7 @@ export const Landing: React.FC<LandingProps> = ({
             </div>
           </div>
           <div className={styles.footerColumn}>
-            <h4>Para tí</h4>
+            <h4>Legal</h4>
             <div className={styles.footerLinks}>
               <Link to="/envios" className={styles.footerBtnLink}>
                 Envío y devoluciones
@@ -866,66 +992,6 @@ export const Landing: React.FC<LandingProps> = ({
         </div>
         <div className={styles.footerBottomRow}>
           <p>© 2026 Movinex. Todos los derechos reservados.</p>
-        </div>
-        <div className={styles.footerPaymentSection}>
-          <h4>Aceptamos los siguientes métodos de pago</h4>
-          <div className={styles.metodosPagoWix}>
-            <div className={styles.paymentLogoWix}>
-              <svg
-                viewBox="0 0 24 15"
-                width="40"
-                height="25"
-                style={{ borderRadius: "2px" }}
-              >
-                <rect width="24" height="15" fill="#1A1F71" />
-                <text
-                  x="50%"
-                  y="60%"
-                  fill="#FFFFFF"
-                  fontSize="6.5"
-                  fontWeight="bold"
-                  fontStyle="italic"
-                  textAnchor="middle"
-                  fontFamily="sans-serif"
-                >
-                  VISA
-                </text>
-              </svg>
-            </div>
-            <div className={styles.paymentLogoWix}>
-              <svg viewBox="0 0 24 15" width="40" height="25">
-                <circle cx="8" cy="7.5" r="6" fill="#EB001B" opacity="0.9" />
-                <circle cx="16" cy="7.5" r="6" fill="#F79E1B" opacity="0.9" />
-                <path
-                  d="M12 3.8a6 6 0 0 1 2.2 3.7A6 6 0 0 1 12 11.2a6 6 0 0 1-2.2-3.7A6 6 0 0 1 12 3.8z"
-                  fill="#FF5F00"
-                />
-              </svg>
-            </div>
-            <div className={styles.paymentLogoWix}>
-              <svg
-                viewBox="0 0 24 15"
-                width="40"
-                height="25"
-                style={{ borderRadius: "2px" }}
-              >
-                <rect width="24" height="15" fill="#0070CD" />
-                <text
-                  x="50%"
-                  y="60%"
-                  fill="#FFFFFF"
-                  fontSize="6.5"
-                  fontWeight="bold"
-                  textAnchor="middle"
-                  fontFamily="sans-serif"
-                >
-                  AMEX
-                </text>
-              </svg>
-            </div>
-            <img src={speiLogo} alt="SPEI" />
-            <img src={oxxoLogo} alt="OXXO" />
-          </div>
         </div>
       </footer>
     </div>

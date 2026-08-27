@@ -7,12 +7,15 @@
 
 /* HEADER */
 .header {
-  background-color: #ffffff;
-  border-bottom: 1px solid #E2E8F0;
+  background-color: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  border-bottom-left-radius: 18px;
+  border-bottom-right-radius: 18px;
   position: sticky;
   top: 0;
   z-index: 100;
-  box-shadow: 0 4px 20px rgba(11, 27, 60, 0.02);
 }
 
 .headerContent {
@@ -27,7 +30,7 @@
 
 @media (min-width: 901px) {
   .headerContent {
-    padding: 20px 96px;
+    padding: 20px 96px 16px;
   }
 }
 
@@ -44,9 +47,9 @@
 
 .nav a {
   text-decoration: none;
-  color: #475569;
-  font-weight: 600;
-  font-size: 15px;
+  color: #0b1b3a;
+  font-weight: 700;
+  font-size: 16px;
   transition: color 0.2s ease;
 }
 
@@ -62,13 +65,21 @@
   color: #ffffff;
   border: 1px solid rgba(255, 255, 255, 0.6);
   box-shadow: 0 6px 20px rgba(21, 65, 147, 0.4);
-  padding: 12px 22px;
+  padding: 12px 24px;
   border-radius: 12px;
   font-weight: 600;
-  font-size: 15px;
+  font-size: 16px;
   cursor: pointer;
   font-family: 'Inter', sans-serif;
   transition: transform 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ctaCotizarDot {
+  color: #22cced;
+  font-weight: 700;
 }
 
 .ctaCotizar:hover {
@@ -179,21 +190,37 @@
 /* HERO                       */
 /* ========================== */
 .hero {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 56px;
-  padding: 48px 96px;
+  gap: 80px;
+  padding: 120px 96px 48px;
   max-width: 1440px;
   margin: 0 auto;
   background-color: #ffffff;
+  overflow: hidden;
+}
+
+.heroBlob {
+  position: absolute;
+  right: -60px;
+  top: 20%;
+  width: 657px;
+  height: 630px;
+  max-width: 60%;
+  background: radial-gradient(circle, rgba(107, 63, 224, 0.51) 0%, rgba(107, 63, 224, 0) 70%);
+  pointer-events: none;
+  z-index: 0;
 }
 
 .heroLeft {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   gap: 40px;
-  width: 596px;
-  flex-shrink: 0;
+  flex: 1;
+  min-width: 0;
 }
 
 .heroTextBlock {
@@ -205,16 +232,20 @@
 .heroTitle {
   font-family: 'Inter', sans-serif;
   font-weight: 800;
-  font-size: 64px;
-  line-height: 1.05;
+  font-size: 72px;
+  line-height: 1;
   letter-spacing: -0.02em;
   color: #0b1b3a;
   margin: 0;
 }
 
+.heroTitle span {
+  color: #246aeb;
+}
+
 .heroSubtitle {
   font-size: 20px;
-  line-height: 1.4;
+  line-height: 1.2;
   color: #050d1d;
   margin: 0;
 }
@@ -244,9 +275,13 @@
 }
 
 .heroVideoWrap {
-  flex: 1;
-  height: 644px;
-  border-radius: 24px;
+  position: relative;
+  z-index: 1;
+  flex-shrink: 0;
+  width: 585px;
+  max-width: 45%;
+  aspect-ratio: 585 / 636.618;
+  border-radius: 18px;
   overflow: hidden;
   background: linear-gradient(135deg, #0b1b3a, #246aeb, #22cced);
 }
@@ -254,7 +289,6 @@
 .heroVideoTag {
   width: 100%;
   height: 100%;
-  min-height: 480px;
   object-fit: cover;
   display: block;
 }
@@ -263,40 +297,65 @@
 /* MARCAS VENDIDAS (marquee)  */
 /* ========================== */
 .marcasVendidas {
+  position: relative;
   background-color: #ffffff;
-  padding: 96px 96px 101px;
-  max-width: 1440px;
-  margin: 0 auto;
+  padding: 240px 96px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 40px;
+  gap: 64px;
+}
+
+/* Reproduce el "Rectangle 11" de Figma: un rectángulo con gradiente más
+   grande que la sección, rotado -1.94deg, así sus bordes quedan en
+   diagonal contra el blanco de arriba/abajo en vez de un corte recto. */
+.marcasBandBg {
+  position: absolute;
+  z-index: 0;
+  left: -10%;
+  right: -10%;
+  top: 90px;
+  height: 500px;
+  background: linear-gradient(110deg, #246aeb, #22cced);
+  transform: rotate(-1.94deg);
+  pointer-events: none;
 }
 
 .marcasHeading {
+  position: relative;
+  z-index: 1;
   text-align: center;
-  max-width: 700px;
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 12px;
 }
 
 .marcasHeading h2 {
   font-family: 'Inter', sans-serif;
   font-weight: 800;
-  font-size: 44px;
-  color: #0b1b3a;
+  font-size: 60px;
+  color: #ffffff;
   letter-spacing: -0.02em;
+  line-height: 1;
   margin: 0;
+  white-space: nowrap;
+}
+
+.marcasHeadingBreak {
+  display: none;
 }
 
 .marcasHeading p {
+  max-width: 700px;
   font-size: 18px;
-  color: #050d1d;
+  color: #e8f0fe;
   margin: 0;
 }
 
 .marquee {
+  position: relative;
+  z-index: 1;
   width: 100%;
   overflow: hidden;
   -webkit-mask-image: linear-gradient(to right, transparent, #000 8%, #000 92%, transparent);
@@ -305,7 +364,8 @@
 
 .marqueeTrack {
   display: flex;
-  gap: 40px;
+  align-items: center;
+  gap: 100px;
   width: max-content;
   animation: marqueeScroll 28s linear infinite;
 }
@@ -320,21 +380,16 @@
 }
 
 .marqueeItem {
-  background-color: #ffffff;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  border-radius: 12px;
-  width: 220px;
-  height: 125px;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 16px;
+  height: 60px;
   flex-shrink: 0;
 }
 
 .marqueeItem img {
-  max-height: 60px;
-  max-width: 85%;
+  max-height: 100%;
+  max-width: 100%;
   object-fit: contain;
 }
 
@@ -354,17 +409,21 @@
 .comoFuncionaTitle {
   font-family: 'Inter', sans-serif;
   font-weight: 800;
-  font-size: 54px;
+  font-size: 60px;
   line-height: 1.15;
   letter-spacing: -0.02em;
   color: #0b1b3a;
   margin: 0;
 }
 
+.comoFuncionaTitle span {
+  color: #246aeb;
+}
+
 .comoFuncionaGrid {
   display: flex;
-  gap: 80px;
-  align-items: flex-start;
+  gap: 160px;
+  align-items: center;
 }
 
 .pasosColumn {
@@ -405,14 +464,14 @@
 
 .pasoTitulo {
   font-weight: 700;
-  font-size: 26px;
+  font-size: 28px;
   letter-spacing: -0.01em;
   color: #0b1b3a;
   margin: 0;
 }
 
 .pasoDescripcion {
-  font-size: 16px;
+  font-size: 14px;
   line-height: 1.4;
   color: #050d1d;
   margin: 0;
@@ -443,12 +502,13 @@
 }
 
 .comoFuncionaImgWrap {
-  flex: 1;
-  min-width: 0;
+  flex-shrink: 0;
+  width: 548px;
+  max-width: 100%;
   border-radius: 24px;
   overflow: hidden;
-  background: linear-gradient(135deg, #0b1b3a, #246aeb, #22cced);
-  aspect-ratio: 547 / 703;
+  background: #cfcfcf;
+  aspect-ratio: 548 / 545;
 }
 
 .comoFuncionaImgWrap img {
@@ -458,10 +518,15 @@
   display: block;
 }
 
+.comoFuncionaImgMovil {
+  display: none;
+}
+
 /* ========================== */
 /* POR QUÉ MOVINEX            */
 /* ========================== */
 .porQueMovinex {
+  position: relative;
   background-color: #ffffff;
   padding: 80px 96px;
   max-width: 1440px;
@@ -469,19 +534,39 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 64px;
+  gap: 40px;
+  overflow: hidden;
+}
+
+.porQueBlob {
+  position: absolute;
+  left: -260px;
+  top: 0;
+  width: 805px;
+  height: 755px;
+  background: radial-gradient(circle, rgba(107, 63, 224, 0.4) 0%, rgba(107, 63, 224, 0) 70%);
+  pointer-events: none;
+  z-index: 0;
 }
 
 .porQueTitle {
+  position: relative;
+  z-index: 1;
   font-family: 'Inter', sans-serif;
   font-weight: 800;
-  font-size: 54px;
+  font-size: 60px;
   color: #0b1b3a;
   text-align: center;
   margin: 0;
 }
 
+.porQueTitle span {
+  color: #246aeb;
+}
+
 .porQueGrid {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: flex-start;
   gap: 40px;
@@ -491,7 +576,7 @@
 .porQueCard {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 20px;
   flex: 1;
 }
 
@@ -513,9 +598,17 @@
   transform: scale(1.05);
 }
 
+.porQueTextWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow: hidden;
+}
+
 .porQueCard h3 {
-  font-size: 22px;
+  font-size: 28px;
   font-weight: 700;
+  line-height: 1.2;
   color: #0b1b3a;
   margin: 0;
 }
@@ -524,54 +617,182 @@
   font-size: 15px;
   line-height: 1.5;
   color: #050d1d;
-  margin: 0;
+  margin: 14px 0 0;
+  max-height: 0;
+  opacity: 0;
+  transform: translateY(-6px);
+  transition: max-height 0.3s ease, opacity 0.25s ease, margin-top 0.3s ease, transform 0.3s ease;
+}
+
+.porQueCard:hover .porQueDesc,
+.porQueCard:focus-within .porQueDesc {
+  max-height: 120px;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ========================== */
+/* BANNER PROMOCIONAL         */
+/* ========================== */
+.bannerPromo {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 80px 96px 160px;
+  display: flex;
+  justify-content: center;
+}
+
+.bannerPromoCard {
+  width: 100%;
+  max-width: 1208px;
+  height: 334px;
+  border: 1px solid rgba(11, 27, 58, 0.05);
+  border-radius: 18px;
+  background: linear-gradient(140deg, #141f55 27%, #3448c8 99%);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  overflow: hidden;
+}
+
+.bannerPromoInfo {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  padding: 60px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.bannerPromoTag {
+  font-size: 18px;
+  color: #ffffff;
+}
+
+.bannerPromoDot {
+  color: #22cced;
+  font-weight: 700;
+}
+
+.bannerPromoModelo {
+  font-family: 'Inter', sans-serif;
+  font-weight: 800;
+  font-size: 60px;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: #ffffff;
+  margin: 0 0 10px;
+  overflow-wrap: anywhere;
+}
+
+.bannerPromoBtn {
+  display: inline-flex;
+  text-decoration: none;
+  background-color: #246aeb;
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 6px 20px rgba(21, 65, 147, 0.4);
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.bannerPromoImgWrap {
+  flex-shrink: 0;
+  width: 541px;
+  height: 294px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.bannerPromoImgWrap img {
+  max-width: 100%;
+  max-height: 140%;
+  object-fit: contain;
 }
 
 /* ========================== */
 /* PREGUNTAS FRECUENTES       */
 /* ========================== */
 .faq {
+  position: relative;
   background-color: #ffffff;
-  padding: 80px 96px 120px;
-  max-width: 900px;
-  margin: 0 auto;
+  padding: 80px 96px 160px;
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 40px;
+  overflow: hidden;
+}
+
+.faqBlob1 {
+  position: absolute;
+  right: -150px;
+  top: -400px;
+  width: 1299px;
+  height: 1218px;
+  background: radial-gradient(circle, rgba(107, 63, 224, 0.4) 0%, rgba(107, 63, 224, 0) 70%);
+  pointer-events: none;
+}
+
+.faqBlob2 {
+  position: absolute;
+  left: -360px;
+  bottom: -100px;
+  width: 566px;
+  height: 531px;
+  background: radial-gradient(circle, rgba(107, 63, 224, 0.4) 0%, rgba(107, 63, 224, 0) 70%);
+  pointer-events: none;
 }
 
 .faqTitle {
+  position: relative;
+  z-index: 1;
   font-family: 'Inter', sans-serif;
   font-weight: 800;
-  font-size: 40px;
+  font-size: 60px;
   color: #0b1b3a;
   text-align: center;
   margin: 0;
 }
 
-.faqList {
+.faqCard {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 900px;
+  background-color: #e8f0fe;
+  border: 1px solid rgba(11, 27, 58, 0.05);
+  border-radius: 18px;
+  padding: 40px 80px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
 }
 
 .faqItem {
-  border: 1px solid #e5e7eb;
-  border-radius: 16px;
-  padding: 20px 24px;
+  border-bottom: 1px solid rgba(11, 27, 58, 0.1);
+  padding: 10px 0;
 }
 
-.faqItem[open] {
-  background-color: #f8f8f9;
+.faqItem:last-child {
+  border-bottom: none;
 }
 
 .faqPregunta {
   cursor: pointer;
   list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
   font-family: 'Inter', sans-serif;
-  font-weight: 700;
-  font-size: 16px;
+  font-weight: 500;
+  font-size: 20px;
   color: #0b1b3a;
+  padding: 10px 0;
 }
 
 .faqPregunta::-webkit-details-marker {
@@ -580,7 +801,13 @@
 
 .faqPregunta::after {
   content: '+';
-  float: right;
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
   font-weight: 400;
   color: #246aeb;
 }
@@ -590,10 +817,36 @@
 }
 
 .faqRespuesta {
-  margin: 14px 0 0;
+  margin: 0 0 14px;
   font-size: 15px;
   line-height: 1.55;
   color: #050d1d;
+}
+
+.faqCta {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.faqCta p {
+  font-weight: 600;
+  font-size: 18px;
+  color: #0b1b3a;
+  margin: 0;
+}
+
+.faqCta a {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 20px;
+  color: #246aeb;
 }
 
 /* ================================ */
@@ -609,7 +862,7 @@
   max-width: 1200px;
   margin: 0 auto;
   display: grid;
-  grid-template-columns: 1.6fr 1fr 1fr 1fr;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 24px;
   padding-bottom: 80px;
 }
@@ -724,51 +977,6 @@
   color: #a8b9d6;
   font-size: 13px;
   margin: 0;
-}
-
-.footerPaymentSection {
-  margin: 32px auto 0;
-  border-top: 1px solid #16305f;
-  padding-top: 32px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-  width: 100%;
-  max-width: 1200px;
-}
-
-.footerPaymentSection h4 {
-  font-size: 13px;
-  font-weight: 600;
-  color: #a8b9d6;
-  text-transform: none;
-  letter-spacing: 0;
-}
-
-.metodosPagoWix {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-  background: #ffffff;
-  border-radius: 14px;
-  padding: 16px 24px;
-}
-
-.metodosPagoWix img {
-  height: 28px;
-  width: auto;
-  object-fit: contain;
-}
-
-.paymentLogoWix {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 28px;
-  width: auto;
 }
 
 /* ================================ */
@@ -1413,17 +1621,24 @@
   }
   .hero {
     flex-direction: column;
-    padding: 32px 24px 48px;
-    gap: 28px;
+    padding: 128px 24px 60px;
+    gap: 40px;
+  }
+  .heroBlob {
+    max-width: 100%;
+    right: auto;
+    left: 24px;
+    top: 40%;
   }
   .heroLeft {
     width: 100%;
     align-items: center;
     text-align: center;
-    gap: 32px;
+    gap: 24px;
   }
   .heroTitle {
-    font-size: 40px;
+    font-size: 44px;
+    letter-spacing: -0.02em;
   }
   .heroSubtitle {
     font-size: 16px;
@@ -1433,27 +1648,39 @@
   }
   .heroVideoWrap {
     width: 100%;
-    height: 340px;
-  }
-  .heroVideoTag {
-    min-height: 0;
+    max-width: 100%;
+    aspect-ratio: 365 / 397;
   }
   .marcasVendidas {
-    padding: 56px 24px;
-    gap: 24px;
+    padding: 80px 24px;
+    gap: 32px;
+  }
+  .marcasBandBg {
+    left: -13%;
+    right: -13%;
+    top: 39px;
+    height: 338px;
   }
   .marcasHeading h2 {
-    font-size: 28px;
+    font-size: 36px;
+    white-space: normal;
+    max-width: 320px;
+  }
+  .marcasHeadingBreak {
+    display: inline;
   }
   .marcasHeading p {
-    font-size: 15px;
+    font-size: 14px;
+  }
+  .marqueeTrack {
+    gap: 60px;
   }
   .comoFunciona {
     padding: 56px 24px;
     gap: 32px;
   }
   .comoFuncionaTitle {
-    font-size: 32px;
+    font-size: 36px;
     text-align: center;
   }
   .comoFuncionaGrid {
@@ -1462,10 +1689,17 @@
   }
   .comoFuncionaImgWrap {
     width: 100%;
-    aspect-ratio: 364 / 490;
+    aspect-ratio: auto;
+    height: 332px;
+  }
+  .comoFuncionaImgDesktop {
+    display: none;
+  }
+  .comoFuncionaImgMovil {
+    display: block;
   }
   .pasoTitulo {
-    font-size: 18px;
+    font-size: 20px;
   }
   .ctaPrimary {
     width: 100%;
@@ -1476,21 +1710,71 @@
     padding: 56px 24px;
     gap: 32px;
   }
+  .porQueBlob {
+    left: auto;
+    right: -150px;
+    top: 300px;
+    width: 480px;
+    height: 450px;
+  }
   .porQueTitle {
-    font-size: 32px;
+    font-size: 36px;
   }
   .porQueGrid {
     flex-direction: column;
     max-width: 420px;
   }
+  .porQueImgWrap {
+    aspect-ratio: auto;
+    height: 220px;
+  }
+  .porQueDesc,
+  .porQueCard:hover .porQueDesc,
+  .porQueCard:focus-within .porQueDesc {
+    max-height: none;
+    opacity: 1;
+    transform: none;
+  }
+  .bannerPromo {
+    padding: 40px 24px 80px;
+  }
+  .bannerPromoCard {
+    flex-direction: column-reverse;
+    height: auto;
+    padding-bottom: 24px;
+  }
+  .bannerPromoInfo {
+    width: 100%;
+    height: auto;
+    padding: 24px 24px 0;
+    gap: 25px;
+  }
+  .bannerPromoModelo {
+    font-size: 36px;
+  }
+  .bannerPromoImgWrap {
+    width: 186px;
+    height: 195px;
+  }
   .faq {
-    padding: 56px 24px 64px;
+    padding: 56px 24px 80px;
+    gap: 32px;
   }
   .faqTitle {
-    font-size: 28px;
+    font-size: 36px;
   }
-  .faqItem {
-    padding: 16px 18px;
+  .faqCard {
+    padding: 40px 16px;
+  }
+  .faqPregunta {
+    font-size: 14px;
+    gap: 12px;
+  }
+  .faqCta p {
+    font-size: 14px;
+  }
+  .faqCta a {
+    font-size: 16px;
   }
   .footer {
     padding: 48px 24px 32px;
