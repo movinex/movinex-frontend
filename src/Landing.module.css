@@ -1074,6 +1074,7 @@
 }
 
 .tiendaCardImgWrap {
+  position: relative;
   width: 100%;
   aspect-ratio: 403 / 480;
   border-radius: 40px;
@@ -1086,6 +1087,27 @@
   height: 100%;
   object-fit: cover;
   display: block;
+}
+
+/* Zonas invisibles a los costados de la imagen para cambiar de foto tocando el
+   borde, además de los puntitos. */
+.tiendaCardBorde {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 30%;
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+}
+
+.tiendaCardBordeIzq {
+  left: 0;
+}
+
+.tiendaCardBordeDer {
+  right: 0;
 }
 
 .tiendaCardDots {
@@ -1219,228 +1241,208 @@
 
 .modalCard {
   background-color: #ffffff;
-  width: 90%;
-  max-width: 1000px;
-  max-height: 90vh;
-  border-radius: 24px;
-  overflow-y: auto;
+  width: 92%;
+  max-width: 820px;
+  height: min(716px, 88vh);
+  border-radius: 40px;
+  overflow: hidden;
   position: relative;
+  display: flex;
   box-shadow: 0 24px 64px rgba(11, 27, 60, 0.25);
   animation: scaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  padding: 40px;
 }
 
 .closeBtn {
   position: absolute;
   top: 20px;
-  right: 24px;
-  background: transparent;
+  right: 20px;
+  width: 40px;
+  height: 40px;
+  border-radius: 40px;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border: none;
-  font-size: 32px;
-  color: #5A6688;
+  font-size: 24px;
+  line-height: 1;
+  color: #0b1b3a;
   cursor: pointer;
-  transition: color 0.2s;
-  z-index: 10;
+  box-shadow: 0 2px 8px rgba(11, 27, 58, 0.15);
+  z-index: 20;
+  transition: background-color 0.2s;
 }
 
 .closeBtn:hover {
-  color: #0B1B3C;
-}
-
-.modalGrid {
-  display: grid;
-  grid-template-columns: 1fr 1.2fr;
-  gap: 40px;
-}
-
-.modalLeft {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
+  background: #f2f2f3;
 }
 
 .modalImgWrap {
-  background-color: #F8FAFC;
-  border-radius: 20px;
-  padding: 40px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  border: 1px solid #E2E8F0;
-  height: 320px;
+  position: relative;
+  flex: 1;
+  height: 100%;
+  background: #f2f2f3;
+  overflow: hidden;
 }
 
 .modalImgWrap img {
-  max-height: 100%;
-  width: auto;
-  object-fit: contain;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
-.modalFinanceCard {
-  background-color: #F8FAFC;
-  border-radius: 20px;
-  border: 1px solid #E2E8F0;
-  padding: 24px;
-}
-
-.modalFinanceCard h3 {
-  font-size: 16px;
-  font-weight: 800;
-  color: #0B1B3C;
-  margin-bottom: 16px;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.financeRow {
+.modalDots {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
   display: flex;
-  justify-content: space-between;
-  margin-bottom: 12px;
-  font-size: 14px;
-  padding-bottom: 8px;
-  border-bottom: 1px dashed #E2E8F0;
+  gap: 6px;
+  z-index: 5;
 }
 
-.financeRow span {
-  color: #64748B;
-  font-weight: 600;
+.modalDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.5);
+  padding: 0;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
 }
 
-.financeRow strong {
-  font-size: 16px;
-  color: #0B1B3C;
-  font-weight: 800;
+.modalDotActiva {
+  background: #ffffff;
 }
 
-.financeNote {
-  font-size: 12px;
-  color: #64748B;
-  line-height: 1.5;
-  margin-top: 16px;
-}
-
-.modalRight {
+.modalContent {
+  flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
+  gap: 32px;
+  padding: 40px 0;
 }
 
-.modalBrand {
-  font-size: 12px;
-  font-weight: 800;
-  color: #2B6BE4;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  margin-bottom: 8px;
+.modalTop {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 0 40px;
+}
+
+.modalTexto {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.modalTitulo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-right: 32px;
 }
 
 .modalTitle {
-  font-size: 32px;
+  font-family: 'Inter', sans-serif;
   font-weight: 800;
-  color: #0B1B3C;
-  margin-bottom: 16px;
-  line-height: 1.15;
+  font-size: 24px;
+  line-height: 1.2;
+  color: #0b1b3a;
+  margin: 0;
 }
 
-.priceContainer {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 24px;
-}
-
-.originalPrice {
-  font-size: 18px;
-  text-decoration: line-through;
-  color: #5A6688;
+.modalBadge {
+  align-self: flex-start;
+  background: #e8f0fe;
+  color: #246aeb;
+  font-size: 14px;
   font-weight: 600;
-}
-
-.offerPrice {
-  font-size: 28px;
-  font-weight: 800;
-  color: #EF4444;
-}
-
-.discountBadge {
-  background-color: #FEF2F2;
-  color: #DC2626;
-  padding: 6px 12px;
+  padding: 4px 6px;
   border-radius: 8px;
-  font-size: 12px;
-  font-weight: 700;
 }
 
-.specsContainer h3 {
-  font-size: 16px;
-  font-weight: 800;
-  color: #0B1B3C;
-  margin-bottom: 16px;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.specsTable {
-  margin-bottom: 24px;
-}
-
-.specRow {
-  display: grid;
-  grid-template-columns: 1fr 1.5fr;
-  padding: 10px 0;
-  border-bottom: 1px solid #F1F5F9;
-  font-size: 13.5px;
-  line-height: 1.4;
-}
-
-.specRow span:first-child {
-  font-weight: 700;
-  color: #475569;
-}
-
-.specRow span:last-child {
-  color: #0B1B3C;
-}
-
-.modalActions {
+.modalPrecios {
   display: flex;
-  gap: 16px;
-  margin-top: auto;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  color: #050d1d;
+}
+
+.modalPrecios p {
+  margin: 0;
 }
 
 .solicitarBtn {
-  flex: 1.3;
-  background: linear-gradient(135deg, #2B6BE4, #0E7490);
+  width: 100%;
+  background: #246aeb;
   color: #ffffff;
-  border: none;
-  padding: 16px;
-  border-radius: 14px;
-  font-weight: 800;
-  font-size: 15px;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  padding: 12px 22px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 16px;
   cursor: pointer;
-  box-shadow: 0 8px 20px rgba(43, 107, 228, 0.25);
-  transition: all 0.2s;
+  box-shadow: 0 6px 20px rgba(21, 65, 147, 0.4);
+  transition: transform 0.2s;
 }
 
 .solicitarBtn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 10px 24px rgba(43, 107, 228, 0.35);
 }
 
-.cancelarBtn {
-  flex: 0.7;
-  background-color: #E2E8F0;
-  color: #475569;
-  border: none;
-  padding: 16px;
-  border-radius: 14px;
-  font-weight: 700;
-  font-size: 15px;
-  cursor: pointer;
-  transition: background-color 0.2s;
+.specsScroll {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  padding: 0 20px 0 40px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(11, 27, 58, 0.3) rgba(11, 27, 58, 0.05);
 }
 
-.cancelarBtn:hover {
-  background-color: #CBD5E1;
+.specsScroll::-webkit-scrollbar {
+  width: 8px;
+}
+
+.specsScroll::-webkit-scrollbar-track {
+  background: rgba(11, 27, 58, 0.05);
+  border-radius: 20px;
+}
+
+.specsScroll::-webkit-scrollbar-thumb {
+  background: rgba(11, 27, 58, 0.3);
+  border-radius: 20px;
+}
+
+.specRow {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 12px;
+  padding-bottom: 8px;
+  margin-bottom: 8px;
+  border-bottom: 1px dashed rgba(11, 27, 58, 0.12);
+}
+
+.specsScroll .specRow:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.specRow span:first-child {
+  font-weight: 600;
+  color: #0b1b3a;
+  letter-spacing: -0.12px;
+}
+
+.specRow span:last-child {
+  color: rgba(11, 27, 58, 0.7);
+  letter-spacing: -0.24px;
 }
 
 /* ================================ */
@@ -2066,18 +2068,24 @@
 
 @media (max-width: 768px) {
   .modalCard {
-    padding: 24px;
-    width: 95%;
-  }
-  .modalGrid {
-    grid-template-columns: 1fr;
-    gap: 24px;
+    flex-direction: column;
+    width: 94%;
+    height: min(92vh, 680px);
   }
   .modalImgWrap {
+    flex: none;
     height: 240px;
   }
-  .modalActions {
-    margin-bottom: 16px;
+  .modalContent {
+    padding: 24px 0;
+    gap: 24px;
+    min-height: 0;
+  }
+  .modalTop {
+    padding: 0 20px;
+  }
+  .specsScroll {
+    padding: 0 16px 0 20px;
   }
 }
 

@@ -55,8 +55,9 @@ const FORM_VACIO = {
   precioDescuento: '', imagen: '', imagenes: ['', '', ''] as string[], envioGratis: true, costoEnvio: 0, ...SPECS_VACIO
 };
 
-// Etiquetas del mini-carrusel de la Tienda — la de frente va siempre en el medio.
-const SLOTS_CARRUSEL = ['Lateral 1', 'De frente (se muestra primero)', 'Lateral 2'];
+// Etiquetas del mini-carrusel de la Tienda — la del medio es la foto principal
+// (normalmente la combo, mitad cámara / mitad pantalla) y se muestra primero.
+const SLOTS_CARRUSEL = ['Lateral 1', 'Foto principal (centro, se muestra primero)', 'Lateral 2 / atrás'];
 
 const ACCESORES: Record<string, (p: Phone) => string | number | null | undefined> = {
   modelo: (p) => p.modelo,

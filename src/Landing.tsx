@@ -181,17 +181,18 @@ import catHonor2 from "./assets/cat-honor-2.webp";
 import catHonor3 from "./assets/cat-honor-3.webp";
 
 // Fallback local mientras se completa el backfill a Supabase (ver `phone.imagenes`
-// más abajo, que tiene prioridad). Orden fijo [lateral, frente, lateral] — la de
-// frente siempre en el medio.
+// más abajo, que tiene prioridad). Orden fijo [lateral, combo (la foto principal,
+// mitad cámara/mitad pantalla), lateral u atrás] — la combo siempre en el medio,
+// es la que se muestra primero (igual que el pop-up de Figma).
 const CATALOGO_FOTOS: Record<string, string[]> = {
-  "Motorola E15": [catE153, catE151, catE152],
-  samsunga17: [catA171, catA172, catA173],
-  "Samsung A11 tab": [catTabA111, catTabA112, catTabA113],
-  "Motorola g35": [catG351, catG352, catG353],
-  Motorolag06: [catG061, catG062, catG063],
-  Motorolag15: [catG151, catG153, catG152],
-  "samsung-a07": [catA071, catA072, catA073],
-  "HONOR Play10": [catHonor1, catHonor2, catHonor3],
+  "Motorola E15": [catE151, catE153, catE152],
+  samsunga17: [catA172, catA171, catA173],
+  "Samsung A11 tab": [catTabA112, catTabA111, catTabA113],
+  "Motorola g35": [catG352, catG351, catG353],
+  Motorolag06: [catG062, catG061, catG063],
+  Motorolag15: [catG153, catG151, catG152],
+  "samsung-a07": [catA072, catA071, catA073],
+  "HONOR Play10": [catHonor2, catHonor1, catHonor3],
 };
 
 // Nombre de vitrina prolijo — la base tiene marca/modelo con mayúsculas y
@@ -208,6 +209,14 @@ const CATALOGO_NOMBRES: Record<string, string> = {
   "samsung-a07": "Samsung A07",
   "HONOR Play10": "Honor Play 10",
 };
+
+// Las 3 fotos de un celular, en orden [lateral, combo (la principal), lateral u
+// atrás] — usada tanto por la tarjeta de la grilla como por el pop-up de detalles,
+// para que ambos compartan exactamente el mismo criterio de fallback.
+const getFotosCelular = (phone: Phone): string[] =>
+  phone.imagenes && phone.imagenes.length > 0
+    ? phone.imagenes
+    : CATALOGO_FOTOS[phone.id] || (phone.imagen ? [phone.imagen] : []);
 
 interface LandingProps {
   onSelectPhone: (phone: Phone) => void;
@@ -380,6 +389,20 @@ export const Landing: React.FC<LandingProps> = ({
         });
     }
   }, [page]);
+
+  // Precarga las 3 fotos de cada celular apenas llega la lista — si se dejan cargar
+  // recién al hacer click en un puntito, la primera vez que se cambia de foto se ve
+  // "frenado" (esperando la red) porque ahora las fotos viven en Supabase Storage,
+  // no empaquetadas con el frontend.
+  useEffect(() => {
+    if (page !== "tienda" || phones.length === 0) return;
+    phones.forEach((phone) => {
+      getFotosCelular(phone).forEach((url) => {
+        const img = new Image();
+        img.src = url;
+      });
+    });
+  }, [page, phones]);
 
   const handleQuickView = (phone: Phone) => {
     setSelectedQuickView(phone);
@@ -903,18 +926,37 @@ export const Landing: React.FC<LandingProps> = ({
                   </div>
                 ))
               : phones.map((phone) => {
-                  const fotos =
-                    phone.imagenes && phone.imagenes.length > 0
-                      ? phone.imagenes
-                      : CATALOGO_FOTOS[phone.id] || (phone.imagen ? [phone.imagen] : []);
-                  // La foto de frente vive en el medio del array — arranca ahí, no en la 0.
+                  const fotos = getFotosCelular(phone);
+                  // La foto principal (la combo, mitad cámara/mitad pantalla) vive en el
+                  // medio del array — arranca ahí, no en la 0.
                   const activaDefault = Math.floor((fotos.length - 1) / 2);
                   const activa = carruselTienda[phone.id] ?? activaDefault;
                   const nombre = CATALOGO_NOMBRES[phone.id] || `${(phone.marca || "").trim()} ${phone.modelo}`.trim();
+                  const irAFoto = (i: number) =>
+                    setCarruselTienda((prev) => ({
+                      ...prev,
+                      [phone.id]: (i + fotos.length) % fotos.length,
+                    }));
                   return (
                     <div className={styles.tiendaCard} key={phone.id}>
                       <div className={styles.tiendaCardImgWrap}>
                         {fotos[activa] && <img src={fotos[activa]} alt={nombre} />}
+                        {fotos.length > 1 && (
+                          <>
+                            <button
+                              type="button"
+                              className={`${styles.tiendaCardBorde} ${styles.tiendaCardBordeIzq}`}
+                              onClick={() => irAFoto(activa - 1)}
+                              aria-label={`Foto anterior de ${nombre}`}
+                            />
+                            <button
+                              type="button"
+                              className={`${styles.tiendaCardBorde} ${styles.tiendaCardBordeDer}`}
+                              onClick={() => irAFoto(activa + 1)}
+                              aria-label={`Foto siguiente de ${nombre}`}
+                            />
+                          </>
+                        )}
                       </div>
                       {fotos.length > 1 && (
                         <div className={styles.tiendaCardDots}>
@@ -923,9 +965,7 @@ export const Landing: React.FC<LandingProps> = ({
                               key={i}
                               type="button"
                               className={`${styles.tiendaCardDot} ${i === activa ? styles.tiendaCardDotActiva : ""}`}
-                              onClick={() =>
-                                setCarruselTienda((prev) => ({ ...prev, [phone.id]: i }))
-                              }
+                              onClick={() => irAFoto(i)}
                               aria-label={`Ver foto ${i + 1} de ${nombre}`}
                             />
                           ))}
@@ -975,117 +1015,113 @@ export const Landing: React.FC<LandingProps> = ({
       )}
 
       {/* QUICK VIEW MODAL */}
-      {selectedQuickView && (
-        <div className={styles.modalOverlay} onClick={handleCloseQuickView}>
-          <div
-            className={styles.modalCard}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              className={styles.closeBtn}
-              onClick={handleCloseQuickView}
-              aria-label="Cerrar modal"
-            >
-              &times;
-            </button>
-            <div className={styles.modalGrid}>
-              <div className={styles.modalLeft}>
+      {selectedQuickView &&
+        (() => {
+          const phone = selectedQuickView;
+          const fotos = getFotosCelular(phone);
+          const activaDefault = Math.floor((fotos.length - 1) / 2);
+          const activa = carruselTienda[phone.id] ?? activaDefault;
+          const irAFoto = (i: number) =>
+            setCarruselTienda((prev) => ({
+              ...prev,
+              [phone.id]: (i + fotos.length) % fotos.length,
+            }));
+          const specsTodas: [string, string][] = [
+            ["Pantalla", phone.specsPantalla || ""],
+            ["Procesador", phone.specsProcesador || ""],
+            ["Almacenamiento", phone.specsRamAlmacenamiento || ""],
+            ["MicroSD", phone.specsMicrosd || ""],
+            ["Cámara trasera", phone.specsCamaraTrasera || ""],
+            ["Cámara frontal", phone.specsCamaraFrontal || ""],
+            ["Batería", phone.specsBateria || ""],
+            ["Sistema", phone.specsSistema || ""],
+            ["Seguridad", phone.specsSeguridad || ""],
+            ["Resistencia", phone.specsResistencia || ""],
+            ["Conectividad", phone.specsConectividad || ""],
+            ["Dimensiones", phone.specsDimensionesPeso || ""],
+          ];
+          const specs = specsTodas.filter(([, val]) => val);
+
+          return (
+            <div className={styles.modalOverlay} onClick={handleCloseQuickView}>
+              <div className={styles.modalCard} onClick={(e) => e.stopPropagation()}>
+                <button
+                  className={styles.closeBtn}
+                  onClick={handleCloseQuickView}
+                  aria-label="Cerrar modal"
+                >
+                  &times;
+                </button>
                 <div className={styles.modalImgWrap}>
-                  <img
-                    src={selectedQuickView.imagen}
-                    alt={selectedQuickView.modelo}
-                  />
-                </div>
-                <div className={styles.modalFinanceCard}>
-                  <h3>Financiamiento</h3>
-                  <div className={styles.financeRow}>
-                    <span>Enganche Inicial (15%):</span>
-                    <strong>${selectedQuickView.enganche}</strong>
-                  </div>
-                  <div className={styles.financeRow}>
-                    <span>Pago semanal desde:</span>
-                    <strong style={{ color: "#2B6BE4" }}>
-                      ${selectedQuickView.montoSemanal52}/sem
-                    </strong>
-                  </div>
-                  <p className={styles.financeNote}>
-                    Paga a 26 o 52 semanas sin tarjeta de crédito ni aval.
-                    Aprobación express con tu INE.
-                  </p>
-                </div>
-              </div>
-              <div className={styles.modalRight}>
-                <span className={styles.modalBrand}>
-                  {selectedQuickView.marca}
-                </span>
-                <h2 className={styles.modalTitle}>
-                  {selectedQuickView.modelo}
-                </h2>
-                <div className={styles.priceContainer}>
-                  {selectedQuickView.precioDescuento ? (
+                  {fotos[activa] && <img src={fotos[activa]} alt={phone.modelo} />}
+                  {fotos.length > 1 && (
                     <>
-                      <span className={styles.originalPrice}>
-                        ${selectedQuickView.precioBase.toLocaleString()}
-                      </span>
-                      <span className={styles.offerPrice}>
-                        ${selectedQuickView.precioDescuento.toLocaleString()}
-                      </span>
-                      <span className={styles.discountBadge}>
-                        Oferta Especial
-                      </span>
+                      <button
+                        type="button"
+                        className={`${styles.tiendaCardBorde} ${styles.tiendaCardBordeIzq}`}
+                        onClick={() => irAFoto(activa - 1)}
+                        aria-label="Foto anterior"
+                      />
+                      <button
+                        type="button"
+                        className={`${styles.tiendaCardBorde} ${styles.tiendaCardBordeDer}`}
+                        onClick={() => irAFoto(activa + 1)}
+                        aria-label="Foto siguiente"
+                      />
+                      <div className={styles.modalDots}>
+                        {fotos.map((_, i) => (
+                          <button
+                            key={i}
+                            type="button"
+                            className={`${styles.modalDot} ${i === activa ? styles.modalDotActiva : ""}`}
+                            onClick={() => irAFoto(i)}
+                            aria-label={`Ver foto ${i + 1} de ${phone.modelo}`}
+                          />
+                        ))}
+                      </div>
                     </>
-                  ) : (
-                    <span className={styles.offerPrice}>
-                      ${selectedQuickView.precioBase.toLocaleString()}
-                    </span>
                   )}
                 </div>
-                <div className={styles.specsContainer}>
-                  <h3>Ficha Técnica</h3>
-                  <div className={styles.specsTable}>
-                    {(() => {
-                      const entries: [string, string][] = [
-                        ["Pantalla", selectedQuickView.specsPantalla || ''],
-                        ["Procesador", selectedQuickView.specsProcesador || ''],
-                        ["RAM / Almacenamiento", selectedQuickView.specsRamAlmacenamiento || ''],
-                        ["MicroSD", selectedQuickView.specsMicrosd || ''],
-                        ["Cámara Trasera", selectedQuickView.specsCamaraTrasera || ''],
-                        ["Cámara Frontal", selectedQuickView.specsCamaraFrontal || ''],
-                        ["Batería", selectedQuickView.specsBateria || ''],
-                        ["Sistema", selectedQuickView.specsSistema || ''],
-                        ["Seguridad", selectedQuickView.specsSeguridad || ''],
-                        ["Resistencia", selectedQuickView.specsResistencia || ''],
-                        ["Conectividad", selectedQuickView.specsConectividad || ''],
-                        ["Dimensiones / Peso", selectedQuickView.specsDimensionesPeso || ''],
-                      ];
-                      return entries.filter(([_, val]) => val).map(([label, value]) => (
-                        <div key={label} className={styles.specRow}>
-                          <span>{label}</span>
-                          <span>{value}</span>
-                        </div>
-                      ));
-                    })()}
+                <div className={styles.modalContent}>
+                  <div className={styles.modalTop}>
+                    <div className={styles.modalTexto}>
+                      <div className={styles.modalTitulo}>
+                        <h2 className={styles.modalTitle}>{phone.modelo}</h2>
+                        <span className={styles.modalBadge}>
+                          Desde ${phone.montoSemanal52}/sem
+                        </span>
+                      </div>
+                      <div className={styles.modalPrecios}>
+                        <p>Precio original ${phone.precioBase.toLocaleString()}</p>
+                        {phone.precioDescuento != null && (
+                          <p>
+                            Precio con descuento $
+                            {phone.precioDescuento.toLocaleString()}
+                          </p>
+                        )}
+                        <p>Enganche ${phone.enganche.toLocaleString()}</p>
+                      </div>
+                    </div>
+                    <button
+                      className={styles.solicitarBtn}
+                      onClick={() => handleProcederCotizar(phone)}
+                    >
+                      Solicitar Crédito
+                    </button>
                   </div>
-                </div>
-                <div className={styles.modalActions}>
-                  <button
-                    className={styles.solicitarBtn}
-                    onClick={() => handleProcederCotizar(selectedQuickView)}
-                  >
-                    Solicitar Crédito Ahora
-                  </button>
-                  <button
-                    className={styles.cancelarBtn}
-                    onClick={handleCloseQuickView}
-                  >
-                    Volver a la tienda
-                  </button>
+                  <div className={styles.specsScroll}>
+                    {specs.map(([label, value]) => (
+                      <div key={label} className={styles.specRow}>
+                        <span>{label}:</span>
+                        <span>{value}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-      )}
+          );
+        })()}
 
       {/* FOOTER */}
       <footer className={styles.footer}>
