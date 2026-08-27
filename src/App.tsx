@@ -13,7 +13,7 @@ import type { Pago } from './lib/cartera';
 import landingStyles from './Landing.module.css';
 import finalizadoStyles from './Documentos.module.css';
 import logoBlancoFinalizado from './assets/movinex_blanco.webp';
-import { FiCheckCircle } from 'react-icons/fi';
+import { FiCheck, FiCheckCircle } from 'react-icons/fi';
 
 // Carga diferida a propósito: SadminDashboard importa Tailwind (sadmin.css), y si se
 // cargara de entrada ese CSS le llegaría a toda la app. Con lazy(), el chunk (y su CSS)
@@ -796,6 +796,20 @@ function FinalizadoRoute({
               <img src={imagen} alt={modelo} />
             </div>
           )}
+        </div>
+        <div className={finalizadoStyles.progreso}>
+          <div className={finalizadoStyles.pasoIndicador}>
+            <span className={`${finalizadoStyles.pasoNum} ${finalizadoStyles.pasoNumDone}`}><FiCheck /></span>
+            <span>Cotizar celular</span>
+          </div>
+          <div className={finalizadoStyles.pasoIndicador}>
+            <span className={`${finalizadoStyles.pasoNum} ${finalizadoStyles.pasoNumDone}`}><FiCheck /></span>
+            <span>Identidad</span>
+          </div>
+          <div className={`${finalizadoStyles.pasoIndicador} ${finalizadoStyles.pasoActivo}`}>
+            <span className={finalizadoStyles.pasoNum}>3</span>
+            <span>Envío</span>
+          </div>
         </div>
         <div className={finalizadoStyles.body}>
           <div className={finalizadoStyles.estado}>

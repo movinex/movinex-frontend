@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import styles from "./Documentos.module.css";
 import logoBlanco from "./assets/movinex_blanco.webp";
-import { FiCheck } from "react-icons/fi";
+import { FiCheck, FiCheckCircle, FiMail } from "react-icons/fi";
 import { FaWhatsapp } from "react-icons/fa6";
 
 export interface ResumenSolicitud {
@@ -385,22 +385,24 @@ export const Documentos: React.FC<DocumentosProps> = ({ planData, onVolver, resu
           </div>
         )}
       </div>
-      <div className={styles.progreso}>
-        <div className={styles.pasoIndicador}>
-          <span className={`${styles.pasoNum} ${styles.pasoNumDone}`}>
-            <FiCheck />
-          </span>
-          <span>Cotizar celular</span>
+      {paso !== "pago" && (
+        <div className={styles.progreso}>
+          <div className={styles.pasoIndicador}>
+            <span className={`${styles.pasoNum} ${styles.pasoNumDone}`}>
+              <FiCheck />
+            </span>
+            <span>Cotizar celular</span>
+          </div>
+          <div className={`${styles.pasoIndicador} ${fase2Activa ? styles.pasoActivo : ""}`}>
+            <span className={styles.pasoNum}>{fase2Activa ? "2" : <FiCheck />}</span>
+            <span>Identidad</span>
+          </div>
+          <div className={`${styles.pasoIndicador} ${!fase2Activa ? styles.pasoActivo : ""}`}>
+            <span className={styles.pasoNum}>3</span>
+            <span>Envío</span>
+          </div>
         </div>
-        <div className={`${styles.pasoIndicador} ${fase2Activa ? styles.pasoActivo : ""}`}>
-          <span className={styles.pasoNum}>{fase2Activa ? "2" : <FiCheck />}</span>
-          <span>Tus datos</span>
-        </div>
-        <div className={`${styles.pasoIndicador} ${!fase2Activa ? styles.pasoActivo : ""}`}>
-          <span className={styles.pasoNum}>3</span>
-          <span>Pago</span>
-        </div>
-      </div>
+      )}
     </div>
   );
 
@@ -415,7 +417,7 @@ export const Documentos: React.FC<DocumentosProps> = ({ planData, onVolver, resu
                 <p className={styles.titulo}>Verifica tu número de celular</p>
               </div>
               <div className={styles.campo}>
-                <label htmlFor="celular">Número de celular (WhatsApp)</label>
+                <label htmlFor="celular"><FiMail size={16} /> Número de celular (WhatsApp)</label>
                 <input
                   id="celular"
                   type="tel"
@@ -488,20 +490,20 @@ export const Documentos: React.FC<DocumentosProps> = ({ planData, onVolver, resu
           {paso === "datos" && (
             <div className={styles.paso}>
               <div className={styles.tituloWrap}>
-                <p className={styles.titulo}>Datos del cliente</p>
-                <p className={styles.subtitulo}>Necesitamos estos datos para tu solicitud de crédito</p>
+                <p className={styles.titulo}>Tus datos</p>
+                <p className={styles.subtitulo}>Llena el formulario con tus datos para continuar con tu solicitud de crédito.</p>
               </div>
 
               <div className={styles.campo}>
-                <label htmlFor="nombre">Nombre(s) <span className={styles.requerido}>*</span></label>
+                <label htmlFor="nombre">Nombre(s)</label>
                 <input id="nombre" type="text" value={nombre} onChange={(e) => setNombre(e.target.value)} required />
               </div>
               <div className={styles.campo}>
-                <label htmlFor="apellidos">Apellidos <span className={styles.requerido}>*</span></label>
+                <label htmlFor="apellidos">Apellidos</label>
                 <input id="apellidos" type="text" value={apellidos} onChange={(e) => setApellidos(e.target.value)} required />
               </div>
               <div className={styles.campo}>
-                <label htmlFor="email">Correo electrónico <span className={styles.requerido}>*</span></label>
+                <label htmlFor="email">Correo electrónico</label>
                 <input
                   id="email"
                   type="email"
@@ -513,11 +515,11 @@ export const Documentos: React.FC<DocumentosProps> = ({ planData, onVolver, resu
                 />
               </div>
               <div className={styles.campo}>
-                <label htmlFor="fechaNacimiento">Fecha de nacimiento <span className={styles.requerido}>*</span></label>
+                <label htmlFor="fechaNacimiento">Fecha de nacimiento</label>
                 <input id="fechaNacimiento" type="date" value={fechaNacimiento} onChange={(e) => setFechaNacimiento(e.target.value)} required />
               </div>
               <div className={styles.campo}>
-                <label htmlFor="curp">CURP <span className={styles.requerido}>*</span></label>
+                <label htmlFor="curp">CURP</label>
                 <input
                   id="curp"
                   type="text"
@@ -532,7 +534,7 @@ export const Documentos: React.FC<DocumentosProps> = ({ planData, onVolver, resu
                 )}
               </div>
               <div className={styles.campo}>
-                <label>Género <span className={styles.requerido}>*</span></label>
+                <label>Género</label>
                 <div className={styles.toggleGroup}>
                   <button
                     type="button"
@@ -551,7 +553,7 @@ export const Documentos: React.FC<DocumentosProps> = ({ planData, onVolver, resu
                 </div>
               </div>
               <div className={styles.campo}>
-                <label htmlFor="estadoCivil">Estado civil <span className={styles.requerido}>*</span></label>
+                <label htmlFor="estadoCivil">Estado civil</label>
                 <select id="estadoCivil" value={estadoCivil} onChange={(e) => setEstadoCivil(e.target.value)} required>
                   <option value="">Selecciona una opción</option>
                   <option value="Soltero/a">Soltero/a</option>
@@ -562,7 +564,7 @@ export const Documentos: React.FC<DocumentosProps> = ({ planData, onVolver, resu
                 </select>
               </div>
               <div className={styles.campo}>
-                <label htmlFor="dependientes">Dependientes económicos <span className={styles.requerido}>*</span></label>
+                <label htmlFor="dependientes">Dependientes económicos</label>
                 <input
                   id="dependientes"
                   type="number"
@@ -573,7 +575,7 @@ export const Documentos: React.FC<DocumentosProps> = ({ planData, onVolver, resu
                 />
               </div>
               <div className={styles.campo}>
-                <label htmlFor="nivelEstudios">Nivel de estudios <span className={styles.requerido}>*</span></label>
+                <label htmlFor="nivelEstudios">Nivel de estudios</label>
                 <select id="nivelEstudios" value={nivelEstudios} onChange={(e) => setNivelEstudios(e.target.value)} required>
                   <option value="">Selecciona una opción</option>
                   <option value="Primaria">Primaria</option>
@@ -603,12 +605,12 @@ export const Documentos: React.FC<DocumentosProps> = ({ planData, onVolver, resu
           {paso === "direccion" && (
             <div className={styles.paso}>
               <div className={styles.tituloWrap}>
-                <p className={styles.titulo}>Agrega tu dirección</p>
-                <p className={styles.subtitulo}>La necesitamos para programar el envío de tu celular</p>
+                <p className={styles.titulo}>Agrega tus datos de envío</p>
+                <p className={styles.subtitulo}>Completa la información para programar el envío de tu celular.</p>
               </div>
 
               <div className={styles.campo}>
-                <label htmlFor="calle">Calle <span className={styles.requerido}>*</span></label>
+                <label htmlFor="calle">Calle</label>
                 <input
                   id="calle"
                   type="text"
@@ -622,7 +624,7 @@ export const Documentos: React.FC<DocumentosProps> = ({ planData, onVolver, resu
               </div>
               <div style={{ display: "flex", gap: "16px" }}>
                 <div className={styles.campo} style={{ flex: 1 }}>
-                  <label htmlFor="numeroExterior">No. exterior <span className={styles.requerido}>*</span></label>
+                  <label htmlFor="numeroExterior">No. exterior</label>
                   <input id="numeroExterior" type="text" placeholder="123" value={numeroExterior} onChange={(e) => setNumeroExterior(e.target.value)} required />
                 </div>
                 <div className={styles.campo} style={{ flex: 1 }}>
@@ -631,7 +633,7 @@ export const Documentos: React.FC<DocumentosProps> = ({ planData, onVolver, resu
                 </div>
               </div>
               <div className={styles.campo}>
-                <label htmlFor="codigoPostal">Código postal <span className={styles.requerido}>*</span></label>
+                <label htmlFor="codigoPostal">Código postal</label>
                 <input
                   id="codigoPostal"
                   type="text"
@@ -647,15 +649,15 @@ export const Documentos: React.FC<DocumentosProps> = ({ planData, onVolver, resu
                 )}
               </div>
               <div className={styles.campo}>
-                <label htmlFor="colonia">Colonia <span className={styles.requerido}>*</span></label>
+                <label htmlFor="colonia">Colonia</label>
                 <input id="colonia" type="text" placeholder="Roma Norte" value={colonia} onChange={(e) => setColonia(e.target.value)} required />
               </div>
               <div className={styles.campo}>
-                <label htmlFor="alcaldiaMunicipio">Alcaldía / Municipio <span className={styles.requerido}>*</span></label>
+                <label htmlFor="alcaldiaMunicipio">Alcaldía / Municipio</label>
                 <input id="alcaldiaMunicipio" type="text" placeholder="Cuauhtémoc" value={alcaldiaMunicipio} onChange={(e) => setAlcaldiaMunicipio(e.target.value)} required />
               </div>
               <div className={styles.campo}>
-                <label htmlFor="estado">Estado <span className={styles.requerido}>*</span></label>
+                <label htmlFor="estado">Estado</label>
                 <input id="estado" type="text" placeholder="Ciudad de México" value={estado} onChange={(e) => setEstado(e.target.value)} required />
               </div>
 
@@ -666,7 +668,7 @@ export const Documentos: React.FC<DocumentosProps> = ({ planData, onVolver, resu
 
               <div className={styles.botonesFinal}>
                 <button type="button" className={styles.cta} onClick={handleGuardarDireccion} disabled={guardando}>
-                  {guardando ? "Guardando..." : "Siguiente"}
+                  {guardando ? "Guardando..." : "Confirmar domicilio"}
                 </button>
                 <button type="button" className={styles.pasoAnterior} onClick={() => setPaso("datos")}>
                   Paso Anterior
@@ -678,8 +680,8 @@ export const Documentos: React.FC<DocumentosProps> = ({ planData, onVolver, resu
           {paso === "codigo2" && (
             <div className={styles.paso}>
               <div className={styles.tituloWrap}>
-                <p className={styles.titulo}>Confirma tu identidad</p>
-                <p className={styles.subtitulo}>Te reenviamos un código para confirmar que sigues siendo tú</p>
+                <p className={styles.titulo}>Firma de Términos y Condiciones</p>
+                <p className={styles.subtitulo}>Te reenviamos un código a tu WhatsApp con este firmas los términos y condiciones</p>
               </div>
               <div className={styles.avisoWhatsapp}>
                 <FaWhatsapp /> Código enviado a tu WhatsApp
@@ -741,37 +743,41 @@ export const Documentos: React.FC<DocumentosProps> = ({ planData, onVolver, resu
             </div>
           )}
 
-          {paso === "pago" && (
-            <div className={styles.estado}>
-              <div className={styles.tituloWrap}>
-                <p className={styles.titulo}>¡Ya casi estás!</p>
-              </div>
-              <div className={styles.ed}>
-                {`Solo falta el pago inicial para procesar el envío de tu ${planData.modelo}. La verificación de tu identidad es el último paso, después de pagar.`}
-              </div>
-              <div className={styles.resumenPago}>
-                <div className={styles.filaResumen}>
-                  <span>Enganche requerido:</span>
-                  <b>${planData.enganche.toLocaleString()}</b>
+          {paso === "pago" && (() => {
+            const totalInicial = planData.enganche + (planData.envioGratis !== false ? 0 : (planData.costoEnvio || 0));
+            return (
+              <div className={styles.estado}>
+                <FiCheckCircle className={styles.badgeOk} />
+                <div className={styles.tituloWrap}>
+                  <p className={styles.titulo}>Fuiste autorizado</p>
                 </div>
-                <div className={styles.filaResumen}>
-                  <span>Costo de envío:</span>
-                  <b className={planData.envioGratis !== false ? styles.gratis : undefined}>
-                    {planData.envioGratis !== false ? "¡Gratis!" : `$${(planData.costoEnvio || 0).toLocaleString()}`}
-                  </b>
+                <div className={styles.ed}>
+                  {`Ahora puedes continuar con el pago inicial de tu ${planData.modelo} para procesar el envío. La verificación de tu identidad es el último paso, después de pagar.`}
                 </div>
-                <div className={styles.dividerResumen} />
-                <div className={`${styles.filaResumen} ${styles.filaTotal}`}>
-                  <span>Total Inicial a pagar:</span>
-                  <b>${(planData.enganche + (planData.envioGratis !== false ? 0 : (planData.costoEnvio || 0))).toLocaleString()}</b>
+                <div className={styles.resumenPago}>
+                  <div className={styles.filaResumen}>
+                    <span>Pago inicial (Requerido)</span>
+                    <b>${planData.enganche.toLocaleString()}</b>
+                  </div>
+                  <div className={styles.filaResumen}>
+                    <span>Costo de envío</span>
+                    <b className={planData.envioGratis !== false ? styles.gratis : undefined}>
+                      {planData.envioGratis !== false ? "¡Gratis!" : `$${(planData.costoEnvio || 0).toLocaleString()}`}
+                    </b>
+                  </div>
+                  <div className={styles.dividerResumen} />
+                  <div className={`${styles.filaResumen} ${styles.filaTotal}`}>
+                    <span>Total a pagar</span>
+                    <b>${totalInicial.toLocaleString()}</b>
+                  </div>
                 </div>
+                {pagoError && <span className={styles.errorMsg}>{pagoError}</span>}
+                <button className={styles.cta} onClick={handleIniciarPago} disabled={iniciandoPago || !solicitudId} style={{ marginTop: 16 }}>
+                  {iniciandoPago ? "Preparando pago..." : `Pagar Enganche $${totalInicial.toLocaleString()}`}
+                </button>
               </div>
-              {pagoError && <span className={styles.errorMsg}>{pagoError}</span>}
-              <button className={styles.cta} onClick={handleIniciarPago} disabled={iniciandoPago || !solicitudId} style={{ marginTop: 16 }}>
-                {iniciandoPago ? "Preparando pago..." : "Pagar enganche →"}
-              </button>
-            </div>
-          )}
+            );
+          })()}
 
           {paso === "bloqueado" && (
             <div className={styles.estado}>

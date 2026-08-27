@@ -168,11 +168,11 @@ export const Verificacion: React.FC<VerificacionProps> = ({ solicitudId, modelo,
         </div>
         <div className={styles.pasoIndicador}>
           <span className={`${styles.pasoNum} ${styles.pasoNumDone}`}><FiCheck /></span>
-          <span>Pago</span>
+          <span>Identidad</span>
         </div>
         <div className={`${styles.pasoIndicador} ${styles.pasoActivo}`}>
           <span className={styles.pasoNum}>3</span>
-          <span>Verificación</span>
+          <span>Envío</span>
         </div>
       </div>
     </div>
