@@ -3,6 +3,12 @@
   color: #0B1B3C;
   background-color: #ffffff;
   min-height: 100vh;
+  /* Varias secciones (bandas diagonales, nubes decorativas) se posicionan a
+     propósito más anchas que la sección para que su borde se corte por
+     fuera de la pantalla, no por el overflow:hidden de la propia sección
+     (eso recortaba el degradado en un borde recto en vez de dejarlo
+     desvanecer). El clip global evita que eso genere scroll horizontal. */
+  overflow-x: clip;
 }
 
 /* HEADER */
@@ -197,7 +203,6 @@
   max-width: 1440px;
   margin: 0 auto;
   background-color: #ffffff;
-  overflow: hidden;
 }
 
 .heroBlob {
@@ -270,6 +275,31 @@
 }
 
 .ctaPrimary:hover {
+  transform: translateY(-1px);
+}
+
+/* Variante "small" del botón (Figma instance "small"): misma paleta que
+   .ctaPrimary pero más compacto — usada en botones fuera del hero (Quienes
+   Somos: "Elige tu Celular Ya", "Cotiza Aquí"). */
+.ctaSmall {
+  display: inline-block;
+  text-align: center;
+  text-decoration: none;
+  background-color: #246aeb;
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 6px 20px rgba(21, 65, 147, 0.4);
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  width: fit-content;
+  font-family: 'Inter', sans-serif;
+  transition: transform 0.2s ease;
+}
+
+.ctaSmall:hover {
   transform: translateY(-1px);
 }
 
@@ -534,7 +564,6 @@
   flex-direction: column;
   align-items: center;
   gap: 40px;
-  overflow: hidden;
 }
 
 .porQueBlob {
@@ -724,7 +753,6 @@
   flex-direction: column;
   align-items: center;
   gap: 40px;
-  overflow: hidden;
 }
 
 .faqBlob1 {
@@ -1537,75 +1565,246 @@
 }
 
 /* ================================ */
-/* ABOUT SECTION (MOVINEX PAGE)     */
+/* QUIENES SOMOS — HERO             */
 /* ================================ */
-.aboutSection {
-  max-width: 800px;
-  margin: 60px auto;
-  padding: 0 24px;
-  animation: fadeIn 0.4s ease-out;
+.qsHero {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 40px;
+  padding: 120px 96px;
 }
 
-.aboutContent {
-  background: #ffffff;
-  border: 1px solid #E2E8F0;
-  border-radius: 24px;
-  padding: 48px;
-  box-shadow: 0 10px 30px rgba(11, 27, 60, 0.03);
+.qsHeroBlob {
+  position: absolute;
+  left: -232px;
+  top: -38px;
+  width: 657px;
+  height: 630px;
+  background: radial-gradient(circle, rgba(107, 63, 224, 0.51) 0%, rgba(107, 63, 224, 0) 70%);
+  pointer-events: none;
+  z-index: 0;
 }
 
-.aboutContent h2 {
-  font-size: 36px;
+.qsHeroImgWrap {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 1248px;
+  height: 413px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #246aeb;
+}
+
+.qsHeroImgWrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.qsHeroContent {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  gap: 38px;
+  width: 100%;
+  max-width: 1248px;
+}
+
+.qsHeroLeft {
+  flex: 4 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.qsHeroTitle {
+  font-family: 'Inter', sans-serif;
   font-weight: 800;
-  color: #0B1B3C;
-  margin: 12px 0 24px 0;
+  font-size: 60px;
+  line-height: 1;
   letter-spacing: -0.02em;
+  color: #0b1b3a;
+  margin: 0;
+  max-width: 605px;
 }
 
-.aboutContent p {
-  color: #475569;
+.qsHeroTitle span {
+  color: #246aeb;
+}
+
+.qsHeroChecks {
+  display: flex;
+  gap: 12px;
+  font-weight: 600;
+  font-size: 18px;
+  color: #246aeb;
+}
+
+.qsHeroChecks span {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.qsHeroRight {
+  flex: 2 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  justify-content: center;
+}
+
+.qsHeroRight p {
   font-size: 16px;
-  line-height: 1.7;
-  margin-bottom: 20px;
+  line-height: 1.2;
+  color: #0b1b3a;
+  margin: 0;
 }
 
-.aboutHighlight {
-  font-size: 18px !important;
-  font-weight: 700;
-  color: #2B6BE4 !important;
-  border-left: 4px solid #2B6BE4;
-  padding-left: 18px;
-  margin: 28px 0;
+/* ================================ */
+/* QUIENES SOMOS — FRASE (banda)    */
+/* ================================ */
+.qsQuote {
+  position: relative;
+  padding: 120px 96px;
 }
 
-.aboutJobs {
-  margin-top: 40px;
-  border-top: 1.5px solid #E2E8F0;
-  padding-top: 32px;
+.qsQuoteBandBg {
+  position: absolute;
+  z-index: 0;
+  left: -10%;
+  right: -10%;
+  top: -40px;
+  height: 445px;
+  background: linear-gradient(110deg, #246aeb 43%, #22cced 84%);
+  transform: rotate(-1.94deg);
+  pointer-events: none;
 }
 
-.aboutJobs h3 {
-  font-size: 20px;
+.qsQuote p {
+  position: relative;
+  z-index: 1;
+  max-width: 800px;
+  font-family: 'Inter', sans-serif;
   font-weight: 800;
-  color: #0B1B3C;
-  margin-bottom: 12px;
-}
-
-.contactBtn {
-  display: inline-block;
-  background-color: #0B1B3C;
+  font-size: 28px;
+  line-height: 1.2;
   color: #ffffff;
-  text-decoration: none;
-  font-weight: 700;
-  padding: 12px 28px;
-  border-radius: 10px;
-  font-size: 14px;
-  transition: background-color 0.2s;
-  margin-top: 16px;
+  margin: 0;
 }
 
-.contactBtn:hover {
-  background-color: #1e3a8a;
+/* ================================ */
+/* QUIENES SOMOS — COMO FUNCIONA    */
+/* ================================ */
+.qsComoFunciona {
+  position: relative;
+  padding: 140px 96px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 80px;
+  overflow: hidden;
+}
+
+.qsComoFuncionaPhoto {
+  position: absolute;
+  z-index: 0;
+  right: 71px;
+  top: 144px;
+  width: 427px;
+  pointer-events: none;
+}
+
+.qsComoFuncionaInner {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 1248px;
+  display: flex;
+  flex-direction: column;
+  gap: 80px;
+}
+
+.qsComoFuncionaHead {
+  max-width: 680px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  color: #0b1b3a;
+}
+
+.qsComoFuncionaHead h2 {
+  font-family: 'Inter', sans-serif;
+  font-weight: 800;
+  font-size: 72px;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.qsComoFuncionaHead h2 span {
+  color: #246aeb;
+}
+
+.qsComoFuncionaHead p {
+  font-size: 18px;
+  line-height: 1.2;
+  margin: 0;
+}
+
+.qsPasosGrid {
+  display: flex;
+  gap: 20px;
+  align-items: stretch;
+}
+
+.qsPasoCard {
+  flex: 1;
+  min-width: 0;
+  background: #e8f0fe;
+  border-radius: 20px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.qsPasoNumero {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: #246aeb;
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.qsPasoItems {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.qsPasoItem {
+  font-size: 16px;
+  line-height: 1.2;
+  color: rgba(11, 27, 58, 0.7);
+  margin: 0;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(11, 27, 58, 0.1);
+}
+
+.qsPasoItem:last-child {
+  padding-bottom: 0;
+  border-bottom: none;
 }
 
 /* ================================ */
@@ -1783,19 +1982,78 @@
     gap: 36px;
     padding-bottom: 40px;
   }
+
+  /* Quienes Somos */
+  .qsHero {
+    padding: 52px 24px 80px;
+    gap: 28px;
+  }
+  .qsHeroBlob {
+    left: -67px;
+    top: -7px;
+    width: 221px;
+    height: 212px;
+  }
+  .qsHeroImgWrap {
+    height: 220px;
+  }
+  .qsHeroContent {
+    flex-direction: column;
+    text-align: center;
+    align-items: center;
+    gap: 24px;
+  }
+  .qsHeroLeft {
+    align-items: center;
+  }
+  .qsHeroTitle {
+    font-size: 44px;
+    max-width: none;
+  }
+  .qsHeroChecks {
+    justify-content: center;
+    font-size: 14px;
+  }
+  .qsHeroRight {
+    align-items: center;
+  }
+  .qsQuote {
+    padding: 52px 24px;
+  }
+  .qsQuoteBandBg {
+    top: -10px;
+    height: 196px;
+  }
+  .qsQuote p {
+    font-size: 18px;
+    max-width: 271px;
+  }
+  .qsComoFunciona {
+    padding: 120px 24px 56px;
+    gap: 48px;
+  }
+  .qsComoFuncionaPhoto {
+    display: none;
+  }
+  .qsComoFuncionaHead h2 {
+    font-size: 36px;
+  }
+  .qsComoFuncionaHead p {
+    font-size: 14px;
+  }
+  .qsPasosGrid {
+    flex-direction: column;
+  }
+  .qsPasoNumero {
+    width: 35px;
+    height: 35px;
+  }
+  .qsPasoItem {
+    font-size: 14px;
+  }
 }
 
 @media (max-width: 640px) {
-  .headerContent {
-    flex-direction: column;
-    gap: 16px;
-    padding: 16px;
-  }
-  .nav {
-    gap: 20px;
-    flex-wrap: wrap;
-    justify-content: center;
-  }
   .slideContent {
     padding: 0 16px;
   }

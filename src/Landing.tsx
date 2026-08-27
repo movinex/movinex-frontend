@@ -145,6 +145,13 @@ import logoMarca5 from "./assets/figma-logo-5.svg";
 // Payment methods
 import logoColor from "./assets/movinex_color.webp";
 
+// "Quienes Somos" — foto del hero (desktop + móvil, distintas) y la foto ya
+// recortada/enmascarada de "Cómo funciona Movinex" (viene con transparencia
+// directo de Figma, no hace falta aplicarle una máscara en CSS)
+import imgQsHero from "./assets/quienes-hero.webp";
+import imgQsHeroMovil from "./assets/quienes-hero-movil.webp";
+import imgQsComoFunciona from "./assets/quienes-como-funciona.webp";
+
 interface LandingProps {
   onSelectPhone: (phone: Phone) => void;
   onNavigateAdmin: () => void;
@@ -204,6 +211,38 @@ export const Landing: React.FC<LandingProps> = ({
       imagenMovil: imgPasoDondeTuElijasMovil,
     },
   ];
+  const pasosQuienesSomos = [
+    {
+      numero: 1,
+      items: [
+        "Escoge el celular que más te guste de nuestro catálogo y elige.",
+        "Elige el plazo semanal que mejor se adapte a tu bolsillo: 26 o 52 semanas.",
+        "Tú decides cuánto pagar cada semana, sin sorpresas.",
+      ],
+    },
+    {
+      numero: 2,
+      items: [
+        "Ingresa tu número de WhatsApp para comenzar tu solicitud en un par de minutos.",
+        "Ten tu INE a la mano, la vas a necesitar más adelante. Todo es digital, sin papeleos ni vueltas.",
+      ],
+    },
+    {
+      numero: 3,
+      items: [
+        "Realiza el pago de tu enganche, equivalente al 15% del valor de tu celular.",
+        "Es el único pago que necesitas hacer para asegurar tu equipo.",
+      ],
+    },
+    {
+      numero: 4,
+      items: [
+        "Sube tu INE para validar tu identidad de forma rápida.",
+        "Llena el formulario con tus datos y listo: te llevamos el celular hasta la puerta de tu casa, sin que tengas que moverte.",
+      ],
+    },
+  ];
+
   const PASO_DURACION_MS = 5000;
   const [pasoActivo, setPasoActivo] = useState(1);
 
@@ -230,10 +269,11 @@ export const Landing: React.FC<LandingProps> = ({
   }, [page]);
 
   // Cargar catálogo de celulares desde el backend. También se pide en
-  // "inicio", porque el banner "Último Celular" muestra el primero del
-  // catálogo (el backend ya lo devuelve ordenado por updated_at desc).
+  // "inicio" y "movinex", porque el banner "Último Celular" (compartido por
+  // ambas páginas) muestra el primero del catálogo (el backend ya lo
+  // devuelve ordenado por updated_at desc).
   useEffect(() => {
-    if (page === "tienda" || page === "inicio") {
+    if (page === "tienda" || page === "inicio" || page === "movinex") {
       setLoading(true);
       const backendUrl = import.meta.env.VITE_BACKEND_URL || 'https://movinex-backend-production.up.railway.app';
       fetch(`${backendUrl}/api/celulares`)
@@ -325,6 +365,83 @@ export const Landing: React.FC<LandingProps> = ({
       };
     });
   }, []);
+
+  // Banner "Último Celular" y Preguntas Frecuentes son idénticos en Inicio y
+  // Quienes Somos (mismo diseño, mismo contenido) — se arman una sola vez acá
+  // para no duplicar el JSX (y el JSON-LD) en las dos páginas.
+  const bannerPromoSection = ultimoCelular && (
+    <section className={styles.bannerPromo}>
+      <div className={styles.bannerPromoCard}>
+        <div className={styles.bannerPromoInfo}>
+          <span className={styles.bannerPromoTag}>
+            <span className={styles.bannerPromoDot}>•</span> Último Celular
+          </span>
+          <div>
+            <p className={styles.bannerPromoModelo}>
+              {ultimoCelular.marca} {ultimoCelular.modelo}
+            </p>
+            <Link
+              to={`/cotizar/${ultimoCelular.id}`}
+              className={styles.bannerPromoBtn}
+            >
+              Desde ${ultimoCelular.montoSemanal52}/Sem
+            </Link>
+          </div>
+        </div>
+        <div className={styles.bannerPromoImgWrap}>
+          <img
+            src={ultimoCelular.imagen}
+            alt={`${ultimoCelular.marca} ${ultimoCelular.modelo}`}
+          />
+        </div>
+      </div>
+    </section>
+  );
+
+  const faqSection = (
+    <>
+      <section className={styles.faq}>
+        <div className={styles.faqBlob1} aria-hidden="true" />
+        <div className={styles.faqBlob2} aria-hidden="true" />
+        <h2 className={styles.faqTitle}>Preguntas frecuentes</h2>
+        <div className={styles.faqCard}>
+          {FAQ_INICIO.map((item) => (
+            <details className={styles.faqItem} key={item.pregunta}>
+              <summary className={styles.faqPregunta}>
+                <span>{item.pregunta}</span>
+              </summary>
+              <p className={styles.faqRespuesta}>{item.respuesta}</p>
+            </details>
+          ))}
+        </div>
+        <div className={styles.faqCta}>
+          <p>¿Necesitas Asesoría?</p>
+          <a
+            href="https://wa.me/525555028744?text=Hola%20Movinex,%20tengo%20una%20duda"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <FaWhatsapp size={18} />
+            Habla con nosotros
+          </a>
+        </div>
+      </section>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            mainEntity: FAQ_INICIO.map((item) => ({
+              "@type": "Question",
+              name: item.pregunta,
+              acceptedAnswer: { "@type": "Answer", text: item.respuesta },
+            })),
+          }),
+        }}
+      />
+    </>
+  );
 
   const canonicalPath = page === "inicio" ? "" : page;
 
@@ -611,111 +728,97 @@ export const Landing: React.FC<LandingProps> = ({
             </div>
           </section>
 
-          {/* BANNER PROMOCIONAL — el último celular agregado al catálogo */}
-          {ultimoCelular && (
-            <section className={styles.bannerPromo}>
-              <div className={styles.bannerPromoCard}>
-                <div className={styles.bannerPromoInfo}>
-                  <span className={styles.bannerPromoTag}>
-                    <span className={styles.bannerPromoDot}>•</span> Último
-                    Celular
-                  </span>
-                  <div>
-                    <p className={styles.bannerPromoModelo}>
-                      {ultimoCelular.marca} {ultimoCelular.modelo}
-                    </p>
-                    <Link
-                      to={`/cotizar/${ultimoCelular.id}`}
-                      className={styles.bannerPromoBtn}
-                    >
-                      Desde ${ultimoCelular.montoSemanal52}/Sem
-                    </Link>
-                  </div>
-                </div>
-                <div className={styles.bannerPromoImgWrap}>
-                  <img
-                    src={ultimoCelular.imagen}
-                    alt={`${ultimoCelular.marca} ${ultimoCelular.modelo}`}
-                  />
-                </div>
-              </div>
-            </section>
-          )}
-
-          {/* PREGUNTAS FRECUENTES */}
-          <section className={styles.faq}>
-            <div className={styles.faqBlob1} aria-hidden="true" />
-            <div className={styles.faqBlob2} aria-hidden="true" />
-            <h2 className={styles.faqTitle}>Preguntas frecuentes</h2>
-            <div className={styles.faqCard}>
-              {FAQ_INICIO.map((item) => (
-                <details className={styles.faqItem} key={item.pregunta}>
-                  <summary className={styles.faqPregunta}>
-                    <span>{item.pregunta}</span>
-                  </summary>
-                  <p className={styles.faqRespuesta}>{item.respuesta}</p>
-                </details>
-              ))}
-            </div>
-            <div className={styles.faqCta}>
-              <p>¿Necesitas Asesoría?</p>
-              <a
-                href="https://wa.me/525555028744?text=Hola%20Movinex,%20tengo%20una%20duda"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <FaWhatsapp size={18} />
-                Habla con nosotros
-              </a>
-            </div>
-          </section>
-          <script
-            type="application/ld+json"
-            dangerouslySetInnerHTML={{
-              __html: JSON.stringify({
-                "@context": "https://schema.org",
-                "@type": "FAQPage",
-                mainEntity: FAQ_INICIO.map((item) => ({
-                  "@type": "Question",
-                  name: item.pregunta,
-                  acceptedAnswer: { "@type": "Answer", text: item.respuesta },
-                })),
-              }),
-            }}
-          />
+          {bannerPromoSection}
+          {faqSection}
         </>
       )}
 
-      {/* ===================== MOVINEX ===================== */}
+      {/* ===================== MOVINEX (Quienes Somos) ===================== */}
       {page === "movinex" && (
-        <section className={styles.aboutSection}>
-          <div className={styles.aboutContent}>
-            <span className={styles.eyebrow}>SOBRE NOSOTROS</span>
-            <h1>Acerca de Movinex</h1>
+        <>
+          {/* HERO */}
+          <section className={styles.qsHero}>
+            <div className={styles.qsHeroBlob} aria-hidden="true" />
+            <div className={styles.qsHeroImgWrap}>
+              <picture>
+                <source media="(max-width: 900px)" srcSet={imgQsHeroMovil} />
+                <img src={imgQsHero} alt="Movinex" />
+              </picture>
+            </div>
+            <div className={styles.qsHeroContent}>
+              <div className={styles.qsHeroLeft}>
+                <h1 className={styles.qsHeroTitle}>
+                  Llevamos tecnología a las manos de todos los{" "}
+                  <span>mexicanos</span>
+                </h1>
+                <div className={styles.qsHeroChecks}>
+                  <span>✓ Rapido</span>
+                  <span>✓ Facil</span>
+                  <span>✓ Sin Papeleo</span>
+                </div>
+              </div>
+              <div className={styles.qsHeroRight}>
+                <p>
+                  En Movinex le decimos que sí a todos los mexicanos. Te
+                  financiamos el celular que necesitas y te lo llevamos hasta
+                  la puerta de tu casa. Sin avales, sin Buró y sin papeleo
+                  interminable.
+                </p>
+                <Link to="/tienda" className={styles.ctaSmall}>
+                  Elige tu Celular Ya
+                </Link>
+              </div>
+            </div>
+          </section>
+
+          {/* FRASE (banda diagonal) */}
+          <section className={styles.qsQuote}>
+            <div className={styles.qsQuoteBandBg} aria-hidden="true" />
             <p>
-              En Movinex creemos que tener un buen celular no debería depender
-              de tener tarjeta de crédito.
+              Somos una fintech 100% mexicana con el objetivo de facilitar el
+              acceso a celulares a todos los mexicanos sin importar su
+              historial crediticio.
             </p>
-            <p>
-              Somos una empresa mexicana que hace posible que más personas
-              estrenen el smartphone que necesitan, con un enganche accesible y
-              pagos semanales pensados para su bolsillo. Sin trámites eternos,
-              sin checar buró y sin sucursales: todo desde tu hogar, con envío a
-              domicilio a todo el país.
-            </p>
-            <p>
-              Todo con reglas claras que entiendes desde el primer momento:
-              sabes cuánto pagas de enganche, cuánto por semana y en cuántas
-              semanas terminas. Sin letras chiquitas, sin intereses moratorios y
-              sin sorpresas.
-            </p>
-            <p className={styles.aboutHighlight}>
-              Nuestra misión es acercar tecnología a quienes el sistema
-              tradicional suele dejar fuera, de forma simple, honesta y a su
-              ritmo.
-            </p>
-          </div>
-        </section>
+          </section>
+
+          {/* COMO FUNCIONA MOVINEX */}
+          <section className={styles.qsComoFunciona}>
+            <img
+              src={imgQsComoFunciona}
+              alt=""
+              aria-hidden="true"
+              className={styles.qsComoFuncionaPhoto}
+            />
+            <div className={styles.qsComoFuncionaInner}>
+              <div className={styles.qsComoFuncionaHead}>
+                <h2>
+                  Como funciona <span>Movinex</span>
+                </h2>
+                <p>Estas a tan solo 4 pasos de tener tu nuevo celular</p>
+              </div>
+              <div className={styles.qsPasosGrid}>
+                {pasosQuienesSomos.map((paso) => (
+                  <div className={styles.qsPasoCard} key={paso.numero}>
+                    <div className={styles.qsPasoNumero}>{paso.numero}</div>
+                    <div className={styles.qsPasoItems}>
+                      {paso.items.map((item, idx) => (
+                        <p className={styles.qsPasoItem} key={idx}>
+                          {item}
+                        </p>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <Link to="/tienda" className={styles.ctaSmall}>
+              Cotiza Aquí
+            </Link>
+          </section>
+
+          {bannerPromoSection}
+          {faqSection}
+        </>
       )}
 
       {/* ===================== TIENDA ===================== */}
