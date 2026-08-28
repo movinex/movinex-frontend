@@ -128,9 +128,9 @@ import imgPorQue1 from "./assets/figma-card1.webp";
 import imgPorQue2 from "./assets/figma-card2.webp";
 import imgPorQue3 from "./assets/figma-card3.webp";
 
-// Logo en monocromo, para el footer sobre fondo azul marino (Figma)
-import logoMoviMono from "./assets/logo-movi-mono.svg";
-import logoNexMono from "./assets/logo-nex-mono.svg";
+// Logo blanco combinado (Movi+nex en un solo SVG), para el footer sobre fondo azul
+// marino — exportado de Figma (assets diseño/logo.svg), reemplaza los dos SVG mono sueltos.
+import logoFooter from "./assets/figma-logo-footer.svg";
 
 // Logos de marcas para la banda "Las marcas que ya conoces" (versión mono
 // blanca, exportada de Figma — reemplazan los logos a color anteriores)
@@ -594,6 +594,28 @@ export const Landing: React.FC<LandingProps> = ({
             <details className={styles.faqItem} key={item.pregunta}>
               <summary className={styles.faqPregunta}>
                 <span>{item.pregunta}</span>
+                <svg
+                  className={styles.faqIcon}
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <rect width="24" height="24" rx="6" fill="#0B1B3A" />
+                  {/* El signo: "+" cuando está cerrado, "–" cuando está abierto
+                      (la barra vertical se oculta por CSS con [open]). */}
+                  <rect
+                    className={styles.faqIconV}
+                    x="11"
+                    y="5"
+                    width="2"
+                    height="14"
+                    fill="white"
+                  />
+                  <rect x="5" y="11" width="14" height="2" fill="white" />
+                </svg>
               </summary>
               <p className={styles.faqRespuesta}>{item.respuesta}</p>
             </details>
@@ -1255,8 +1277,7 @@ export const Landing: React.FC<LandingProps> = ({
         <div className={styles.footerContent}>
           <div className={styles.footerColumn}>
             <div className={styles.footerLogoRow}>
-              <img src={logoMoviMono} alt="" className={styles.footerLogoMovi} />
-              <img src={logoNexMono} alt="" className={styles.footerLogoNex} />
+              <img src={logoFooter} alt="Movinex" className={styles.footerLogo} />
             </div>
             <div className={styles.socialsWix}>
               <button

@@ -12,7 +12,7 @@ import type { Configuracion, Phone, Rechazo, Solicitud } from './types';
 import type { Pago } from './lib/cartera';
 import landingStyles from './Landing.module.css';
 import finalizadoStyles from './Documentos.module.css';
-import logoBlancoFinalizado from './assets/movinex_blanco.webp';
+import logoBlancoFinalizado from './assets/figma-logo-footer.svg';
 import { FiCheck, FiCheckCircle } from 'react-icons/fi';
 
 // Carga diferida a propósito: SadminDashboard importa Tailwind (sadmin.css), y si se
@@ -441,8 +441,9 @@ function App() {
     }
   };
 
-  const handleGenerarLinkTarjeta = async (id: string): Promise<string> => {
-    const response = await fetch(`${backendUrl}/api/admin/solicitudes/${id}/link-pago-tarjeta`, {
+  const handleGenerarLinkPago = async (id: string, metodo: 'card' | 'oxxo'): Promise<string> => {
+    const endpoint = metodo === 'oxxo' ? 'link-pago-oxxo' : 'link-pago-tarjeta';
+    const response = await fetch(`${backendUrl}/api/admin/solicitudes/${id}/${endpoint}`, {
       method: 'POST',
       headers: adminToken ? { Authorization: `Bearer ${adminToken}` } : undefined
     });
@@ -480,7 +481,7 @@ function App() {
                 onSaveDireccion={handleSaveDireccion}
                 onSaveCelular={handleSaveCelular}
                 onProcesarRecordatorios={handleProcesarCobranza}
-                onGenerarLinkTarjeta={handleGenerarLinkTarjeta}
+                onGenerarLinkPago={handleGenerarLinkPago}
                 configuracion={configuracion}
                 onGuardarConfiguracion={handleGuardarConfiguracion}
                 phones={phones}

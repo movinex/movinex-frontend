@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import styles from "./Documentos.module.css";
-import logoBlanco from "./assets/movinex_blanco.webp";
+import logoBlanco from "./assets/figma-logo-footer.svg";
 import { FiCheck, FiCheckCircle, FiMail } from "react-icons/fi";
 import { FaWhatsapp } from "react-icons/fa6";
 

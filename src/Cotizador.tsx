@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router';
 import styles from './Cotizador.module.css';
 import type { Phone } from './types';
-import logoBlanco from './assets/movinex_blanco.webp';
+import logoBlanco from './assets/figma-logo-footer.svg';
 import { FiCheck, FiArrowRight } from 'react-icons/fi';
 
 interface PlazoOption {

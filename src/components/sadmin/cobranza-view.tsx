@@ -53,10 +53,10 @@ const CAMPOS_TEXTO = ['cliente', 'celular', 'modelo'];
 interface CobranzaViewProps {
   cartera: CreditoEstado[];
   onProcesarRecordatorios: () => Promise<void>;
-  onGenerarLinkTarjeta: (id: string) => Promise<string>;
+  onGenerarLinkPago: (id: string, metodo: 'card' | 'oxxo') => Promise<string>;
 }
 
-export function CobranzaView({ cartera, onProcesarRecordatorios, onGenerarLinkTarjeta }: CobranzaViewProps) {
+export function CobranzaView({ cartera, onProcesarRecordatorios, onGenerarLinkPago }: CobranzaViewProps) {
   const [q, setQ] = useState('');
   const [enviando, setEnviando] = useState(false);
   const [generandoLinkId, setGenerandoLinkId] = useState<string | null>(null);
@@ -106,10 +106,33 @@ export function CobranzaView({ cartera, onProcesarRecordatorios, onGenerarLinkTa
     }
   };
 
-  const handleGenerarLink = async (id: string) => {
+  const handleGenerarLink = async (c: CreditoEstado) => {
+    const id = c.solicitud.id;
+    const metodo = c.solicitud.metodoPagoEnganche;
+
+    // SPEI (customer_balance) no genera un link de checkout nuevo: el cliente
+    // reutiliza siempre la misma CLABE persistente que se le asignó al confirmar
+    // el enganche. El botón solo la copia para pegarla en WhatsApp.
+    if (metodo === 'customer_balance') {
+      const clabe = c.solicitud.stripeClabeReferencia;
+      if (!clabe) {
+        toast.error('Esta solicitud todavía no tiene una CLABE de referencia asignada.');
+        return;
+      }
+      try {
+        await navigator.clipboard.writeText(clabe);
+        setLinkCopiadoId(id);
+        toast.success('CLABE copiada — mandala por WhatsApp.');
+        setTimeout(() => setLinkCopiadoId((actual) => (actual === id ? null : actual)), 2500);
+      } catch {
+        toast.error('No se pudo copiar la CLABE.');
+      }
+      return;
+    }
+
     setGenerandoLinkId(id);
     try {
-      const url = await onGenerarLinkTarjeta(id);
+      const url = await onGenerarLinkPago(id, metodo as 'card' | 'oxxo');
       await navigator.clipboard.writeText(url);
       setLinkCopiadoId(id);
       toast.success('Link de pago copiado — mandalo por WhatsApp.');
@@ -144,11 +167,20 @@ export function CobranzaView({ cartera, onProcesarRecordatorios, onGenerarLinkTa
       <Link to={`/sadmin/estado-cuenta/${c.solicitud.id}`} className="ctl" title="Ver estado de cuenta">
         <FileText strokeWidth={1.7} />
       </Link>
-      {c.solicitud.metodoPagoEnganche === 'card' && (
-        <button type="button" className="ctl" disabled={generandoLinkId === c.solicitud.id} onClick={() => handleGenerarLink(c.solicitud.id)}>
+      {(c.solicitud.metodoPagoEnganche === 'card'
+        || c.solicitud.metodoPagoEnganche === 'oxxo'
+        || c.solicitud.metodoPagoEnganche === 'customer_balance') && (
+        <button
+          type="button"
+          className="ctl"
+          disabled={generandoLinkId === c.solicitud.id}
+          onClick={() => handleGenerarLink(c)}
+        >
           {linkCopiadoId === c.solicitud.id
             ? (<><Check strokeWidth={1.7} /> Copiado</>)
-            : (<><LinkIcon strokeWidth={1.7} /> {generandoLinkId === c.solicitud.id ? 'Generando…' : 'Link'}</>)}
+            : (<><LinkIcon strokeWidth={1.7} /> {generandoLinkId === c.solicitud.id
+              ? 'Generando…'
+              : (c.solicitud.metodoPagoEnganche === 'customer_balance' ? 'CLABE' : 'Link')}</>)}
         </button>
       )}
     </div>

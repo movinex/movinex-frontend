@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import styles from "./Documentos.module.css";
-import logoBlanco from "./assets/movinex_blanco.webp";
+import logoBlanco from "./assets/figma-logo-footer.svg";
 import { FiCheck, FiInfo } from "react-icons/fi";
 
 interface VerificacionProps {

@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
-import { Printer, Search, ArrowLeft, Copy } from 'lucide-react';
+import { Printer, Search, ArrowLeft, Copy, Link as LinkIcon, Check } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa';
 import { toast } from 'sonner';
 import { Table, TableBody, TableCell, TableFooter, TableHeader, TableRow, TableWrap } from '@/components/ui/table';
@@ -16,10 +16,18 @@ const TONO_CUOTA: Record<Cuota['estatus'], TonoPill> = {
   'Por vencer': 'n'
 };
 
-export function EstadoCuentaView({ cartera }: { cartera: CreditoEstado[] }) {
+export function EstadoCuentaView({
+  cartera,
+  onGenerarLinkPago
+}: {
+  cartera: CreditoEstado[];
+  onGenerarLinkPago?: (id: string, metodo: 'card' | 'oxxo') => Promise<string>;
+}) {
   const { id } = useParams();
   const navigate = useNavigate();
   const [q, setQ] = useState('');
+  const [generandoLink, setGenerandoLink] = useState(false);
+  const [linkCopiado, setLinkCopiado] = useState(false);
 
   const credito = useMemo(() => cartera.find((c) => c.solicitud.id === id), [cartera, id]);
 
@@ -43,6 +51,44 @@ export function EstadoCuentaView({ cartera }: { cartera: CreditoEstado[] }) {
     toast.success('Resumen copiado — listo para mandar por WhatsApp.');
   };
 
+  const metodo = s.metodoPagoEnganche;
+  const esSpei = metodo === 'customer_balance';
+  const puedeGenerarLink =
+    credito.estatus !== 'Liquidado' &&
+    ((esSpei && Boolean(s.stripeClabeReferencia)) ||
+      (Boolean(onGenerarLinkPago) && (metodo === 'card' || metodo === 'oxxo')));
+
+  const handleGenerarLink = async () => {
+    // SPEI: no genera un link nuevo, solo copia la CLABE persistente que el
+    // cliente reutiliza cada semana.
+    if (esSpei) {
+      if (!s.stripeClabeReferencia) return;
+      try {
+        await navigator.clipboard.writeText(s.stripeClabeReferencia);
+        setLinkCopiado(true);
+        toast.success('CLABE copiada — mandala por WhatsApp.');
+        setTimeout(() => setLinkCopiado(false), 2500);
+      } catch {
+        toast.error('No se pudo copiar la CLABE.');
+      }
+      return;
+    }
+
+    if (!onGenerarLinkPago || (metodo !== 'card' && metodo !== 'oxxo')) return;
+    setGenerandoLink(true);
+    try {
+      const url = await onGenerarLinkPago(s.id, metodo);
+      await navigator.clipboard.writeText(url);
+      setLinkCopiado(true);
+      toast.success('Link de pago copiado — mandalo por WhatsApp.');
+      setTimeout(() => setLinkCopiado(false), 2500);
+    } catch (error: any) {
+      toast.error(error.message || 'No se pudo generar el link de pago.');
+    } finally {
+      setGenerandoLink(false);
+    }
+  };
+
   return (
     <>
       {/* La barra de acciones no se imprime: en papel solo va el estado de cuenta. */}
@@ -60,6 +106,13 @@ export function EstadoCuentaView({ cartera }: { cartera: CreditoEstado[] }) {
           <FaWhatsapp className="text-[#25D366]" />
           Escribirle
         </a>
+        {puedeGenerarLink && (
+          <button type="button" className="ctl" disabled={generandoLink} onClick={handleGenerarLink}>
+            {linkCopiado
+              ? (<><Check strokeWidth={1.7} /> {esSpei ? 'CLABE copiada' : 'Link copiado'}</>)
+              : (<><LinkIcon strokeWidth={1.7} /> {generandoLink ? 'Generando…' : (esSpei ? 'Copiar CLABE' : 'Link de pago')}</>)}
+          </button>
+        )}
         <button type="button" className="ctl" onClick={() => window.print()}>
           <Printer strokeWidth={1.7} />
           Imprimir

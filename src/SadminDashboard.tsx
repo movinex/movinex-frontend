@@ -44,7 +44,7 @@ interface SadminDashboardProps {
   onSaveDireccion: (id: string, direccion: DireccionInput) => Promise<void>;
   onSaveCelular: (id: string, celular: string) => Promise<void>;
   onProcesarRecordatorios: () => Promise<void>;
-  onGenerarLinkTarjeta: (id: string) => Promise<string>;
+  onGenerarLinkPago: (id: string, metodo: 'card' | 'oxxo') => Promise<string>;
   configuracion: Configuracion | null;
   onGuardarConfiguracion: (config: Configuracion) => Promise<void>;
   phones: Phone[];
@@ -58,7 +58,7 @@ interface SadminDashboardProps {
 }
 
 export function SadminDashboard({
-  solicitudes, pagos, rechazos, cargandoDatos, onUpdateStatus, onCancelarSolicitud, onSaveImei, onSaveDireccion, onSaveCelular, onProcesarRecordatorios, onGenerarLinkTarjeta,
+  solicitudes, pagos, rechazos, cargandoDatos, onUpdateStatus, onCancelarSolicitud, onSaveImei, onSaveDireccion, onSaveCelular, onProcesarRecordatorios, onGenerarLinkPago,
   configuracion, onGuardarConfiguracion,
   phones, onReloadPhones, adminUser, adminToken, onLogout, onRefrescar, segundosParaRefresh, backendUrl
 }: SadminDashboardProps) {
@@ -115,14 +115,14 @@ export function SadminDashboard({
               <Route path="creditos" element={<Navigate to="/sadmin/solicitudes" replace />} />
               <Route
                 path="cobranza"
-                element={<CobranzaView cartera={cartera} onProcesarRecordatorios={onProcesarRecordatorios} onGenerarLinkTarjeta={onGenerarLinkTarjeta} />}
+                element={<CobranzaView cartera={cartera} onProcesarRecordatorios={onProcesarRecordatorios} onGenerarLinkPago={onGenerarLinkPago} />}
               />
               <Route path="deudores" element={<DeudoresView cartera={cartera} />} />
               <Route path="calendario" element={<CalendarioView cartera={cartera} />} />
               <Route path="liquidados" element={<LiquidadosView cartera={cartera} />} />
               <Route path="rechazos" element={<RechazosView rechazos={rechazos} solicitudes={solicitudes} />} />
               <Route path="estado-cuenta" element={<EstadoCuentaView cartera={cartera} />} />
-              <Route path="estado-cuenta/:id" element={<EstadoCuentaView cartera={cartera} />} />
+              <Route path="estado-cuenta/:id" element={<EstadoCuentaView cartera={cartera} onGenerarLinkPago={onGenerarLinkPago} />} />
               <Route
                 path="catalogo"
                 element={<CatalogoView phones={phones} onReloadPhones={onReloadPhones} adminToken={adminToken} configuracion={configuracion} />}
