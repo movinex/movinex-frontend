@@ -1073,15 +1073,20 @@
   gap: 16px;
 }
 
+/* El degradado de fondo lo pone el JSX por `style` (CATALOGO_FONDOS), distinto
+   para cada celular. El gris es solo el color de espera mientras carga. */
 .tiendaCardImgWrap {
   position: relative;
   width: 100%;
   aspect-ratio: 403 / 480;
   border-radius: 40px;
   overflow: hidden;
-  background: #f2f2f3;
+  background-color: #f2f2f3;
 }
 
+/* Las imágenes son la tarjeta ya compuesta (degradado + celular en la posición
+   exacta del Figma, 403x480 exportado a 2x), con la misma proporción que el
+   contenedor — se muestran tal cual. */
 .tiendaCardImgWrap img {
   width: 100%;
   height: 100%;
@@ -1285,13 +1290,39 @@
   overflow: hidden;
 }
 
+/* Misma imagen que la tarjeta (viene del Figma con su degradado ya compuesto).
+   El panel del pop-up es más alto que la imagen (401x716 vs 403x480), así que
+   `cover` la recorta a los costados, anclada algo por encima del centro, que
+   es donde vive el celular. */
 .modalImgWrap img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center 35%;
   display: block;
 }
 
+/* El celular transparente se muestra entero sobre el gradiente del contenedor.
+   A propósito NO se usa `object-fit: contain`: como las fotos de las 3 vistas
+   (lateral/combo/atrás) tienen proporciones distintas entre sí — y las que
+   suba el sadmin a futuro pueden venir en cualquier tamaño — `contain` las
+   escala según la dimensión más restrictiva de CADA imagen (a veces el ancho,
+   a veces el alto), y el celular termina viéndose de un tamaño distinto según
+   qué foto esté activa. Fijando `height` siempre gana el alto: las 3 vistas
+   quedan siempre del mismo tamaño visual, con el ancho ajustándose solo
+   (puede quedar más angosta o más ancha, nunca más alta ni más baja). */
+.modalImgTransparente {
+  position: absolute !important;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: auto !important;
+  height: 58% !important;
+  object-fit: contain;
+}
+
+/* Los puntitos van sobre la foto, que puede ser clara u oscura según el
+   celular — la píldora semitransparente los mantiene legibles en ambos casos. */
 .modalDots {
   position: absolute;
   bottom: 20px;
@@ -1300,6 +1331,10 @@
   display: flex;
   gap: 6px;
   z-index: 5;
+  padding: 7px 10px;
+  border-radius: 999px;
+  background: rgba(11, 27, 58, 0.28);
+  backdrop-filter: blur(6px);
 }
 
 .modalDot {
@@ -2074,7 +2109,7 @@
   }
   .modalImgWrap {
     flex: none;
-    height: 240px;
+    height: 300px;
   }
   .modalContent {
     padding: 24px 0;

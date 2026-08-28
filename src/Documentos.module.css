@@ -38,6 +38,10 @@
   height: 18px;
   width: auto;
   display: block;
+  /* Mismo motivo que en Cotizador.module.css: .telefonoCol es flex-column sin
+     align-items explícito (default: stretch), que estira el logo a lo ancho
+     del contenedor y lo deforma. */
+  align-self: flex-start;
 }
 
 .modelo {

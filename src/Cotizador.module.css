@@ -39,6 +39,11 @@
   height: 18px;
   width: auto;
   display: block;
+  /* .telefonoCol es un flex-column sin align-items explícito (default:
+     stretch), que estira el <img> a lo ancho del contenedor ignorando su
+     proporción natural — se ve deformado/aplastado. align-self lo saca de
+     ese stretch y lo deja en su ancho intrínseco. */
+  align-self: flex-start;
 }
 
 .modelo {

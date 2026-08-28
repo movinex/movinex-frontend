@@ -19,10 +19,15 @@ export interface Phone {
   ahorro26?: number;
   precioDescuento?: number;
   imagen: string;
-  // Fotos del mini-carrusel de la Tienda, en orden fijo: [lateral, frente, lateral].
-  // La de frente va siempre en el medio (índice 1). Puede venir vacío en celulares
-  // que todavía no se cargaron con el sadmin nuevo.
+  // Fotos del mini-carrusel de la Tienda, con el fondo ya pegado, en orden fijo:
+  // [lateral, combo/frente, lateral]. La combo va siempre en el medio (índice 1).
+  // Puede venir vacío en celulares que todavía no se cargaron con el sadmin nuevo.
   imagenes?: string[];
+  // Las mismas 3 vistas, pero del celular SOLO (transparente) para el pop-up de
+  // Detalles — el fondo ahí lo pone `gradienteInicio`/`gradienteFin` por CSS.
+  imagenesPopup?: string[];
+  gradienteInicio?: string;
+  gradienteFin?: string;
   envioGratis?: boolean;
   costoEnvio?: number;
   specsPantalla?: string;

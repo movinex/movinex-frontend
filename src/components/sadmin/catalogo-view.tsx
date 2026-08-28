@@ -52,7 +52,9 @@ const SPECS_VACIO = {
 
 const FORM_VACIO = {
   id: '', modelo: '', marca: '', precioBase: 0, enganche: 0, montoSemanal26: 0, montoSemanal52: 0,
-  precioDescuento: '', imagen: '', imagenes: ['', '', ''] as string[], envioGratis: true, costoEnvio: 0, ...SPECS_VACIO
+  precioDescuento: '', imagen: '', imagenes: ['', '', ''] as string[],
+  imagenesPopup: ['', '', ''] as string[], gradienteInicio: '', gradienteFin: '',
+  envioGratis: true, costoEnvio: 0, ...SPECS_VACIO
 };
 
 // Etiquetas del mini-carrusel de la Tienda — la del medio es la foto principal
@@ -118,6 +120,8 @@ export function CatalogoView({ phones, onReloadPhones, adminToken, configuracion
       enganche: phone.enganche, montoSemanal26: phone.montoSemanal26, montoSemanal52: phone.montoSemanal52,
       precioDescuento: phone.precioDescuento ? String(phone.precioDescuento) : '', imagen: phone.imagen,
       imagenes: [0, 1, 2].map((i) => phone.imagenes?.[i] || ''),
+      imagenesPopup: [0, 1, 2].map((i) => phone.imagenesPopup?.[i] || ''),
+      gradienteInicio: phone.gradienteInicio || '', gradienteFin: phone.gradienteFin || '',
       envioGratis: phone.envioGratis !== false, costoEnvio: phone.costoEnvio || 0,
       specsPantalla: phone.specsPantalla || '', specsProcesador: phone.specsProcesador || '',
       specsRamAlmacenamiento: phone.specsRamAlmacenamiento || '', specsMicrosd: phone.specsMicrosd || '',
@@ -140,8 +144,13 @@ export function CatalogoView({ phones, onReloadPhones, adminToken, configuracion
   };
 
   // `slot` undefined = la imagen de portada (`form.imagen`); un número = la posición
-  // en el mini-carrusel de la Tienda (`form.imagenes[slot]`).
-  const handleImagen = async (e: ChangeEvent<HTMLInputElement>, slot?: number) => {
+  // en el mini-carrusel indicado por `campo` (`form.imagenes` = tarjeta de la Tienda,
+  // `form.imagenesPopup` = celular transparente para el pop-up de Detalles).
+  const handleImagen = async (
+    e: ChangeEvent<HTMLInputElement>,
+    slot?: number,
+    campo: 'imagenes' | 'imagenesPopup' = 'imagenes'
+  ) => {
     const file = e.target.files?.[0];
     if (!file) return;
     setSubiendo(true);
@@ -162,7 +171,7 @@ export function CatalogoView({ phones, onReloadPhones, adminToken, configuracion
       if (slot === undefined) {
         setForm((f) => ({ ...f, imagen: res.url }));
       } else {
-        setForm((f) => ({ ...f, imagenes: f.imagenes.map((u, i) => (i === slot ? res.url : u)) }));
+        setForm((f) => ({ ...f, [campo]: f[campo].map((u, i) => (i === slot ? res.url : u)) }));
       }
     } catch (err: any) {
       toast.error(err.message || 'No se pudo subir la imagen.');
@@ -179,6 +188,8 @@ export function CatalogoView({ phones, onReloadPhones, adminToken, configuracion
       monto_semanal_26: form.montoSemanal26, monto_semanal_52: form.montoSemanal52,
       precio_descuento: form.precioDescuento === '' ? null : Number(form.precioDescuento), imagen: form.imagen,
       imagenes: form.imagenes.filter((u) => u),
+      imagenes_popup: form.imagenesPopup.filter((u) => u),
+      gradiente_inicio: form.gradienteInicio || null, gradiente_fin: form.gradienteFin || null,
       envio_gratis: form.envioGratis, costo_envio: form.envioGratis ? 0 : form.costoEnvio,
       specs_pantalla: form.specsPantalla, specs_procesador: form.specsProcesador,
       specs_ram_almacenamiento: form.specsRamAlmacenamiento, specs_microsd: form.specsMicrosd,
@@ -297,6 +308,92 @@ export function CatalogoView({ phones, onReloadPhones, adminToken, configuracion
                       onChange={(e) => setForm((f) => ({ ...f, imagenes: f.imagenes.map((u, idx) => (idx === i ? e.target.value : u)) }))}
                     />
                     {form.imagenes[i] && <img src={form.imagenes[i]} alt="Vista previa" className="size-9 shrink-0 rounded border object-contain" />}
+                  </div>
+                </Campo>
+              ))}
+            </div>
+          </Panel>
+
+          <SecH
+            titulo="Fondo del pop-up de Detalles"
+            nota="Degradado detrás del celular en la ventana de Detalles. Dos colores hex, ej. #1199AF."
+          />
+          <Panel className="p-4">
+            <div className="form-grid">
+              <Campo label="Color inicial">
+                <div className="flex items-center gap-2.5">
+                  <input
+                    type="color"
+                    className="size-9 shrink-0 rounded border p-0.5"
+                    value={form.gradienteInicio || '#1199AF'}
+                    onChange={(e) => setForm((f) => ({ ...f, gradienteInicio: e.target.value }))}
+                  />
+                  <input
+                    className="flex-1"
+                    placeholder="#1199AF"
+                    value={form.gradienteInicio}
+                    onChange={(e) => setForm((f) => ({ ...f, gradienteInicio: e.target.value }))}
+                  />
+                </div>
+              </Campo>
+              <Campo label="Color final">
+                <div className="flex items-center gap-2.5">
+                  <input
+                    type="color"
+                    className="size-9 shrink-0 rounded border p-0.5"
+                    value={form.gradienteFin || '#1C7583'}
+                    onChange={(e) => setForm((f) => ({ ...f, gradienteFin: e.target.value }))}
+                  />
+                  <input
+                    className="flex-1"
+                    placeholder="#1C7583"
+                    value={form.gradienteFin}
+                    onChange={(e) => setForm((f) => ({ ...f, gradienteFin: e.target.value }))}
+                  />
+                </div>
+              </Campo>
+              {form.gradienteInicio && form.gradienteFin && (
+                <div
+                  className="fld"
+                  style={{
+                    gridColumn: '1 / -1',
+                    height: 48,
+                    borderRadius: 12,
+                    background: `linear-gradient(230.54deg, ${form.gradienteInicio} 33.766%, ${form.gradienteFin} 97.531%)`
+                  }}
+                />
+              )}
+            </div>
+          </Panel>
+
+          <SecH
+            titulo="Fotos del pop-up de Detalles"
+            nota="Mismas 3 posiciones que arriba (lateral / frente-centro / lateral), pero el celular SOLO, sin fondo — el fondo lo pone el degradado de arriba."
+          />
+          <Panel className="p-4">
+            <div className="form-grid">
+              {SLOTS_CARRUSEL.map((label, i) => (
+                <Campo key={i} label={label}>
+                  <div className="flex items-center gap-2.5">
+                    <input
+                      id={`file-upload-popup-${i}`}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => handleImagen(e, i, 'imagenesPopup')}
+                    />
+                    <label htmlFor={`file-upload-popup-${i}`} className="ctl shrink-0">
+                      <Upload strokeWidth={1.7} /> {subiendo ? 'Subiendo...' : 'Cargar'}
+                    </label>
+                    <input
+                      className="flex-1"
+                      placeholder="O ingresa la URL manualmente"
+                      value={form.imagenesPopup[i] || ''}
+                      onChange={(e) => setForm((f) => ({ ...f, imagenesPopup: f.imagenesPopup.map((u, idx) => (idx === i ? e.target.value : u)) }))}
+                    />
+                    {form.imagenesPopup[i] && (
+                      <img src={form.imagenesPopup[i]} alt="Vista previa" className="size-9 shrink-0 rounded border object-contain" />
+                    )}
                   </div>
                 </Campo>
               ))}
