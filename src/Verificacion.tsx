@@ -16,9 +16,18 @@ type Estado = "cargando" | "redirigiendo" | "esperando" | "revision" | "error" |
 // contra nuestro propio rate limit — que pesa porque las operadoras mexicanas hacen NAT
 // y varios clientes reales comparten la misma IP saliente.
 const POLL_MS = 4000;
-// Tras ~2 minutos sin un resultado definitivo se deja de esperar y se le ofrece una
-// salida al cliente. Antes el spinner giraba para siempre si la sesión quedaba colgada
-// (pasó 2026-08-18) y no había forma de salir sin recargar a mano.
+// El cliente que Verificamex acaba de redirigir de vuelta también pasa un ratito en OPEN
+// mientras se procesa su resultado — mostrarle el botón de "continuar" de inmediato sería
+// confuso (ya terminó su parte). 15s alcanza para cubrir ese margen sin hacer esperar tanto
+// como MAX_ESPERA_MS a quien de verdad abandonó el proceso.
+const MOSTRAR_LINK_TRAS_MS = 15 * 1000;
+// Tras ~2 minutos sin un resultado definitivo se deja de esperar y se le ofrece al
+// cliente el link para retomar Verificamex (ver estado "sinRespuesta" — antes el spinner
+// giraba para siempre si la sesión quedaba colgada, pasó 2026-08-18, y no había forma de
+// salir sin recargar a mano). El caso típico no es un problema técnico: el cliente abre
+// el link, no completa el proceso (INE, foto, prueba de vida) y Verificamex se queda en
+// OPEN sin nada que reportar — ni el webhook ni el polling tienen de dónde sacar un
+// resultado si el cliente nunca lo generó.
 const MAX_ESPERA_MS = 2 * 60 * 1000;
 
 // Paso 7 del flujo: verificación de identidad en vivo con Verificamex (VerificationSession
@@ -33,6 +42,8 @@ export const Verificacion: React.FC<VerificacionProps> = ({ solicitudId, modelo,
   const backendUrl = import.meta.env.VITE_BACKEND_URL || 'https://movinex-backend-production.up.railway.app';
   const [estado, setEstado] = useState<Estado>("cargando");
   const [errorMsg, setErrorMsg] = useState("");
+  const [formUrl, setFormUrl] = useState<string | null>(null);
+  const [mostrarLink, setMostrarLink] = useState(false);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   // Cada sesión de Verificamex es una llamada facturada, así que crear dos por descuido
   // cuesta plata — y peor: la segunda pisa el session_id guardado, dejando la solicitud
@@ -80,6 +91,8 @@ export const Verificacion: React.FC<VerificacionProps> = ({ solicitudId, modelo,
   };
 
   const evaluarEstado = (estadoVerif: any) => {
+    if (estadoVerif.verificamexFormUrl) setFormUrl(estadoVerif.verificamexFormUrl);
+
     if (estadoVerif.estatus === "Preparando paquete" || estadoVerif.estatus === "Pendiente de envío" || estadoVerif.estatus === "Enviado" || estadoVerif.estatus === "Entregado" || estadoVerif.estatus === "Aprobado") {
       detenerPolling();
       onFinalizado();
@@ -118,11 +131,16 @@ export const Verificacion: React.FC<VerificacionProps> = ({ solicitudId, modelo,
     }
 
     // OPEN / VERIFYING: sigue en curso. Se espera, pero no para siempre.
-    if (Date.now() - inicioEsperaRef.current > MAX_ESPERA_MS) {
+    const transcurrido = Date.now() - inicioEsperaRef.current;
+    if (transcurrido > MAX_ESPERA_MS) {
       detenerPolling();
       setEstado("sinRespuesta");
       return;
     }
+    // setEstado("esperando") no dispara un re-render en los polls siguientes (React no
+    // re-renderiza si el valor no cambia), así que el botón necesita su propio booleano
+    // para poder aparecer a mitad de la espera en vez de solo al montar.
+    setMostrarLink(transcurrido > MOSTRAR_LINK_TRAS_MS);
     setEstado("esperando");
   };
 
@@ -194,6 +212,16 @@ export const Verificacion: React.FC<VerificacionProps> = ({ solicitudId, modelo,
                   ? "Esto puede tardar unos segundos. No cierres esta ventana."
                   : "Te vamos a llevar a la página segura de Verificamex para tomar tu INE y una foto en vivo."}
               </div>
+              {estado === "esperando" && formUrl && mostrarLink && (
+                <>
+                  <div className={styles.ed} style={{ marginTop: 8 }}>
+                    ¿No completaste el proceso? Dale click abajo para continuar.
+                  </div>
+                  <a href={formUrl} className={styles.cta} style={{ marginTop: 16, textDecoration: "none" }}>
+                    Continuar verificación
+                  </a>
+                </>
+              )}
             </div>
           )}
 
@@ -202,10 +230,15 @@ export const Verificacion: React.FC<VerificacionProps> = ({ solicitudId, modelo,
               <FiInfo className={styles.infoIcon} />
               <div className={styles.et}>Seguimos esperando tu verificación</div>
               <div className={styles.ed}>
-                Puede tardar unos minutos más en confirmarse — no hace falta que hagas nada.
-                Si pasa más tiempo, nuestro equipo la revisa a mano y te contactamos por
-                WhatsApp.
+                {formUrl
+                  ? "Si ya completaste el proceso, puede tardar unos minutos más en confirmarse — no hace falta que hagas nada. Si todavía no lo terminaste, dale click abajo para continuar."
+                  : "Puede tardar unos minutos más en confirmarse — no hace falta que hagas nada. Si pasa más tiempo, nuestro equipo la revisa a mano y te contactamos por WhatsApp."}
               </div>
+              {formUrl && (
+                <a href={formUrl} className={styles.cta} style={{ marginTop: 16, textDecoration: "none" }}>
+                  Continuar verificación
+                </a>
+              )}
               <div className={styles.cerrarWrap}>
                 <p className={styles.cerrarHint}>Puedes cerrar esta ventana</p>
               </div>
