@@ -992,18 +992,20 @@ export const Landing: React.FC<LandingProps> = ({
 
           {/* COMO FUNCIONA MOVINEX */}
           <section className={styles.qsComoFunciona}>
-            <img
-              src={imgQsComoFunciona}
-              alt=""
-              aria-hidden="true"
-              className={styles.qsComoFuncionaPhoto}
-            />
             <div className={styles.qsComoFuncionaInner}>
-              <div className={styles.qsComoFuncionaHead}>
-                <h2>
-                  Como funciona <span>Movinex</span>
-                </h2>
-                <p>Estas a tan solo 4 pasos de tener tu nuevo celular</p>
+              <div className={styles.qsComoFuncionaTop}>
+                <div className={styles.qsComoFuncionaHead}>
+                  <h2>
+                    Como funciona <span>Movinex</span>
+                  </h2>
+                  <p>Estas a tan solo 4 pasos de tener tu nuevo celular</p>
+                </div>
+                <img
+                  src={imgQsComoFunciona}
+                  alt=""
+                  aria-hidden="true"
+                  className={styles.qsComoFuncionaPhoto}
+                />
               </div>
               <div className={styles.qsPasosGrid}>
                 {pasosQuienesSomos.map((paso) => (

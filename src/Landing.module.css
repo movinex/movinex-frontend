@@ -1677,21 +1677,12 @@
 /* ================================ */
 .qsComoFunciona {
   position: relative;
-  padding: 280px 96px 220px;
+  padding: 140px 96px;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 80px;
   overflow: hidden;
-}
-
-.qsComoFuncionaPhoto {
-  position: absolute;
-  z-index: 0;
-  right: 71px;
-  top: 0;
-  width: 427px;
-  pointer-events: none;
 }
 
 .qsComoFuncionaInner {
@@ -1701,7 +1692,23 @@
   max-width: 1248px;
   display: flex;
   flex-direction: column;
-  gap: 80px;
+}
+
+/* Fila superior: título a la izquierda, foto a la derecha — ambos en flujo
+   normal (nada de position: absolute), así el alto de la fila lo define el
+   contenido real y no se puede desalinear entre pantallas. */
+.qsComoFuncionaTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 40px;
+}
+
+.qsComoFuncionaPhoto {
+  flex-shrink: 0;
+  width: 427px;
+  max-width: 40%;
+  pointer-events: none;
 }
 
 .qsComoFuncionaHead {
