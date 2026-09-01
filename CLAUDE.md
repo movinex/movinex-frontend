@@ -4,15 +4,23 @@ SPA de venta de celulares a crédito (React 19 + Vite 8 + TypeScript, CSS Module
 
 ## Estructura
 
-Todo vive plano en `src/`, sin carpetas `components/`/`pages/` (proyecto chico, revisar si conviene ordenar cuando crezca):
+Componentes de página grandes siguen sueltos en `src/` (`Admin.tsx`, `App.tsx`, `Documentos.tsx`, `LegalContent.tsx` — pendientes de partir igual que Landing). `Landing.tsx` ya se componentizó (2026-09-01) y sirve de referencia del patrón a seguir:
 
 - `App.tsx` — shell principal, fetch de solicitudes/catálogo, navegación entre vistas.
-- `Landing.tsx` — home pública, catálogo de celulares.
+- `Landing.tsx` — shell delgado (128 líneas) que solo decide qué página de `pages/landing/` renderizar según la URL. NO le agregues JSX ni lógica de negocio de vuelta — si algo crece, va a `pages/landing/` o `components/landing/`.
+  - `pages/landing/InicioPage.tsx`, `QuienesSomosPage.tsx`, `TiendaPage.tsx` — una página por ruta.
+  - `pages/landing/catalogo-data.ts` — imports de imágenes del catálogo + diccionarios (fotos/fondos/nombres por id de celular) + helpers `getFotosCelular`/`getNombreCelular`.
+  - `pages/landing/types.ts` — `LandingPage`, `PAGE_META` (title/description SEO por página).
+  - `components/landing/Header.tsx`, `Footer.tsx`, `BannerPromo.tsx`, `FaqSection.tsx`, `PhoneCard.tsx`, `QuickViewModal.tsx` — piezas visuales reutilizadas entre páginas.
+  - `hooks/useCatalogo.ts` — fetch + mapeo snake_case→camelCase + precarga de fotos del catálogo.
+  - `hooks/useCarrusel.ts` — patrón "índice de foto activa por id de celular" (usado por `PhoneCard` y `QuickViewModal`, cada uno con su propio state independiente).
+  - Sigue usando un solo `Landing.module.css` compartido por todos los sub-componentes (no se partió) — las clases CSS Modules siguen siendo `styles.xxx` en cada archivo.
 - `Cotizador.tsx` — simulador de cuotas.
 - `Documentos.tsx` — flujo KYC: captura de selfie + INE, envío a backend en Base64.
 - `Admin.tsx` / `Sadmin.tsx` — panel admin y **superadmin** (login propio contra `/api/admin/login`, gestiona catálogo de celulares).
 - `LegalContent.tsx` — términos, privacidad, cookies, envíos (contenido fuente en `../Avisos/*.md`).
 - `Domicilio.tsx` — paso 2 de 3 post-pago: domicilio estructurado para Skydropx.
+- `components/sadmin/` — ya estaba bien componentizado desde antes (una vista por archivo); es el otro ejemplo a imitar al partir el resto.
 
 El frontend no tiene cliente de Supabase propio ni sus keys — todo lo que lee o escribe pasa por el backend (incluida la subida de imágenes del catálogo, vía `POST /api/celulares/imagen`).
 
