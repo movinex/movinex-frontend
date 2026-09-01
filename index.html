@@ -18,6 +18,15 @@
          margen necesario para no quedar tapados por la barra/home indicator del iPhone. -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 
+    <!-- Google Sans Flex: solo para títulos/headings (ver Landing.module.css), el
+         resto del texto sigue en Inter. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:wght@400..800&display=swap"
+      rel="stylesheet"
+    />
+
     <!-- title, meta description y canonical: renderizados por página desde
          Landing.tsx y Cotizador.tsx (React 19 los hoistea a <head>). No se
          declaran aquí como estáticos porque, al ser una SPA con un solo

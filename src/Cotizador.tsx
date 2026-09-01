@@ -140,12 +140,12 @@ export const Cotizador: React.FC<CotizadorProps> = ({ phone, onSiguiente, onVolv
             </div>
           </div>
 
-          <p className={styles.resumenTexto}>
+          {/* <p className={styles.resumenTexto}>
             Llévate el {nombreCompleto} pagando ${enganche.toLocaleString()} de enganche y{' '}
             {opcionActiva.semanas} pagos semanales de ${opcionActiva.montoSemanal} en Movinex:
             sin checar buró de crédito, sin tarjeta y sin aval. Solo necesitas tu INE y tu
             WhatsApp, la aprobación es en minutos y te lo enviamos a tu domicilio en todo México.
-          </p>
+          </p> */}
 
           <div className={styles.botones}>
             <button className={styles.cta} onClick={handleSiguiente}>

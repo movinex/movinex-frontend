@@ -24,6 +24,8 @@ El frontend no tiene cliente de Supabase propio ni sus keys — todo lo que lee 
 
 - `GET /api/celulares`, `GET/POST/PUT/DELETE` para catálogo (admin), `POST /api/celulares/imagen` para subir fotos.
 - `GET/POST /api/solicitudes` — solicitudes de crédito (KYC + datos del cliente); `GET /api/solicitudes/estatus` — polling liviano de pago confirmado; `POST /api/solicitudes/:id/domicilio` — domicilio post-pago (genera guía en Skydropx).
+- `PATCH /api/solicitudes/:id` (admin) también acepta `celular` (2026-08-25) — usado por `SolicitudesView` (detalle de solicitud en /sadmin) para corregir el número al que le llegan las alertas, con edición inline junto al link de WhatsApp.
+- `GET /api/admin/solicitudes/:id/mensajes` (2026-08-25) — historial de WhatsApp mandados a una solicitud; `SolicitudesView` lo pinta en una sección nueva del detalle ("Mensajes enviados"). Es enteramente nuestro propio registro — Meta no expone ningún endpoint de consulta de mensajes ya enviados.
 - `POST /api/admin/login` — login del panel admin.
 - Webhooks (`/api/webhooks/stripe`, `/api/webhooks/verificacion-cliente`) y `/api/mdm/command` no los llama el frontend directamente.
 

@@ -209,8 +209,8 @@
 
 .heroBlob {
   position: absolute;
-  right: -60px;
-  top: 20%;
+  right: -146px;
+  top: 226px;
   width: 657px;
   height: 630px;
   max-width: 60%;
@@ -236,7 +236,7 @@
 }
 
 .heroTitle {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Google Sans Flex', 'Inter', sans-serif;
   font-weight: 800;
   font-size: 72px;
   line-height: 1;
@@ -363,7 +363,7 @@
 }
 
 .marcasHeading h2 {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Google Sans Flex', 'Inter', sans-serif;
   font-weight: 800;
   font-size: 60px;
   color: #ffffff;
@@ -438,7 +438,7 @@
 }
 
 .comoFuncionaTitle {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Google Sans Flex', 'Inter', sans-serif;
   font-weight: 800;
   font-size: 60px;
   line-height: 1.15;
@@ -570,8 +570,8 @@
 
 .porQueBlob {
   position: absolute;
-  left: -260px;
-  top: 0;
+  left: -417px;
+  top: 26px;
   width: 805px;
   height: 755px;
   background: radial-gradient(circle, rgba(107, 63, 224, 0.4) 0%, rgba(107, 63, 224, 0) 70%);
@@ -582,7 +582,7 @@
 .porQueTitle {
   position: relative;
   z-index: 1;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Google Sans Flex', 'Inter', sans-serif;
   font-weight: 800;
   font-size: 60px;
   color: #0b1b3a;
@@ -706,7 +706,7 @@
 }
 
 .bannerPromoModelo {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Google Sans Flex', 'Inter', sans-serif;
   font-weight: 800;
   font-size: 60px;
   line-height: 1;
@@ -767,8 +767,8 @@
 
 .faqBlob1 {
   position: absolute;
-  right: -150px;
-  top: -400px;
+  right: -826px;
+  top: -559px;
   width: 1299px;
   height: 1218px;
   background: radial-gradient(circle, rgba(107, 63, 224, 0.4) 0%, rgba(107, 63, 224, 0) 70%);
@@ -778,7 +778,7 @@
 .faqBlob2 {
   position: absolute;
   left: -360px;
-  bottom: -100px;
+  bottom: -230px;
   width: 566px;
   height: 531px;
   background: radial-gradient(circle, rgba(107, 63, 224, 0.4) 0%, rgba(107, 63, 224, 0) 70%);
@@ -788,7 +788,7 @@
 .faqTitle {
   position: relative;
   z-index: 1;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Google Sans Flex', 'Inter', sans-serif;
   font-weight: 500;
   font-size: 60px;
   color: #0b1b3a;
@@ -1048,7 +1048,7 @@
 }
 
 .tiendaTitulo h1 {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Google Sans Flex', 'Inter', sans-serif;
   font-weight: 800;
   font-size: 60px;
   line-height: 1;
@@ -1066,7 +1066,8 @@
 .tiendaGrid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
+  column-gap: 20px;
+  row-gap: 72px;
 }
 
 .tiendaCard {
@@ -1146,7 +1147,7 @@
 }
 
 .tiendaCardInfo h3 {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Google Sans Flex', 'Inter', sans-serif;
   font-weight: 800;
   font-size: 28px;
   color: #0b1b3a;
@@ -1385,7 +1386,7 @@
 }
 
 .modalTitle {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Google Sans Flex', 'Inter', sans-serif;
   font-weight: 800;
   font-size: 24px;
   line-height: 1.2;
@@ -1545,7 +1546,7 @@
   flex-direction: column;
   align-items: center;
   gap: 40px;
-  padding: 120px 96px;
+  padding: 34px 96px 120px;
 }
 
 .qsHeroBlob {
@@ -1594,7 +1595,7 @@
 }
 
 .qsHeroTitle {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Google Sans Flex', 'Inter', sans-serif;
   font-weight: 800;
   font-size: 60px;
   line-height: 1;
@@ -1642,7 +1643,7 @@
 /* ================================ */
 .qsQuote {
   position: relative;
-  padding: 90px 96px;
+  padding: 100px 96px;
   display: flex;
   justify-content: center;
 }
@@ -1663,7 +1664,7 @@
   position: relative;
   z-index: 1;
   max-width: 800px;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Google Sans Flex', 'Inter', sans-serif;
   font-weight: 800;
   font-size: 28px;
   line-height: 1.2;
@@ -1676,7 +1677,7 @@
 /* ================================ */
 .qsComoFunciona {
   position: relative;
-  padding: 140px 96px;
+  padding: 280px 96px 220px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1688,7 +1689,7 @@
   position: absolute;
   z-index: 0;
   right: 71px;
-  top: 144px;
+  top: 0;
   width: 427px;
   pointer-events: none;
 }
@@ -1712,7 +1713,7 @@
 }
 
 .qsComoFuncionaHead h2 {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Google Sans Flex', 'Inter', sans-serif;
   font-weight: 800;
   font-size: 72px;
   line-height: 1;
